@@ -1,12 +1,11 @@
-<script>
-export default {
-  name: "CenteredHeader",
-  methods: {
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+<script setup>
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+function goBack() {
+  router.go(-1);
+}
 </script>
 
 <template>
@@ -17,9 +16,6 @@ export default {
       </button>
       <h1 class="text-3xl text-center">Loopin</h1>
     </header>
-    <main>
-      <slot />
-    </main>
   </div>
 </template>
 

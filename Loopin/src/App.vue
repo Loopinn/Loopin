@@ -5,6 +5,7 @@ import { computed } from "vue";
 
 import LogoHeader from "@/components/header/LogoHeader.vue";
 import CenteredHeader from "@/components/header/CenteredHeader.vue";
+import Footer from "@/components/footer/Footer.vue";
 
 const route = useRoute();
 
@@ -27,6 +28,7 @@ const headerComponent = computed(() => {
       <RouterLink to="/user">프로필</RouterLink>
     </nav>
     <RouterView />
+    <Footer />
   </div>
 </template>
 <style scoped></style>
