@@ -1,1 +1,23 @@
 @import "./tailwind.css";
+
+@font-face {
+  font-family: "Inter";
+  src: url("@/assets/fonts/Inter-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: 600px;
+  margin: 0 auto;
+  height: 100vh;
+  position: relative;
+  box-shadow:
+    0 4px 4px -1px rgba(0, 0, 0, 0.2),
+    0 4px 4px -1px rgba(0, 0, 0, 0.2);
+  overflow-y: scroll;
+}
