@@ -14,7 +14,7 @@
 body {
   max-width: 600px;
   margin: 0 auto;
-  height: 100vh;
+  min-height: 100vh;
   position: relative;
   box-shadow:
     0 4px 4px -1px rgba(0, 0, 0, 0.2),
