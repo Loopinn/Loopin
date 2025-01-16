@@ -4,13 +4,18 @@
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { login } from "@/utils/auth/login";
-import { onBeforeMount, ref } from "vue";
-import { loungeComment } from "@/utils/loungeComment";
+import { onBeforeMount, onMounted, ref } from "vue";
+
 import { storeToRefs } from "pinia";
 import { feedLike } from "@/utils/feedLike";
+import { useCommentStore } from "@/stores/commetStore";
 const postStore = usePostStore();
 const { createLoungePost, loadLoungePosts, deleteLoungePost } = postStore;
 const { loungePosts } = storeToRefs(postStore);
+
+const commentStore = useCommentStore();
+const { loungeComments } = storeToRefs(commentStore);
+const { createLoungeComment, loadLoungeComments, updateLoungeComment, deleteLoungeComment } = commentStore;
 
 const title = ref("");
 const description = ref("");
@@ -22,9 +27,14 @@ const upassword = ref("");
 
 const comment = ref("");
 
+const newComment = ref("");
+
 onBeforeMount(() => {
   loadLoungePosts();
   console.log("loungePosts", loungePosts);
+
+  loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
+  console.log(loungeComments);
 });
 
 const handleImages = (e) => {
@@ -117,14 +127,14 @@ const handleSubmit = async () => {
 
   <form
     @submit.prevent="
-      loungeComment({ comment: comment, post_id: '9c4ab856-c8fb-47b7-b14a-6b24bc526202', creator: creator })
+      createLoungeComment({ comment: comment, post_id: '9c4ab856-c8fb-47b7-b14a-6b24bc526202', creator: creator })
     "
   >
     <input type="text" v-model="comment" />
     <button>comment</button>
   </form>
-  <div>
-    <div v-for="post in loungePosts" :key="post.id">
+  <div v-for="comment in loungeComments">
+    <!-- <div v-for="post in loungePosts" :key="post.id">
       <h1>{{ post.title }}</h1>
       <p>{{ post.description }}</p>
       <p>{{ post.creator }}</p>
@@ -132,8 +142,22 @@ const handleSubmit = async () => {
       <img v-for="image in post.images" :src="image" alt="이미지" class="w-[100px]" />
       <p>{{ post.created_at }}</p>
 
+      <template v-if="loungeComments">
+        <div v-for="loungeComment in loungeComments">
+          <p>{{ loungeComment.comment }}</p>
+        </div>
+      </template>
+
       <button class="border border-red-700 text-red-600" type="button" @click="feedLike(post, creator)">like</button>
-    </div>
+    </div> -->
+
+    <p>{{ comment.comment }}</p>
+
+    <form @submit.prevent="updateLoungeComment(newComment, comment.id)">
+      <input type="text" v-model="newComment" />
+      <button>수정</button>
+    </form>
+    <button @click="deleteLoungeComment(comment.id)">삭제</button>
   </div>
 </template>
 <style scoped></style>

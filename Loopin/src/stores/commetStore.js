@@ -4,6 +4,7 @@ import { reactive, ref } from "vue";
 
 export const useCommentStore = defineStore("commentStore", () => {
   const challengeComments = reactive({});
+  const loungeComments = ref([]);
 
   const loadChallengeComments = async (postId) => {
     if (!challengeComments[postId]) {
@@ -97,11 +98,80 @@ export const useCommentStore = defineStore("commentStore", () => {
     }
   };
 
+  // 라운지 피드
+  const loadLoungeComments = async (postId) => {
+    try {
+      const { data, error } = await supabase.from("lounge_comments").select("*").eq("post_id", postId);
+
+      console.log("lounge", data);
+      loungeComments.value = data;
+      console.log("loungeComments", loungeComments.value);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createLoungeComment = async (commentInfo) => {
+    try {
+      const { data: commentData, error: commentError } = await supabase
+        .from("lounge_comments")
+        .insert({ ...commentInfo })
+        .select();
+      if (commentError) throw new Error(commentError);
+      console.log("댓글 달기 성공", commentData);
+
+      // 피드 정보 가져옴
+      const { data: feedData, error: feedError } = await supabase
+        .from("lounge_posts")
+        .select("comments")
+        .eq("id", commentData[0].post_id)
+        .single();
+
+      const currentComments = feedData.comments || [];
+      const updateComments = [...currentComments, commentData[0].id];
+      // 피드 DB에 댓글 추가
+      const response = await supabase
+        .from("lounge_posts")
+        .update({ comments: updateComments })
+        .eq("id", commentData[0].post_id)
+        .select();
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteLoungeComment = async (commentId) => {
+    try {
+      const response = await supabase.from("lounge_comments").delete().eq("id", commentId).select();
+      console.log("삭제완료!", response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateLoungeComment = async (newComment, commentId) => {
+    try {
+      const response = await supabase.from("lounge_comments").update({ comment: newComment }).eq("id", commentId);
+
+      console.log("수정완료!", response);
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     challengeComments,
     loadChallengeComments,
     createChallengeComment,
     deleteChallengeComment,
     updateChallengeComment,
+    loungeComments,
+    loadLoungeComments,
+    createLoungeComment,
+    deleteLoungeComment,
+    updateLoungeComment,
   };
 });
