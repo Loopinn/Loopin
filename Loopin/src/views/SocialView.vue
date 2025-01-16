@@ -63,7 +63,7 @@ import Register from '@/components/postcontent/Register.vue';
             </div>
             <div class="flex gap-1 mb-1">
               <img src="@/assets/images/location.svg" alt="location" />
-              <p>마포구 (서울 마포구 합정동)</p>
+              <p>마포구</p>
             </div>
           </div>
         </div>
