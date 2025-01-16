@@ -6,6 +6,7 @@ export const usePostStore = defineStore("postStore", () => {
   const socialingPosts = ref([]);
   const clubPosts = ref([]);
   const challengePosts = ref([]);
+  const loungePosts = ref([]);
 
   const loadSocialingPosts = async () => {
     let { data, error } = await supabase.from("club_posts").select("*");
@@ -108,6 +109,30 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
+  // 라운지 게시글
+  const createLoungePost = async (postInfo) => {
+    try {
+      const response = await supabase.from("lounge_posts").insert([postInfo]);
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const loadLoungePosts = async () => {
+    try {
+      const { data, error } = await supabase.from("lounge_posts").select("*");
+      if (error) {
+        console.error(error);
+      }
+      console.log(data);
+      loungePosts.value = data;
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     challengePosts,
     loadSocialingPosts,
@@ -116,5 +141,8 @@ export const usePostStore = defineStore("postStore", () => {
     createChallengePost,
     deleteChallengePost,
     updateChallengePost,
+    loungePosts,
+    createLoungePost,
+    loadLoungePosts,
   };
 });
