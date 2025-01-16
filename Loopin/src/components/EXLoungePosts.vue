@@ -23,9 +23,10 @@ onBeforeMount(() => {
 });
 
 const handleImages = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    images.value = file;
+  const files = e.target.files;
+  console.log(files);
+  if (files) {
+    images.value = Array.from(files);
     console.log(images.value);
   } else {
     images.value = null;
@@ -37,28 +38,33 @@ const handleSubmit = async () => {
     return alert("이미지를 선택해야합니다.");
   }
 
-  if (title.value && description.value && imageUrl && creator.value) {
-    const fileName = `${Date.now()}-${images.value.name}`;
-    const { data: imageData, error: imageError } = await supabase.storage
-      .from("post-images")
-      .upload(`images/feed/${fileName}`, images.value);
+  if (title.value && description.value && creator.value) {
+    const imageUrls = await Promise.all(
+      images.value.map(async (image) => {
+        const fileName = `${Date.now()}-${image.name}`;
+        const { data: imageData, error: imageError } = await supabase.storage
+          .from("post-images")
+          .upload(`images/feed/${fileName}`, image);
 
-    if (imageError) throw imageError;
+        if (imageError) throw imageError;
+        console.log("imageData", imageData);
+        const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
 
-    const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
-
-    const imageUrl = imagePath.publicUrl;
+        const imageUrl = imagePath.publicUrl;
+        return imageUrl;
+      }),
+    );
 
     const submitResponse = await createLoungePost(
       {
         title: title.value,
         description: description.value,
         creator: creator.value,
-        images: imageUrl,
+        images: imageUrls,
       },
       "91021736-14c0-4b73-a92f-89429ca7a65d",
     );
-    console.log(submitResponse);
+    console.log("done", submitResponse);
   } else {
     return alert("빈칸을 채워주세");
   }
@@ -84,7 +90,7 @@ const handleSubmit = async () => {
     </div>
     <div class="flex items-center space-x-2">
       <label for="file" class="text-sm w-24">file</label>
-      <input type="file" id="file" accept="image/*" @change="handleImages" class="border p-2 rounded flex-1" />
+      <input type="file" id="file" accept="image/*" @change="handleImages" class="border p-2 rounded flex-1" multiple />
     </div>
     <button type="submit" class="bg-blue-500 text-white p-2 rounded">등록</button>
   </form>
