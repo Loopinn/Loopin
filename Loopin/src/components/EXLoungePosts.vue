@@ -7,19 +7,20 @@ import { onBeforeMount, ref } from "vue";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
-const { createLoungePost, loadLoungePosts } = postStore;
+const { createLoungePost, loadLoungePosts, deleteLoungePost } = postStore;
 
 const title = ref("");
 const description = ref("");
+const creator = ref("91021736-14c0-4b73-a92f-89429ca7a65d");
 
 onBeforeMount(() => {
   loadLoungePosts();
-  console.log("loungePosts", loungePosts);
+  // console.log("loungePosts", loungePosts);
 });
 </script>
 <template>
   <h1>lounge post</h1>
-  <form @submit.prevent="createLoungePost({ title, description })">
+  <form @submit.prevent="createLoungePost({ title, description, creator }, '91021736-14c0-4b73-a92f-89429ca7a65d')">
     <div class="flex items-center space-x-2">
       <label for="title" class="text-sm w-24">제목</label>
       <input type="text" id="title" v-model="title" class="border p-2 rounded flex-1" />
@@ -30,6 +31,7 @@ onBeforeMount(() => {
     </div>
     <button type="submit" class="bg-blue-500 text-white p-2 rounded">등록</button>
   </form>
+  <!-- <button @click="deleteLoungePost('20d73a6d-16da-4aa0-ba22-9995807269a6')">delete</button> -->
 
   <div>
     <pre>{{ loungePosts }}</pre>

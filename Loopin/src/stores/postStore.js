@@ -110,10 +110,39 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   // 라운지 게시글
-  const createLoungePost = async (postInfo) => {
+  const createLoungePost = async (postInfo, userId) => {
     try {
-      const response = await supabase.from("lounge_posts").insert([postInfo]);
-      console.log(response);
+      const {
+        data: createData,
+        error: createError,
+        status: createStatus,
+      } = await supabase.from("lounge_posts").insert([postInfo]).select();
+      console.log("생성 데이터", createData);
+
+      if (createError && createStatus !== 201) {
+        throw createError;
+      }
+
+      const postId = createData[0].id;
+
+      // 유저 정보 가져옴
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select("posts")
+        .eq("id", userId)
+        .single();
+
+      if (userError) throw userError;
+
+      const currentPosts = userData.posts || [];
+
+      const updatePosts = [...currentPosts, postId];
+
+      // 유저 정보 업데이트
+      const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
+      console.log("updateResponse", updateResponse);
+
+      return createData;
     } catch (error) {
       console.error(error);
     }
@@ -133,6 +162,16 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
+  const deleteLoungePost = async (postId) => {
+    try {
+      const response = await supabase.from("lounge_posts").delete().eq("id", postId).select();
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     challengePosts,
     loadSocialingPosts,
@@ -144,5 +183,6 @@ export const usePostStore = defineStore("postStore", () => {
     loungePosts,
     createLoungePost,
     loadLoungePosts,
+    deleteLoungePost,
   };
 });
