@@ -10,16 +10,14 @@ function navigate(index) {
 </script>
 
 <template>
-  <div class="relative">
-    <div class="w-[600px] h-[64px] bg-[#d9d9d9] flex items-center justify-around fixed bottom-0">
-      <div
-        v-for="(name, index) in ['Home', 'Lounge', 'Write', 'Chat', 'MyPage']"
-        :key="index"
-        class="w-[45px] h-[45px] bg-white rounded-full flex justify-center items-center cursor-pointer"
-        @click="navigate(index)"
-      >
-        <span>{{ name }}</span>
-      </div>
+  <div class="w-full flex items-center justify-around">
+    <div
+      v-for="(name, index) in ['Home', 'Lounge', 'Write', 'Chat', 'MyPage']"
+      :key="index"
+      class="w-[45px] h-[45px] bg-white rounded-full flex justify-center items-center cursor-pointer"
+      @click="navigate(index)"
+    >
+      <span>{{ name }}</span>
     </div>
   </div>
 </template>
