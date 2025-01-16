@@ -38,7 +38,7 @@ import Register from '@/components/postcontent/Register.vue';
         <span class="text-[#909090]">(44)</span>
       </div>
       <div class="ml-[40px] mt-[70px] w-[520px]">
-        <div>게시글 내용</div>
+        <div>게시글 내용 </div>
         <!-- 멤버 소개 -->
         <MemberInfo />
         <!-- 안내사항 -->
