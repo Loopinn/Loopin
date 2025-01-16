@@ -1,0 +1,7 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#E5E7EB"/>
+  <circle cx="200" cy="180" r="45" fill="#9CA3AF"/>
+  <path d="M194 158h12v37h-12z" fill="#E5E7EB"/>
+  <circle cx="200" cy="205" r="6" fill="#E5E7EB"/>
+  <text x="200" y="270" font-family="Arial" font-size="24" fill="#9CA3AF" text-anchor="middle">이미지가 없습니다</text>
+</svg>
