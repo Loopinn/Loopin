@@ -28,15 +28,27 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/uploadfeed",
+      name: "uploadfeed",
+      component: () => import("@/components/EXLoungePosts.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/lounge",
       name: "lounge",
       component: () => import("@/views/LoungeView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
-      path: "/uploadfeed",
-      name: "uploadfeed",
-      component: () => import("@/components/EXLoungePosts.vue"),
+      path: "/lounge/write",
+      name: "loungeWriteView",
+      component: () => import("@/views/LoungeWriteView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
+      path: "/lounge/:id",
+      name: "loungeDetail",
+      component: () => import("@/views/LoungeDetailView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
