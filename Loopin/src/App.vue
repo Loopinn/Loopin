@@ -15,8 +15,10 @@ const headerComponent = computed(() => {
 });
 </script>
 <template>
-  <div>
-    <component :is="headerComponent" />
+  <div class="flex flex-col w-full h-full min-h-screen bg-white">
+    <header>
+      <component :is="headerComponent" />
+    </header>
     <nav class="flex gap-3">
       <RouterLink to="/">메인</RouterLink>
       <RouterLink to="/socialing">소셜링</RouterLink>
@@ -27,8 +29,12 @@ const headerComponent = computed(() => {
       <RouterLink to="/signUp">회원가입</RouterLink>
       <RouterLink to="/user">프로필</RouterLink>
     </nav>
-    <RouterView />
-    <Footer />
+    <div class="flex-grow pb-[64px]">
+      <RouterView />
+    </div>
+    <footer class="flex fixed bottom-0 w-[600px] h-[64px] bg-[#d9d9d9] left-1/2 -translate-x-1/2">
+      <Footer />
+    </footer>
   </div>
 </template>
 <style scoped></style>
