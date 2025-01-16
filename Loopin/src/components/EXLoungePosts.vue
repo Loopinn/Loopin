@@ -5,9 +5,12 @@ import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { login } from "@/utils/auth/login";
 import { onBeforeMount, ref } from "vue";
-
+import { loungeComment } from "@/utils/loungeComment";
+import { storeToRefs } from "pinia";
+import { feedLike } from "@/utils/feedLike";
 const postStore = usePostStore();
 const { createLoungePost, loadLoungePosts, deleteLoungePost } = postStore;
+const { loungePosts } = storeToRefs(postStore);
 
 const title = ref("");
 const description = ref("");
@@ -17,9 +20,11 @@ const images = ref(null);
 const uemail = ref("");
 const upassword = ref("");
 
+const comment = ref("");
+
 onBeforeMount(() => {
   loadLoungePosts();
-  // console.log("loungePosts", loungePosts);
+  console.log("loungePosts", loungePosts);
 });
 
 const handleImages = (e) => {
@@ -33,6 +38,7 @@ const handleImages = (e) => {
   }
 };
 
+// 라운지 피드 등록 함수
 const handleSubmit = async () => {
   if (!images.value) {
     return alert("이미지를 선택해야합니다.");
@@ -69,6 +75,20 @@ const handleSubmit = async () => {
     return alert("빈칸을 채워주세");
   }
 };
+
+// const handleLike = async (post) => {
+//   try {
+//     const currentLikes = post.likes || [];
+
+//     // 2번째 로그인 한 유저의 id로 변경해야됨
+//     const updateLikes = [...currentLikes, creator.value];
+//     const response = await supabase.from("lounge_posts").update({ likes: updateLikes }).eq("id", post.id).select();
+
+//     console.log(response);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 </script>
 <template>
   <h1>lounge post</h1>
@@ -94,6 +114,26 @@ const handleSubmit = async () => {
     </div>
     <button type="submit" class="bg-blue-500 text-white p-2 rounded">등록</button>
   </form>
-  <!-- <button @click="deleteLoungePost('20d73a6d-16da-4aa0-ba22-9995807269a6')">delete</button> -->
+
+  <form
+    @submit.prevent="
+      loungeComment({ comment: comment, post_id: '9c4ab856-c8fb-47b7-b14a-6b24bc526202', creator: creator })
+    "
+  >
+    <input type="text" v-model="comment" />
+    <button>comment</button>
+  </form>
+  <div>
+    <div v-for="post in loungePosts" :key="post.id">
+      <h1>{{ post.title }}</h1>
+      <p>{{ post.description }}</p>
+      <p>{{ post.creator }}</p>
+
+      <img v-for="image in post.images" :src="image" alt="이미지" class="w-[100px]" />
+      <p>{{ post.created_at }}</p>
+
+      <button class="border border-red-700 text-red-600" type="button" @click="feedLike(post, creator)">like</button>
+    </div>
+  </div>
 </template>
 <style scoped></style>

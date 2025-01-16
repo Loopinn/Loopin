@@ -2,21 +2,21 @@
 const props = defineProps({
   icon: {
     type: String,
-    required: true
+    required: true,
   },
   title: {
     type: String,
-    required: true
+    required: true,
   },
   subtitle: {
     type: String,
-    required: true
+    required: true,
   },
   alt: {
     type: String,
-    default: '로고 아이콘'
-  }
-})
+    default: "로고 아이콘",
+  },
+});
 </script>
 
 <template>
@@ -28,7 +28,7 @@ const props = defineProps({
     <h3 class="text-2xl font-bold leading-relaxed">
       <template v-for="(line, index) in subtitle.split('\n')" :key="index">
         {{ line }}
-        <br v-if="index < subtitle.split('\n').length - 1">
+        <br v-if="index < subtitle.split('\n').length - 1" />
       </template>
     </h3>
   </div>
