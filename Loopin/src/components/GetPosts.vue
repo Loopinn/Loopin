@@ -1,15 +1,21 @@
 <script setup>
 import supabase from "@/config/supabase";
+import { useCommentStore } from "@/stores/commetStore";
 import { usePostStore } from "@/stores/postStore";
 import { login } from "@/utils/auth/login";
 import { logout } from "@/utils/auth/logout";
 import { register } from "@/utils/auth/register";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref } from "vue";
+import GetComments from "./GetComments.vue";
 
 const postStore = usePostStore();
 const { challengePosts } = storeToRefs(postStore);
 const { loadChallengePosts, createChallengePost, deleteChallengePost, updateChallengePost } = postStore;
+
+const commentStore = useCommentStore();
+const { challengeComments } = storeToRefs(commentStore);
+const { loadChallengeComments } = commentStore;
 
 const fee = ref("");
 const feeInfo = ref("");
@@ -182,8 +188,7 @@ onMounted(() => {
     <p>max-people: {{ post.max_people }}</p>
     <button type="button" class="border" @click="deleteChallengePost(post.id)">delete</button>
     <div>
-      comments
-      <input type="text" class="border" />
+      <GetComments :post-id="post.id" />
     </div>
   </div>
   <div class="h-[64px]"></div>
