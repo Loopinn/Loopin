@@ -11,7 +11,7 @@ const props = defineProps({
 });
 const commentStore = useCommentStore();
 const { challengeComments } = storeToRefs(commentStore);
-const { loadChallengeComments, createChallengeComment } = commentStore;
+const { loadChallengeComments, createChallengeComment, deleteChallengeComment, updateChallengeComment } = commentStore;
 
 const inputText = ref("");
 
@@ -20,6 +20,12 @@ const comments = computed(() => challengeComments.value[props.postId] || []);
 
 const handleSubmit = () => {
   createChallengeComment({ post_id: props.postId, content: inputText.value });
+};
+const handleDelete = (commentId) => {
+  deleteChallengeComment(commentId);
+};
+const handleUpdate = (commentId) => {
+  updateChallengeComment(props.postId, commentId, { content: "updated" });
 };
 
 onMounted(() => {
@@ -36,6 +42,8 @@ onMounted(() => {
     <ul v-if="comments.length">
       <li v-for="comment in comments" :key="comment.id">
         {{ comment.content }}
+        <button class="border" @click="handleDelete(comment.id)">x</button>
+        <button class="border" @click="handleUpdate(comment.id)">update</button>
       </li>
     </ul>
     <p v-else>No comments yet.</p>
