@@ -29,7 +29,7 @@ const headerComponent = computed(() => {
       <RouterLink to="/signUp">회원가입</RouterLink>
       <RouterLink to="/user">프로필</RouterLink>
     </nav>
-    <div class="flex-grow pb-[64px]">
+    <div class="flex-grow mb-[64px]">
       <RouterView />
     </div>
     <footer class="flex fixed bottom-0 w-[600px] h-[64px] bg-[#d9d9d9] left-1/2 -translate-x-1/2">
