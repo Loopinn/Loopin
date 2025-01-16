@@ -34,6 +34,12 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/uploadfeed",
+      name: "uploadfeed",
+      component: () => import("@/components/EXLoungePosts.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/signIn",
       name: "signIn",
       component: () => import("@/views/SignInView.vue"),
