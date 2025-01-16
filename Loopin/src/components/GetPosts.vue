@@ -1,7 +1,11 @@
 <script setup>
+import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
+import { login } from "@/utils/auth/login";
+import { logout } from "@/utils/auth/logout";
+import { register } from "@/utils/auth/register";
 import { storeToRefs } from "pinia";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 const postStore = usePostStore();
 const { challengePosts } = storeToRefs(postStore);
@@ -16,6 +20,14 @@ const startDate = ref(new Date().toLocaleDateString("en-CA", { timeZone: "Asia/S
 const endDate = ref(new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }).split("T")[0]);
 const tpw = ref("");
 const max = ref("");
+const selectedFile = ref(null);
+
+const handleLogin = async () => {
+  await login(`test666@test.com`, `test666`);
+};
+const handleLogout = async () => {
+  await logout();
+};
 
 const convertTime = (time) => {
   const date = new Date(time);
@@ -25,7 +37,29 @@ const convertTime = (time) => {
   return kstTime.toISOString().replace("T", " ").slice(0, 19);
 };
 
-const handleChallengeSubmit = () => {
+const handleChallengeSubmit = async () => {
+  if (!selectedFile.value) {
+    alert("Please select a file first.");
+    return;
+  }
+
+  let imageUrl = null;
+  if (selectedFile.value) {
+    const fileName = `${Date.now()}-${selectedFile.value.name}`;
+    const { data, error } = await supabase.storage.from("post-images").upload(`images/${fileName}`, selectedFile.value);
+
+    if (error) {
+      console.error("Image upload failed:", error.message);
+      return;
+    }
+
+    // 업로드된 이미지의 public URL 가져오기
+    const { data: publicUrlData, error: urlError } = supabase.storage
+      .from("post-images")
+      .getPublicUrl(`images/${fileName}`);
+    imageUrl = publicUrlData.publicUrl;
+  }
+
   if (fee && category && postTitle && startDate && endDate && tpw && max) {
     createChallengePost({
       fee: fee.value,
@@ -37,9 +71,11 @@ const handleChallengeSubmit = () => {
       end_date: endDate.value,
       times_per_week: tpw.value,
       max_people: max.value,
+      images: imageUrl,
     });
   }
 };
+
 const handleUpdate = (postId) => {
   //바꾸고싶은 값 입력
   updateChallengePost(postId, {
@@ -47,11 +83,27 @@ const handleUpdate = (postId) => {
   });
 };
 
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    selectedFile.value = file;
+  } else {
+    selectedFile.value = null;
+  }
+};
+
+const filePreviewUrl = computed(() => {
+  return selectedFile.value ? URL.createObjectURL(selectedFile.value) : null;
+});
+
 onMounted(() => {
   loadChallengePosts();
 });
 </script>
 <template>
+  <button type="button" @click="register(`test666@test.com`, `test666`, `test666`)">register</button>
+  <button type="button" @click="handleLogin">login</button>
+  <button type="button" @click="handleLogout">logout</button>
   <h1>createChallengeForm</h1>
   <form @submit.prevent="handleChallengeSubmit" class="max-w-lg mx-auto space-y-4">
     <div class="flex items-center space-x-2">
@@ -67,6 +119,15 @@ onMounted(() => {
     <div class="flex items-center space-x-2">
       <label for="category" class="text-sm w-24">주제</label>
       <input type="text" id="category" v-model="category" class="border p-2 rounded flex-1" />
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <label for="image" class="text-sm w-24">이미지</label>
+      <input type="file" id="image" @change="handleFileChange" class="border p-2 rounded flex-1" />
+    </div>
+    <div v-if="filePreviewUrl" class="mt-4">
+      <p>이미지 미리보기:</p>
+      <img :src="filePreviewUrl" alt="Preview" class="w-32 h-32 object-cover" />
     </div>
 
     <div class="flex items-center space-x-2">
@@ -111,7 +172,7 @@ onMounted(() => {
     <p>fee: {{ post.fee }}</p>
     <p>fee-info: {{ post.fee_info }}</p>
     <p>description: {{ post.description }}</p>
-    <p>images: {{ post.images }}</p>
+    <img :src="post.images" alt="" />
     <p>start-date: {{ post.start_date }}</p>
     <p>end-date: {{ post.end_date }}</p>
     <p>times-per-week: {{ post.times_per_week }}</p>
@@ -120,6 +181,11 @@ onMounted(() => {
     <p>participants: {{ post.participants }}</p>
     <p>max-people: {{ post.max_people }}</p>
     <button type="button" class="border" @click="deleteChallengePost(post.id)">delete</button>
+    <div>
+      comments
+      <input type="text" class="border" />
+    </div>
   </div>
+  <div class="h-[64px]"></div>
 </template>
 <style scoped></style>
