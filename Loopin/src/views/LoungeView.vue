@@ -6,7 +6,7 @@ import noImage from "../assets/images/noImage.svg";
 import { RouterLink } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
-import WriteButton from "@/components/lounge/writeButton.vue";
+import WriteButton from "@/components/lounge/WriteButton.vue";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
