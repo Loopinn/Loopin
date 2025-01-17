@@ -176,17 +176,56 @@ export const useCommentStore = defineStore("commentStore", () => {
     }
   };
 
+  const loungeCommentLike = async (commentInfo, userId) => {
+    try {
+      const currentLikes = commentInfo.likes || [];
+      const updatedLikes = [...currentLikes, userId];
+
+      const { data, error } = await supabase
+        .from("lounge_comments")
+        .update({ likes: updatedLikes })
+        .eq("id", commentInfo.id)
+        .select();
+      if (error) throw new Error("댓글 좋아요 추가 오류!", error);
+      console.log("댓글 좋아요 추가 완료!", data);
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const loungeCommentUnLike = async (commentInfo, userId) => {
+    try {
+      if (!commentInfo.likes || !commentInfo.likes.length) return;
+
+      const currentLikes = commentInfo.likes;
+      const updatedLikes = currentLikes.filter((like) => like !== userId);
+      const { data, error } = await supabase
+        .from("lounge_comments")
+        .update({ likes: updatedLikes })
+        .eq("id", commentInfo.id)
+        .select();
+
+      if (error) throw new Error("댓글 좋아요 취소 오류!", error);
+      console.log("댓글 좋아요 취소 완료!", data);
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 소셜링 댓글
   const loadSocialComments = async (postId) => {
     try {
       const { data: commentData, error: socialCommentsError } = await supabase
         .from("socialing_comments")
         .select("*")
-        .eq("post_id", postId);
+        .eq("post_id", postId)
+        .select();
 
+      console.log("소셜링 댓글 불러옴", commentData);
       if (socialCommentsError) throw new Error("소셜링 댓글 볼러오기 실패", socialCommentsError);
 
-      console.log(commentData);
       socialComments.value = commentData;
     } catch (error) {
       console.error(error);
@@ -260,6 +299,44 @@ export const useCommentStore = defineStore("commentStore", () => {
     }
   };
 
+  const socialCommentLike = async (commentInfo, userId) => {
+    try {
+      const currentLikes = commentInfo.likes || [];
+      const updatedLikes = [...currentLikes, userId];
+
+      const { data, error } = await supabase
+        .from("socialing_comments")
+        .update({ likes: updatedLikes })
+        .eq("id", commentInfo.id)
+        .select();
+      if (error) throw new Error("댓글 좋아요 추가 오류!", error);
+      console.log("댓글 좋아요 추가 완료!", data);
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const socialCommentUnLike = async (commentInfo, userId) => {
+    try {
+      if (!commentInfo.likes || !commentInfo.likes.length) return;
+
+      const currentLikes = commentInfo.likes;
+      const updatedLikes = currentLikes.filter((like) => like !== userId);
+      const { data, error } = await supabase
+        .from("socialing_comments")
+        .update({ likes: updatedLikes })
+        .eq("id", commentInfo.id)
+        .select();
+
+      if (error) throw new Error("댓글 좋아요 취소 오류!", error);
+      console.log("댓글 좋아요 취소 완료!", data);
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     challengeComments,
     loadChallengeComments,
@@ -271,10 +348,14 @@ export const useCommentStore = defineStore("commentStore", () => {
     createLoungeComment,
     deleteLoungeComment,
     updateLoungeComment,
+    loungeCommentLike,
+    loungeCommentUnLike,
     socialComments,
     loadSocialComments,
     createSocialComment,
     deleteSocialComment,
     updateSocialComment,
+    socialCommentLike,
+    socialCommentUnLike,
   };
 });

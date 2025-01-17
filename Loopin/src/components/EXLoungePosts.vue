@@ -19,7 +19,7 @@ const { socialingPosts } = storeToRefs(postStore);
 const commentStore = useCommentStore();
 const { socialComments } = storeToRefs(commentStore);
 
-const { createSocialComment, updateSocialComment, deleteSocialComment, loadSocialComments } = commentStore;
+const { socialCommentLike, loadSocialComments, socialCommentUnLike } = commentStore;
 
 const title = ref("");
 const description = ref("");
@@ -36,7 +36,7 @@ const newComment = ref("");
 
 onBeforeMount(() => {
   loadSocialPosts();
-
+  loadSocialComments("97de5bfa-e485-4907-80ec-8ee5e3e04ab1");
   // loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
   console.log(socialingPosts);
 });
@@ -116,22 +116,14 @@ const handleSubmit = async () => {
   }
 };
 
-// const handleLike = async (post) => {
-//   try {
-//     const currentLikes = post.likes || [];
-
-//     // 2번째 로그인 한 유저의 id로 변경해야됨
-//     const updateLikes = [...currentLikes, creator.value];
-//     const response = await supabase.from("lounge_posts").update({ likes: updateLikes }).eq("id", post.id).select();
-
-//     console.log(response);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 const isParticipant = (socialingPost, userId) => {
   if (!socialingPost.participants) return false;
   return socialingPost.participants.includes(userId);
+};
+
+const isCommentLike = (commentLike, userId) => {
+  if (!commentLike) return false;
+  return commentLike.includes(userId);
 };
 </script>
 <template>
@@ -166,7 +158,7 @@ const isParticipant = (socialingPost, userId) => {
 
   <div v-for="socialingPost in socialingPosts" :key="socialingPost.id">
     <pre>{{ socialingPost }}</pre>
-    <template v-if="!isParticipant(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')">
+    <!-- <template v-if="!isParticipant(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')">
       <button
         type="button"
         class="bg-red-500"
@@ -183,15 +175,28 @@ const isParticipant = (socialingPost, userId) => {
       >
         참여 취소하기
       </button>
-    </template>
-    <form @submit.prevent="createSocialComment({ comment: comment, post_id: socialingPost.id })">
+    </template> -->
+
+    <!-- <form @submit.prevent="createSocialComment({ comment: comment, post_id: socialingPost.id })">
       <input type="text" v-model="comment" />
       <button>comment</button>
-    </form>
+    </form> -->
 
-    <button type="button" @click="deleteSocialComment(socialingPost, 'f421345f-598e-4a0b-969a-418ff5ce588c')">
+    <!-- <button type="button" @click="deleteSocialComment(socialingPost, 'f421345f-598e-4a0b-969a-418ff5ce588c')">
       댓글 삭제
-    </button>
+    </button> -->
+  </div>
+  <div v-for="socialComment in socialComments" :key="socialComment.id">
+    <template v-if="!isCommentLike(socialComment.likes, '91021736-14c0-4b73-a92f-89429ca7a65d')">
+      <button type="button" @click="socialCommentLike(socialComment, '91021736-14c0-4b73-a92f-89429ca7a65d')">
+        좋아요
+      </button>
+    </template>
+    <template v-else>
+      <button type="button" @click="socialCommentUnLike(socialComment, '91021736-14c0-4b73-a92f-89429ca7a65d')">
+        좋아요 취소
+      </button>
+    </template>
   </div>
 </template>
 <style scoped></style>
