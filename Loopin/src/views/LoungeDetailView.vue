@@ -2,9 +2,16 @@
 import { onMounted, computed } from "vue";
 import noImage from "../assets/images/noImage.svg";
 import userProfile from "../assets/images/defaultprofile30.svg";
-import { RouterLink, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import WriteButton from "@/components/lounge/WriteButton.vue";
+import DetailComment from "@/components/lounge/DetailComment.vue";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
@@ -27,21 +34,31 @@ onMounted(() => {
 <template>
   <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8">
     <!-- 게시물 카드 -->
-    <div class="bg-white rounded-lg shadow-sm">
+    <div class="bg-white">
       <!-- 헤더 영역 -->
       <div class="flex items-center justify-between p-4">
         <div class="flex items-center gap-2">
           <img :src="userProfile" alt="프로필 이미지" class="w-8 h-8 rounded-full" />
-          <span class="font-medium">이름</span>
+          <span class="font-medium">{{ currentPost.creator }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <button class="text-red-500">팔로우</button>
+          <button class="text-red-500 font-bold">팔로우</button>
         </div>
       </div>
 
       <!-- 이미지 영역 -->
-      <div class="aspect-square w-full bg-black">
-        <img :src="currentPost?.images[0] || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+      <div class="aspect-square w-full relative z-0">
+        <Swiper
+          :modules="[Navigation, Pagination]"
+          :slides-per-view="1"
+          :navigation="true"
+          :pagination="{ clickable: true }"
+          class="h-full w-full"
+        >
+          <SwiperSlide v-for="(image, index) in currentPost?.images" :key="index" class="aspect-square">
+            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover rounded-xl" />
+          </SwiperSlide>
+        </Swiper>
       </div>
 
       <!-- 게시물 정보 영역 -->
@@ -50,17 +67,34 @@ onMounted(() => {
         <div class="flex items-center gap-4 my-3">
           <button class="flex items-center gap-1">
             <img src="../assets/images/likeblack.svg" alt="좋아요" />
-            <span>0</span>
+            <span>{{ currentPost?.likes?.length || "0" }}</span>
           </button>
           <button class="flex items-center gap-1">
             <img src="../assets/images/comment.svg" alt="댓글" />
-            <span>0</span>
+            <span>{{ (currentPost.comments && currentPost.comments.length) || "0" }}</span>
           </button>
         </div>
         <p class="leading-relaxed text-gray-800 font-medium text-lg">
           {{ currentPost.description }}
         </p>
       </div>
+      <DetailComment :post-id="currentPost.id" />
     </div>
+    <WriteButton />
   </div>
 </template>
+
+<style>
+.swiper-button-next,
+.swiper-button-prev {
+  background-color: rgba(47, 47, 47, 0.5);
+  color: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --swiper-navigation-size: 15px;
+}
+</style>
