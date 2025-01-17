@@ -10,9 +10,10 @@ import { storeToRefs } from "pinia";
 import { feedLike } from "@/utils/feedLike";
 import { useCommentStore } from "@/stores/commetStore";
 import { logout } from "@/utils/auth/logout";
+import { socialLike } from "@/utils/socialLike";
 const postStore = usePostStore();
 const { createSocialPost, loadSocialPosts, deleteSocialPost } = postStore;
-const { loungePosts } = storeToRefs(postStore);
+const { socialingPosts } = storeToRefs(postStore);
 
 const commentStore = useCommentStore();
 const { socialComments } = storeToRefs(commentStore);
@@ -34,8 +35,9 @@ const newComment = ref("");
 
 onBeforeMount(() => {
   loadSocialPosts();
-  loadSocialComments("90dd696d-9bd3-4402-9de7-4cb5d0b4af9e");
+
   // loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
+  console.log(socialingPosts);
 });
 
 const handleImages = (e) => {
@@ -157,7 +159,12 @@ const handleSubmit = async () => {
     <button type="submit" class="bg-blue-500 text-white p-2 rounded">등록</button>
   </form>
 
-  <button class="bg-red-500" @click="deleteSocialPost('f121198e-1b94-4feb-80c9-9a7e36f8524f')">삭제</button>
+  <div v-for="socialingPost in socialingPosts">
+    <pre>{{ socialingPost }}</pre>
+    <button class="bg-red-500" @click="socialLike(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')">
+      좋아요
+    </button>
+  </div>
 
   <form @submit.prevent="updateSocialComment(comment, '4ee6d694-1948-4a72-a100-c9ba94f24caa')">
     <input type="text" v-model="comment" />
