@@ -8,17 +8,6 @@ export const usePostStore = defineStore("postStore", () => {
   const challengePosts = ref([]);
   const loungePosts = ref([]);
 
-  const loadSocialingPosts = async () => {
-    let { data, error } = await supabase.from("club_posts").select("*");
-
-    if (error) {
-      //오류 발생 시 로직
-      console.log(error);
-    }
-    if (data) {
-      socialingPosts.value = data;
-    }
-  };
   const loadClubPosts = async () => {
     let { data, error } = await supabase.from("club_posts").select("*");
 
@@ -72,16 +61,6 @@ export const usePostStore = defineStore("postStore", () => {
 
     if (error) {
       console.log("failed to delete", error);
-    }
-  };
-
-  const createSocialingPost = async (createSocialingForm) => {
-    const newPost = Object.assign({}, createSocialingForm);
-
-    const { error } = await supabase.from("socialing_posts").insert([newPost]).select();
-    if (error) {
-      //오류 발생 시 로직
-      console.log(error);
     }
   };
 
@@ -172,6 +151,71 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
+  // 소셜링
+  const loadSocialPosts = async () => {
+    try {
+      const { data: socialData, error: socialError } = await supabase.from("socialing_posts").select();
+      console.log("소셜링 게시글 정보", socialData);
+      socialingPosts.value = socialData;
+    } catch (error) {
+      console.error("loadSocialData error");
+    }
+  };
+
+  const createSocialPost = async (postInfo, userId) => {
+    try {
+      const { data: socialPost, error: socialError } = await supabase.from("socialing_posts").insert(postInfo).select();
+      console.log(socialPost);
+      if (socialError) throw new Error("소셜링 업로드 에러", socialError);
+
+      const postId = socialPost[0].id;
+
+      // 유저 정보 가져옴
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select("posts")
+        .eq("id", userId)
+        .single();
+
+      if (userError) throw userError;
+
+      const currentPosts = userData.posts || [];
+
+      const updatePosts = [...currentPosts, postId];
+
+      // 유저 정보 업데이트
+      const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
+      console.log("updateResponse", updateResponse);
+
+      return socialPost;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteSocialPost = async (postId) => {
+    try {
+      const response = await supabase.from("socialing_posts").delete().eq("id", postId).select();
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateSocialPost = async (newPostInfo, postId) => {
+    try {
+      const { data: updateData, error: updateError } = await supabase
+        .from("socialing_posts")
+        .update(newPostInfo)
+        .eq("id", postId)
+        .select();
+      console.log(updateData);
+      return updateData;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     challengePosts,
     loadSocialingPosts,
@@ -184,5 +228,9 @@ export const usePostStore = defineStore("postStore", () => {
     createLoungePost,
     loadLoungePosts,
     deleteLoungePost,
+    loadSocialPosts,
+    createSocialPost,
+    deleteSocialPost,
+    updateSocialPost,
   };
 });

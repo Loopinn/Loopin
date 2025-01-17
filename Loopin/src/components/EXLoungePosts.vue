@@ -9,18 +9,20 @@ import { onBeforeMount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { feedLike } from "@/utils/feedLike";
 import { useCommentStore } from "@/stores/commetStore";
+import { logout } from "@/utils/auth/logout";
 const postStore = usePostStore();
-const { createLoungePost, loadLoungePosts, deleteLoungePost } = postStore;
+const { createSocialPost, loadSocialPosts, deleteSocialPost } = postStore;
 const { loungePosts } = storeToRefs(postStore);
 
-const commentStore = useCommentStore();
-const { loungeComments } = storeToRefs(commentStore);
-const { createLoungeComment, loadLoungeComments, updateLoungeComment, deleteLoungeComment } = commentStore;
+// const commentStore = useCommentStore();
+// const { loungeComments } = storeToRefs(commentStore);
+// const { createLoungeComment, loadLoungeComments, updateLoungeComment, deleteLoungeComment } = commentStore;
 
 const title = ref("");
 const description = ref("");
 const creator = ref("91021736-14c0-4b73-a92f-89429ca7a65d");
 const images = ref(null);
+const date = ref(null);
 
 const uemail = ref("");
 const upassword = ref("");
@@ -30,19 +32,26 @@ const comment = ref("");
 const newComment = ref("");
 
 onBeforeMount(() => {
-  loadLoungePosts();
-  console.log("loungePosts", loungePosts);
+  loadSocialPosts();
 
-  loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
-  console.log(loungeComments);
+  // loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
 });
 
 const handleImages = (e) => {
-  const files = e.target.files;
-  console.log(files);
-  if (files) {
-    images.value = Array.from(files);
-    console.log(images.value);
+  // 다중 이미지
+  // const files = e.target.files;
+  // console.log(files);
+  // if (files) {
+  //   images.value = Array.from(files);
+  //   console.log(images.value);
+  // } else {
+  //   images.value = null;
+  // }
+
+  // 단일 이미지
+  const file = e.target.files[0];
+  if (file) {
+    images.value = file;
   } else {
     images.value = null;
   }
@@ -55,28 +64,45 @@ const handleSubmit = async () => {
   }
 
   if (title.value && description.value && creator.value) {
-    const imageUrls = await Promise.all(
-      images.value.map(async (image) => {
-        const fileName = `${Date.now()}-${image.name}`;
-        const { data: imageData, error: imageError } = await supabase.storage
-          .from("post-images")
-          .upload(`images/feed/${fileName}`, image);
+    // 다중 이미지
+    // const imageUrls = await Promise.all(
+    //   images.value.map(async (image) => {
+    //     const fileName = `${Date.now()}-${image.name}`;
+    //     const { data: imageData, error: imageError } = await supabase.storage
+    //       .from("post-images")
+    //       .upload(`images/feed/${fileName}`, image);
 
-        if (imageError) throw imageError;
-        console.log("imageData", imageData);
-        const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
+    //     if (imageError) throw imageError;
+    //     console.log("imageData", imageData);
+    //     const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
 
-        const imageUrl = imagePath.publicUrl;
-        return imageUrl;
-      }),
-    );
+    //     const imageUrl = imagePath.publicUrl;
+    //     return imageUrl;
+    //   }),
+    // );
 
-    const submitResponse = await createLoungePost(
+    const fileName = `${Date.now()}-${images.value.name}`;
+    const { data: imageData, error: imageError } = await supabase.storage
+      .from("post-images")
+      .upload(`images/socialing/${fileName}`, images.value);
+
+    if (imageError) throw new Error(imageError);
+
+    const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/socialing/${fileName}`);
+    const imageUrl = imagePath.publicUrl;
+
+    const submitResponse = await createSocialPost(
       {
         title: title.value,
         description: description.value,
-        creator: creator.value,
-        images: imageUrls,
+        images: imageUrl,
+        fee: 3000,
+        gender: "남성",
+        max_people: 10,
+        place: "오프라인",
+        age_limit: 50,
+        date: date.value,
+        category: "재테크",
       },
       "91021736-14c0-4b73-a92f-89429ca7a65d",
     );
@@ -108,6 +134,7 @@ const handleSubmit = async () => {
     <input type="password" v-model="upassword" placeholder="비밀번호" />
     <button>submut</button>
   </form>
+  <button class="border" @click="logout">로그아웃</button>
 
   <form @submit.prevent="handleSubmit">
     <div class="flex items-center space-x-2">
@@ -116,14 +143,20 @@ const handleSubmit = async () => {
     </div>
     <div class="flex items-center space-x-2">
       <label for="description" class="text-sm w-24">내용</label>
-      <textarea type="text" id="description" v-model="description" class="border p-2 rounded flex-1" />
+      <textarea id="description" v-model="description" class="border p-2 rounded flex-1" />
     </div>
     <div class="flex items-center space-x-2">
       <label for="file" class="text-sm w-24">file</label>
       <input type="file" id="file" accept="image/*" @change="handleImages" class="border p-2 rounded flex-1" multiple />
     </div>
+    <div class="flex items-center space-x-2">
+      <label for="date" class="text-sm w-24">date</label>
+      <input type="date" id="date" v-model="date" class="border p-2 rounded flex-1" />
+    </div>
     <button type="submit" class="bg-blue-500 text-white p-2 rounded">등록</button>
   </form>
+
+  <button class="bg-red-500" @click="deleteSocialPost('f121198e-1b94-4feb-80c9-9a7e36f8524f')">삭제</button>
 
   <form
     @submit.prevent="
@@ -133,31 +166,5 @@ const handleSubmit = async () => {
     <input type="text" v-model="comment" />
     <button>comment</button>
   </form>
-  <div v-for="comment in loungeComments">
-    <!-- <div v-for="post in loungePosts" :key="post.id">
-      <h1>{{ post.title }}</h1>
-      <p>{{ post.description }}</p>
-      <p>{{ post.creator }}</p>
-
-      <img v-for="image in post.images" :src="image" alt="이미지" class="w-[100px]" />
-      <p>{{ post.created_at }}</p>
-
-      <template v-if="loungeComments">
-        <div v-for="loungeComment in loungeComments">
-          <p>{{ loungeComment.comment }}</p>
-        </div>
-      </template>
-
-      <button class="border border-red-700 text-red-600" type="button" @click="feedLike(post, creator)">like</button>
-    </div> -->
-
-    <p>{{ comment.comment }}</p>
-
-    <form @submit.prevent="updateLoungeComment(newComment, comment.id)">
-      <input type="text" v-model="newComment" />
-      <button>수정</button>
-    </form>
-    <button @click="deleteLoungeComment(comment.id)">삭제</button>
-  </div>
 </template>
 <style scoped></style>
