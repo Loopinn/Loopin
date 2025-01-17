@@ -14,9 +14,10 @@ const postStore = usePostStore();
 const { createSocialPost, loadSocialPosts, deleteSocialPost } = postStore;
 const { loungePosts } = storeToRefs(postStore);
 
-// const commentStore = useCommentStore();
-// const { loungeComments } = storeToRefs(commentStore);
-// const { createLoungeComment, loadLoungeComments, updateLoungeComment, deleteLoungeComment } = commentStore;
+const commentStore = useCommentStore();
+const { socialComments } = storeToRefs(commentStore);
+
+const { createSocialComment, updateSocialComment, deleteSocialComment, loadSocialComments } = commentStore;
 
 const title = ref("");
 const description = ref("");
@@ -33,7 +34,7 @@ const newComment = ref("");
 
 onBeforeMount(() => {
   loadSocialPosts();
-
+  loadSocialComments("90dd696d-9bd3-4402-9de7-4cb5d0b4af9e");
   // loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
 });
 
@@ -158,13 +159,11 @@ const handleSubmit = async () => {
 
   <button class="bg-red-500" @click="deleteSocialPost('f121198e-1b94-4feb-80c9-9a7e36f8524f')">삭제</button>
 
-  <form
-    @submit.prevent="
-      createLoungeComment({ comment: comment, post_id: '9c4ab856-c8fb-47b7-b14a-6b24bc526202', creator: creator })
-    "
-  >
+  <form @submit.prevent="updateSocialComment(comment, '4ee6d694-1948-4a72-a100-c9ba94f24caa')">
     <input type="text" v-model="comment" />
     <button>comment</button>
   </form>
+
+  <button type="button" @click="deleteSocialComment('4ee6d694-1948-4a72-a100-c9ba94f24caa')">댓글 삭제</button>
 </template>
 <style scoped></style>
