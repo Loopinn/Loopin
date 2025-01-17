@@ -157,6 +157,7 @@ export const usePostStore = defineStore("postStore", () => {
       const { data: socialData, error: socialError } = await supabase.from("socialing_posts").select();
       console.log("소셜링 게시글 정보", socialData);
       socialingPosts.value = socialData;
+      console.log(socialingPosts.value);
     } catch (error) {
       console.error("loadSocialData error");
     }
@@ -227,6 +228,7 @@ export const usePostStore = defineStore("postStore", () => {
     createLoungePost,
     loadLoungePosts,
     deleteLoungePost,
+    socialingPosts,
     loadSocialPosts,
     createSocialPost,
     deleteSocialPost,
