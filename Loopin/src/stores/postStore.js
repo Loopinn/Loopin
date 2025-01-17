@@ -218,7 +218,6 @@ export const usePostStore = defineStore("postStore", () => {
 
   return {
     challengePosts,
-    loadSocialingPosts,
     loadClubPosts,
     loadChallengePosts,
     createChallengePost,

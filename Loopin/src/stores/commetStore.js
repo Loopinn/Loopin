@@ -5,6 +5,7 @@ import { reactive, ref } from "vue";
 export const useCommentStore = defineStore("commentStore", () => {
   const challengeComments = reactive({});
   const loungeComments = ref([]);
+  const socialComments = ref([]);
 
   const loadChallengeComments = async (postId) => {
     if (!challengeComments[postId]) {
@@ -162,6 +163,78 @@ export const useCommentStore = defineStore("commentStore", () => {
     }
   };
 
+  // 소셜링 댓글
+  const loadSocialComments = async (postId) => {
+    try {
+      const { data: commentData, error: socialCommentsError } = await supabase
+        .from("socialing_comments")
+        .select("*")
+        .eq("post_id", postId);
+
+      if (socialCommentsError) throw new Error("소셜링 댓글 볼러오기 실패", socialCommentsError);
+
+      console.log(commentData);
+      socialComments.value = commentData;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createSocialComment = async (commentInfo) => {
+    try {
+      const { data: commentData, error: commentError } = await supabase
+        .from("socialing_comments")
+        .insert({ ...commentInfo })
+        .select();
+      if (commentError) throw new Error(commentError);
+      console.log("댓글 달기 성공", commentData);
+
+      // 피드 정보 가져옴
+      const { data: socialData, error: feedError } = await supabase
+        .from("socialing_posts")
+        .select("comments")
+        .eq("id", commentData[0].post_id)
+        .single();
+
+      const currentComments = socialData.comments || [];
+      const updateComments = [...currentComments, commentData[0].id];
+      // 피드 DB에 댓글 추가
+      const response = await supabase
+        .from("socialing_posts")
+        .update({ comments: updateComments })
+        .eq("id", commentData[0].post_id)
+        .select();
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteSocialComment = async (commentId) => {
+    try {
+      const response = await supabase.from("socialing_comments").delete().eq("id", commentId).select();
+      console.log("삭제완료!", response);
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateSocialComment = async (newCommentInfo, commentId) => {
+    try {
+      const response = await supabase
+        .from("socialing_comments")
+        .update({ comment: newCommentInfo })
+        .eq("id", commentId);
+
+      console.log("수정완료!", response);
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     challengeComments,
     loadChallengeComments,
@@ -173,5 +246,10 @@ export const useCommentStore = defineStore("commentStore", () => {
     createLoungeComment,
     deleteLoungeComment,
     updateLoungeComment,
+    socialComments,
+    loadSocialComments,
+    createSocialComment,
+    deleteSocialComment,
+    updateSocialComment,
   };
 });
