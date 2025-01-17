@@ -3,7 +3,7 @@ import supabase from "@/config/supabase";
 import { login } from "@/utils/auth/login";
 import { logout } from "@/utils/auth/logout";
 import { register } from "@/utils/auth/register";
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const currentUser = ref(null);
 
@@ -16,12 +16,30 @@ const newps = ref("");
 const newpscheck = ref("");
 
 const handleLogin = async () => {
-  await login(`test101@test.com`, `test1010`);
-  currentUser.value = (await supabase.auth.getUser()).data.user;
-  console.log(currentUser.value);
+  await login(`test12@test.com`, `test12`);
 
-  nameInput.value = currentUser.value.user_metadata.nickname;
-  introduceInput.value = currentUser.value.user_metadata.introduction;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData?.session?.user?.id;
+  if (!userId) {
+    console.error("User not authenticated");
+    return;
+  }
+
+  // userinfo 데이터 조회
+  const { data: userInfo, error: userInfoError } = await supabase
+    .from("userinfo")
+    .select("*")
+    .eq("id", userId)
+    .single();
+
+  if (userInfoError) throw userInfoError;
+
+  console.log("User profile:", userInfo);
+
+  currentUser.value = userInfo;
+
+  nameInput.value = currentUser.value.nickname;
+  introduceInput.value = currentUser.value.description;
 };
 const handleLogout = async () => {
   await logout();
@@ -56,15 +74,36 @@ const handleUpdateSubmit = async () => {
     imageUrl = publicUrlData.publicUrl;
   }
 
+  // profile_img가 null인 경우 업데이트 요청에서 제외
+  const updateData = {
+    nickname: nameInput.value,
+    description: introduceInput.value,
+  };
+
+  if (imageUrl !== null) {
+    updateData.profile_img = imageUrl; // 이미지 URL이 존재하면 profile_img 포함
+  }
+
   const { data, error } = await supabase.auth.updateUser({
-    data: { nickname: nameInput.value, introduction: introduceInput.value, profileImage: imageUrl },
+    data: updateData,
   });
   if (error) {
     console.log(error);
     return;
   }
   console.log("User updated:", data);
-  currentUser.value = (await supabase.auth.getUser()).data.user;
+  // // userinfo 데이터 조회
+  // const { data: userInfo, error: userInfoError } = await supabase
+  //   .from("userinfo")
+  //   .select("*")
+  //   .eq("id", data.user.id)
+  //   .single();
+
+  // if (userInfoError) throw userInfoError;
+
+  // console.log("User profile:", userInfo);
+
+  // currentUser.value = userInfo;
 };
 
 const passwordUpdate = async () => {
@@ -91,17 +130,49 @@ const passwordUpdate = async () => {
     return;
   }
 };
+
+const subscribeToUserInfo = () => {
+  // 구독 채널을 설정합니다.
+  const subscription = supabase
+    .channel("userinfo")
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "userinfo" }, (payload) => {
+      console.log("User info updated:", payload);
+
+      // 업데이트된 user 정보가 현재 로그인한 사용자와 일치하는지 확인
+      if (currentUser.value && currentUser.value.id === payload.new.id) {
+        currentUser.value = {
+          ...currentUser.value,
+          nickname: payload.new.nickname,
+          description: payload.new.description,
+          profile_img: payload.new.profile_img,
+        };
+      }
+    })
+    .subscribe();
+
+  return subscription;
+};
+
+onMounted(() => {
+  // 컴포넌트가 마운트될 때 구독 시작
+  const subscription = subscribeToUserInfo();
+
+  // 컴포넌트가 언마운트될 때 구독 해제
+  onBeforeUnmount(() => {
+    supabase.removeSubscription(subscription);
+  });
+});
 </script>
 <template>
-  <button type="button" class="border" @click="register(`test101@test.com`, `test101`, `test101`)">register</button>
+  <button type="button" class="border" @click="register(`test12@test.com`, `test12`, `test12`)">register</button>
   <button type="button" class="border" @click="handleLogin">login</button>
   <button type="button" class="border" @click="handleLogout">logout</button>
   <div v-if="currentUser">
     <div>
-      <img :src="currentUser.user_metadata.profileImage" alt="프로필이미지" />
+      <img :src="currentUser.profile_img" alt="프로필이미지" />
     </div>
-    <div>이름: {{ currentUser.user_metadata.nickname }}</div>
-    <div>자기소개: {{ currentUser.user_metadata.introduction }}</div>
+    <div>이름: {{ currentUser.nickname }}</div>
+    <div>자기소개: {{ currentUser.description }}</div>
   </div>
 
   <form @submit.prevent="handleUpdateSubmit" class="border">
