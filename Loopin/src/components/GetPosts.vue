@@ -1,10 +1,6 @@
 <script setup>
 import supabase from "@/config/supabase";
-import { useCommentStore } from "@/stores/commetStore";
 import { usePostStore } from "@/stores/postStore";
-import { login } from "@/utils/auth/login";
-import { logout } from "@/utils/auth/logout";
-import { register } from "@/utils/auth/register";
 import { storeToRefs } from "pinia";
 import { computed, onMounted, ref } from "vue";
 import GetComments from "./GetComments.vue";
@@ -12,10 +8,6 @@ import GetComments from "./GetComments.vue";
 const postStore = usePostStore();
 const { challengePosts } = storeToRefs(postStore);
 const { loadChallengePosts, createChallengePost, deleteChallengePost, updateChallengePost } = postStore;
-
-const commentStore = useCommentStore();
-const { challengeComments } = storeToRefs(commentStore);
-const { loadChallengeComments } = commentStore;
 
 const fee = ref("");
 const feeInfo = ref("");
@@ -27,13 +19,6 @@ const endDate = ref(new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seo
 const tpw = ref("");
 const max = ref("");
 const selectedFile = ref(null);
-
-const handleLogin = async () => {
-  await login(`test666@test.com`, `test666`);
-};
-const handleLogout = async () => {
-  await logout();
-};
 
 const convertTime = (time) => {
   const date = new Date(time);
@@ -107,9 +92,6 @@ onMounted(() => {
 });
 </script>
 <template>
-  <button type="button" @click="register(`test666@test.com`, `test666`, `test666`)">register</button>
-  <button type="button" @click="handleLogin">login</button>
-  <button type="button" @click="handleLogout">logout</button>
   <h1>createChallengeForm</h1>
   <form @submit.prevent="handleChallengeSubmit" class="max-w-lg mx-auto space-y-4">
     <div class="flex items-center space-x-2">

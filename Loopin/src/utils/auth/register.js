@@ -6,7 +6,7 @@ export const register = async (uemail, upassword, unickname) => {
       email: uemail,
       password: upassword,
       options: {
-        data: { nickname: unickname },
+        data: { nickname: unickname, introduction: "안녕하세요.", profileImage: null },
       },
     });
     console.log(response);
