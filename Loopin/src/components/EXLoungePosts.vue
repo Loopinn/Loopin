@@ -164,7 +164,7 @@ const isParticipant = (socialingPost, userId) => {
     <button type="submit" class="bg-blue-500 text-white p-2 rounded">등록</button>
   </form>
 
-  <div v-for="socialingPost in socialingPosts">
+  <div v-for="socialingPost in socialingPosts" :key="socialingPost.id">
     <pre>{{ socialingPost }}</pre>
     <template v-if="!isParticipant(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')">
       <button
@@ -184,13 +184,14 @@ const isParticipant = (socialingPost, userId) => {
         참여 취소하기
       </button>
     </template>
+    <form @submit.prevent="createSocialComment({ comment: comment, post_id: socialingPost.id })">
+      <input type="text" v-model="comment" />
+      <button>comment</button>
+    </form>
+
+    <button type="button" @click="deleteSocialComment(socialingPost, 'f421345f-598e-4a0b-969a-418ff5ce588c')">
+      댓글 삭제
+    </button>
   </div>
-
-  <form @submit.prevent="updateSocialComment(comment, '4ee6d694-1948-4a72-a100-c9ba94f24caa')">
-    <input type="text" v-model="comment" />
-    <button>comment</button>
-  </form>
-
-  <button type="button" @click="deleteSocialComment('4ee6d694-1948-4a72-a100-c9ba94f24caa')">댓글 삭제</button>
 </template>
 <style scoped></style>

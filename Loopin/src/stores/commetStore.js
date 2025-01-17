@@ -143,10 +143,23 @@ export const useCommentStore = defineStore("commentStore", () => {
     }
   };
 
-  const deleteLoungeComment = async (commentId) => {
+  const deleteLoungeComment = async (postInfo, commentId) => {
     try {
+      if (!postInfo.comments || !postInfo.comments.length) return;
+
+      const currentComments = postInfo.comments;
+      const deletedComments = currentComments.filter((curComment) => curComment !== commentId);
+
       const response = await supabase.from("lounge_comments").delete().eq("id", commentId).select();
       console.log("삭제완료!", response);
+
+      const { data, error } = await supabase
+        .from("lounge_posts")
+        .update({ comments: deletedComments })
+        .eq("id", postInfo.id);
+      if (error) console.error(error);
+      console.log("게시판에 있는 댓글 내역도 삭제완료!", data);
+      return response;
     } catch (error) {
       console.error(error);
     }
@@ -211,10 +224,22 @@ export const useCommentStore = defineStore("commentStore", () => {
     }
   };
 
-  const deleteSocialComment = async (commentId) => {
+  const deleteSocialComment = async (postInfo, commentId) => {
     try {
+      if (!postInfo.comments || !postInfo.comments.length) return;
+
+      const currentComments = postInfo.comments;
+      const deletedComments = currentComments.filter((curComment) => curComment !== commentId);
       const response = await supabase.from("socialing_comments").delete().eq("id", commentId).select();
       console.log("삭제완료!", response);
+
+      const { data, error } = await supabase
+        .from("socialing_posts")
+        .update({ comments: deletedComments })
+        .eq("id", postInfo.id);
+      if (error) console.error(error);
+      console.log("게시판에 있는 댓글 내역도 삭제완료!", data);
+
       return response;
     } catch (error) {
       console.error(error);
