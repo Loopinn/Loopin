@@ -2,6 +2,8 @@
 import { ref } from "vue";
 
 import InputField from "@/components/Input/InputField.vue";
+import ConfirmModal from "@/components/modal/ConfirmModal.vue";
+import ChoiceModal from "@/components/modal/ChoiceModal.vue";
 
 import showPassword from "@/assets/images/show-password.svg";
 
@@ -13,6 +15,9 @@ const name = ref("");
 const passwordVisible = ref(false);
 const verifyPasswordVisible = ref(false);
 
+const isModalOpen = ref(false);
+const modalMessage = ref("<b style='font-size: 22px; color: #000;'>회원가입이 완료되었습니다</b>");
+
 const handleSubmit = (e) => {
   e.preventDefault();
   console.log({
@@ -21,6 +26,7 @@ const handleSubmit = (e) => {
     verifyPassword: verifyPassword.value,
     name: name.value,
   });
+  isModalOpen.value = true;
 };
 
 const togglePasswordVisible = (e) => {
@@ -31,6 +37,11 @@ const togglePasswordVisible = (e) => {
 const toggleVerifyPasswordVisible = (e) => {
   e.preventDefault();
   verifyPasswordVisible.value = !verifyPasswordVisible.value;
+};
+
+// 모달 닫기
+const toggleModal = () => {
+  isModalOpen.value = false;
 };
 </script>
 <template>
@@ -70,5 +81,9 @@ const toggleVerifyPasswordVisible = (e) => {
         회원가입
       </button>
     </form>
+    <ConfirmModal :isOpen="isModalOpen" :message="modalMessage" :buttonMessage="'확인'" @close="toggleModal">
+    </ConfirmModal>
+    <!-- <ChoiceModal :isOpen="isModalOpen" :message="modalMessage" :buttonMessage="'신청'" @close="toggleModal">
+    </ChoiceModal> -->
   </div>
 </template>
