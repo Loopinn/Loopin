@@ -11,8 +11,12 @@ const nameInput = ref("");
 const introduceInput = ref("");
 const selectedFile = ref(null);
 
+const oldps = ref("");
+const newps = ref("");
+const newpscheck = ref("");
+
 const handleLogin = async () => {
-  await login(`test101@test.com`, `test101`);
+  await login(`test101@test.com`, `test1010`);
   currentUser.value = (await supabase.auth.getUser()).data.user;
   console.log(currentUser.value);
 
@@ -32,7 +36,7 @@ const handleFileChange = (event) => {
   }
 };
 
-const handleSubmit = async () => {
+const handleUpdateSubmit = async () => {
   let imageUrl = null;
   if (selectedFile.value) {
     const fileName = `${Date.now()}-${selectedFile.value.name}`;
@@ -62,6 +66,31 @@ const handleSubmit = async () => {
   console.log("User updated:", data);
   currentUser.value = (await supabase.auth.getUser()).data.user;
 };
+
+const passwordUpdate = async () => {
+  //기존 비밀번호를 입력받아서 로그인 시도
+  const response = await login(currentUser.value.email, oldps.value);
+  //만약 로그인이 잘 되었다면 비밀번호 변경
+  if (!response.error) {
+    // 비밀번호 업데이트
+    if (newps.value === newpscheck.value) {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newps.value,
+      });
+      if (updateError) {
+        alert(`비밀번호 변경 실패: ${updateError.message}`);
+        return;
+      }
+      alert("비밀번호가 성공적으로 변경되었습니다.");
+    } else {
+      window.alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+  } else {
+    window.alert("현재 비밀번호가 일치하지 않습니다.");
+    return;
+  }
+};
 </script>
 <template>
   <button type="button" class="border" @click="register(`test101@test.com`, `test101`, `test101`)">register</button>
@@ -75,7 +104,7 @@ const handleSubmit = async () => {
     <div>자기소개: {{ currentUser.user_metadata.introduction }}</div>
   </div>
 
-  <form @submit.prevent="handleSubmit" class="border">
+  <form @submit.prevent="handleUpdateSubmit" class="border">
     <h2>수정폼</h2>
     <div>
       <label for="profileImage">프로필이미지</label>
@@ -90,6 +119,22 @@ const handleSubmit = async () => {
       <input v-model="introduceInput" type="text" id="introduce" class="border" />
     </div>
     <button type="submit" class="border">저장</button>
+  </form>
+  <form @submit.prevent="passwordUpdate">
+    <p>비밀번호 변경</p>
+    <div>
+      <label for="oldps">현재 비밀번호</label>
+      <input v-model="oldps" type="password" id="oldps" class="border" />
+    </div>
+    <div>
+      <label for="newps">새 비밀번호</label>
+      <input v-model="newps" type="password" id="newps" class="border" />
+    </div>
+    <div>
+      <label for="newpscheck">새 비밀번호 확인</label>
+      <input v-model="newpscheck" type="password" id="newpscheck" class="border" />
+    </div>
+    <button class="border">변경</button>
   </form>
 </template>
 <style scoped></style>
