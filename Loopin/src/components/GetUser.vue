@@ -156,12 +156,11 @@ const subscribeToUserInfo = () => {
 onMounted(() => {
   // 컴포넌트가 마운트될 때 구독 시작
   const subscription = subscribeToUserInfo();
-
-  // 컴포넌트가 언마운트될 때 구독 해제
-  onBeforeUnmount(() => {
-    supabase.removeSubscription(subscription);
-  });
 });
+// // 컴포넌트가 언마운트될 때 구독 해제
+// onBeforeUnmount(() => {
+//   if (subscription) supabase.removeSubscription(subscription);
+// });
 </script>
 <template>
   <button type="button" class="border" @click="register(`test12@test.com`, `test12`, `test12`)">register</button>
