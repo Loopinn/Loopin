@@ -4,13 +4,14 @@
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { login } from "@/utils/auth/login";
-import { onBeforeMount, onMounted, ref } from "vue";
+import { computed, onBeforeMount, onMounted, ref } from "vue";
 
 import { storeToRefs } from "pinia";
 import { feedLike } from "@/utils/feedLike";
 import { useCommentStore } from "@/stores/commetStore";
 import { logout } from "@/utils/auth/logout";
 import { socialLike } from "@/utils/socialLike";
+import { joinSocialing } from "@/utils/joinSocialing";
 const postStore = usePostStore();
 const { createSocialPost, loadSocialPosts, deleteSocialPost } = postStore;
 const { socialingPosts } = storeToRefs(postStore);
@@ -128,6 +129,10 @@ const handleSubmit = async () => {
 //     console.error(error);
 //   }
 // };
+const isParticipant = (socialingPost, userId) => {
+  if (!socialingPost.participants) return false;
+  return socialingPost.participants.includes(userId);
+};
 </script>
 <template>
   <h1>lounge post</h1>
@@ -161,9 +166,24 @@ const handleSubmit = async () => {
 
   <div v-for="socialingPost in socialingPosts">
     <pre>{{ socialingPost }}</pre>
-    <button class="bg-red-500" @click="socialLike(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')">
-      좋아요
-    </button>
+    <template v-if="!isParticipant(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')">
+      <button
+        type="button"
+        class="bg-red-500"
+        @click="joinSocialing(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')"
+      >
+        참여하기
+      </button>
+    </template>
+    <template v-else>
+      <button
+        type="button"
+        class="bg-red-500"
+        @click="joinSocialing(socialingPost, '91021736-14c0-4b73-a92f-89429ca7a65d')"
+      >
+        참여 취소하기
+      </button>
+    </template>
   </div>
 
   <form @submit.prevent="updateSocialComment(comment, '4ee6d694-1948-4a72-a100-c9ba94f24caa')">
