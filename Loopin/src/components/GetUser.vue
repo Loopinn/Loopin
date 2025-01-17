@@ -3,9 +3,10 @@ import supabase from "@/config/supabase";
 import { login } from "@/utils/auth/login";
 import { logout } from "@/utils/auth/logout";
 import { register } from "@/utils/auth/register";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const currentUser = ref(null);
+const allUsers = ref([]);
 
 const nameInput = ref("");
 const introduceInput = ref("");
@@ -14,6 +15,15 @@ const selectedFile = ref(null);
 const oldps = ref("");
 const newps = ref("");
 const newpscheck = ref("");
+
+const fetchAllUsers = async () => {
+  const { data: users, error } = await supabase.from("userinfo").select("*");
+  if (error) {
+    console.error("Failed to fetch users:", error.message);
+    return;
+  }
+  allUsers.value = users;
+};
 
 const handleLogin = async () => {
   await login(`test12@test.com`, `test12`);
@@ -40,9 +50,15 @@ const handleLogin = async () => {
 
   nameInput.value = currentUser.value.nickname;
   introduceInput.value = currentUser.value.description;
+
+  // Refresh all users after login
+  await fetchAllUsers();
 };
 const handleLogout = async () => {
   await logout();
+
+  currentUser.value = null;
+  await fetchAllUsers();
 };
 
 const handleFileChange = (event) => {
@@ -92,18 +108,6 @@ const handleUpdateSubmit = async () => {
     return;
   }
   console.log("User updated:", data);
-  // // userinfo 데이터 조회
-  // const { data: userInfo, error: userInfoError } = await supabase
-  //   .from("userinfo")
-  //   .select("*")
-  //   .eq("id", data.user.id)
-  //   .single();
-
-  // if (userInfoError) throw userInfoError;
-
-  // console.log("User profile:", userInfo);
-
-  // currentUser.value = userInfo;
 };
 
 const passwordUpdate = async () => {
@@ -153,14 +157,34 @@ const subscribeToUserInfo = () => {
   return subscription;
 };
 
-onMounted(() => {
-  // 컴포넌트가 마운트될 때 구독 시작
-  const subscription = subscribeToUserInfo();
+const toggleFollow = async (userId) => {
+  if (!currentUser.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  const isFollowing = currentUser.value.following?.includes(userId);
+  let updatedFollowing = currentUser.value.following || [];
+
+  if (isFollowing) {
+    updatedFollowing = updatedFollowing.filter((id) => id !== userId);
+  } else {
+    updatedFollowing.push(userId);
+  }
+
+  const { error } = await supabase.from("userinfo").update({ following: updatedFollowing }).eq("id", currentUser.value.id);
+  if (error) {
+    console.error("Failed to update following list:", error.message);
+    return;
+  }
+
+  currentUser.value.following = updatedFollowing;
+};
+
+onMounted(async() => {
+  subscribeToUserInfo();
+  await fetchAllUsers();
 });
-// // 컴포넌트가 언마운트될 때 구독 해제
-// onBeforeUnmount(() => {
-//   if (subscription) supabase.removeSubscription(subscription);
-// });
 </script>
 <template>
   <button type="button" class="border" @click="register(`test12@test.com`, `test12`, `test12`)">register</button>
@@ -206,5 +230,28 @@ onMounted(() => {
     </div>
     <button class="border">변경</button>
   </form>
+
+  <div>
+    <h2>전체 유저 목록</h2>
+    <ul>
+      <li
+        v-for="user in allUsers.filter((user) => !currentUser || user.id !== currentUser.id)"
+        :key="user.id"
+        class="border border-black"
+      >
+        <div>
+          <img :src="user.profile_img" alt="프로필이미지" />
+        </div>
+        <div>이름: {{ user.nickname }}</div>
+        <div>자기소개: {{ user.description }}</div>
+        <button
+          @click="toggleFollow(user.id)"
+          class="border"
+        >
+          {{ currentUser?.following?.includes(user.id) ? "팔로잉" : "팔로우" }}
+        </button>
+      </li>
+    </ul>
+  </div>
 </template>
 <style scoped></style>
