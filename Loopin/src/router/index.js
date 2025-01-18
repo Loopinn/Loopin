@@ -70,6 +70,12 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/user/:id",
+      name: "userinfo",
+      component: () => import("@/views/UserInfoView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
       component: () => import("@/views/NotFoundView.vue"),
