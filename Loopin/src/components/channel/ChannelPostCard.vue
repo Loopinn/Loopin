@@ -4,7 +4,7 @@ import { ref } from "vue";
 const tags = ref(["취미", "사진"]);
 </script>
 <template>
-  <div class="w-[570px] h-[200px] flex rounded-2xl">
+  <div class="w-[570px] h-[200px] flex rounded-2xl bg-white mb-6">
     <img
       src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
       alt="thumbnail"
@@ -20,19 +20,12 @@ const tags = ref(["취미", "사진"]);
         {{ tag }}
       </div>
       <!-- 추천 태그 -->
-      <div
-        class="bg-[#fbecea] text-[#F43630] rounded-3xl inline-block text-center text-[18px] px-2 py-1"
-      >
-        추천
-      </div>
+      <div class="bg-[#fbecea] text-[#F43630] rounded-3xl inline-block text-center text-[18px] px-2 py-1">추천</div>
       <p class="text-[24px]">11회) 연기 첫 경험</p>
       <p class="text-[#999999]">
         소셜링 ·
-        <img
-          src="@/assets/images/location_gray.svg"
-          alt="location"
-          class="inline-block mb-2"
-        />관악구 · 1.25(토) 오후 3:00
+        <img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-2" />관악구 · 1.25(토) 오후
+        3:00
       </p>
       <div class="flex items-center gap-2">
         <div class="flex -space-x-2">
