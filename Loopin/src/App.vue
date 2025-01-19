@@ -9,6 +9,19 @@ import Footer from "@/components/footer/Footer.vue";
 
 const route = useRoute();
 
+const isActive = (path) => route.path === path;
+
+const links = [
+  { name: "메인", path: "/" },
+  { name: "소셜링", path: "/socialing" },
+  { name: "클럽", path: "/club" },
+  { name: "챌린지", path: "/challenge" },
+  { name: "라운지", path: "/lounge" },
+  { name: "로그인", path: "/signIn" },
+  { name: "회원가입", path: "/signUp" },
+  { name: "프로필", path: "/user" },
+];
+
 const headerComponent = computed(() => {
   const layoutName = route.meta.layout || "LogoHeader";
   return layoutName === "CenteredHeader" ? CenteredHeader : LogoHeader;
@@ -19,15 +32,19 @@ const headerComponent = computed(() => {
     <header>
       <component :is="headerComponent" />
     </header>
-    <nav class="flex gap-3">
-      <RouterLink to="/">메인</RouterLink>
-      <RouterLink to="/socialing">소셜링</RouterLink>
-      <RouterLink to="/club">클럽</RouterLink>
-      <RouterLink to="/challenge">챌린지</RouterLink>
-      <RouterLink to="/lounge">라운지</RouterLink>
-      <RouterLink to="/signIn">로그인</RouterLink>
-      <RouterLink to="/signUp">회원가입</RouterLink>
-      <RouterLink to="/user">프로필</RouterLink>
+    <nav class="flex gap-3 h-[48px] items-center ml-3.5">
+      <RouterLink
+        v-for="(link, index) in links"
+        :key="index"
+        :to="link.path"
+        class="relative text-[#999996] hover:text-black"
+        :class="{
+          'text-black font-semibold after:absolute after:left-0 after:bottom-[-4px] after:w-full after:h-[2px] after:bg-black':
+            isActive(link.path),
+        }"
+      >
+        {{ link.name }}
+      </RouterLink>
     </nav>
     <div class="flex-grow mb-[64px]">
       <RouterView />
