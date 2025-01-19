@@ -10,7 +10,7 @@ import Register from "@/components/postcontent/Register.vue";
       src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
       alt="thumbnail"
     />
-    <div class="bg-[#f1f1f1] h-max-full pb-[120px] pt-11">
+    <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="w-[440px] h-[80px] flex gap-7">
         <div class="ml-[40px]">
           <img
@@ -19,11 +19,7 @@ import Register from "@/components/postcontent/Register.vue";
             class="w-[60px] h-[60px] rounded-full"
           />
           <div>
-            <img
-              src="@/assets/images/members_gray.svg"
-              alt="memberscount"
-              class="inline-block"
-            />
+            <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
             <span class="ml-1 text-[12px] text-[#403F3F]">19/20명</span>
           </div>
         </div>
