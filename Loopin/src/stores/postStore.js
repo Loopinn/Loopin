@@ -71,7 +71,7 @@ export const usePostStore = defineStore("postStore", () => {
 
       const currentPosts = userData.posts || [];
 
-      const updatePosts = [...currentPosts, postId];
+      const updatePosts = [...currentPosts, { id: postId, type: "club_posts" }];
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
@@ -165,7 +165,7 @@ export const usePostStore = defineStore("postStore", () => {
 
       const currentPosts = userData.posts || [];
 
-      const updatePosts = [...currentPosts, postId];
+      const updatePosts = [...currentPosts, { id: postId, type: "challenge_posts" }];
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
@@ -321,19 +321,23 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   return {
-    challengePosts,
+    clubPosts,
     loadClubPosts,
     createClubPost,
     deleteClubPost,
     updateClubPost,
+
+    challengePosts,
     loadChallengePosts,
     createChallengePost,
     deleteChallengePost,
     updateChallengePost,
+
     loungePosts,
     createLoungePost,
     loadLoungePosts,
     deleteLoungePost,
+
     socialingPosts,
     loadSocialPosts,
     createSocialPost,
