@@ -13,7 +13,7 @@ import { logout } from "@/utils/auth/logout";
 import { socialLike } from "@/utils/socialLike";
 import { joinSocialing } from "@/utils/joinSocialing";
 const postStore = usePostStore();
-const { createSocialPost, loadSocialPosts, deleteSocialPost } = postStore;
+const { createSocialPost, loadSocialPosts, deleteSocialPost, createLoungePost } = postStore;
 const { socialingPosts } = storeToRefs(postStore);
 
 const commentStore = useCommentStore();
@@ -43,22 +43,22 @@ onBeforeMount(() => {
 
 const handleImages = (e) => {
   // 다중 이미지
-  // const files = e.target.files;
-  // console.log(files);
-  // if (files) {
-  //   images.value = Array.from(files);
-  //   console.log(images.value);
-  // } else {
-  //   images.value = null;
-  // }
-
-  // 단일 이미지
-  const file = e.target.files[0];
-  if (file) {
-    images.value = file;
+  const files = e.target.files;
+  console.log(files);
+  if (files) {
+    images.value = Array.from(files);
+    console.log(images.value);
   } else {
     images.value = null;
   }
+
+  // 단일 이미지
+  // const file = e.target.files[0];
+  // if (file) {
+  //   images.value = file;
+  // } else {
+  //   images.value = null;
+  // }
 };
 
 // 라운지 피드 등록 함수
@@ -69,43 +69,49 @@ const handleSubmit = async () => {
 
   if (title.value && description.value && creator.value) {
     // 다중 이미지
-    // const imageUrls = await Promise.all(
-    //   images.value.map(async (image) => {
-    //     const fileName = `${Date.now()}-${image.name}`;
-    //     const { data: imageData, error: imageError } = await supabase.storage
-    //       .from("post-images")
-    //       .upload(`images/feed/${fileName}`, image);
+    const imageUrls = await Promise.all(
+      images.value.map(async (image) => {
+        const fileName = `${Date.now()}-${image.name}`;
+        const { data: imageData, error: imageError } = await supabase.storage
+          .from("post-images")
+          .upload(`images/feed/${fileName}`, image);
 
-    //     if (imageError) throw imageError;
-    //     console.log("imageData", imageData);
-    //     const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
+        if (imageError) throw imageError;
+        console.log("imageData", imageData);
+        const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
 
-    //     const imageUrl = imagePath.publicUrl;
-    //     return imageUrl;
-    //   }),
-    // );
+        const imageUrl = imagePath.publicUrl;
+        return imageUrl;
+      }),
+    );
 
-    const fileName = `${Date.now()}-${images.value.name}`;
-    const { data: imageData, error: imageError } = await supabase.storage
-      .from("post-images")
-      .upload(`images/socialing/${fileName}`, images.value);
+    // const fileName = `${Date.now()}-${images.value.name}`;
+    // const { data: imageData, error: imageError } = await supabase.storage
+    //   .from("post-images")
+    //   .upload(`images/socialing/${fileName}`, images.value);
 
-    if (imageError) throw new Error(imageError);
+    // if (imageError) throw new Error(imageError);
 
-    const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/socialing/${fileName}`);
-    const imageUrl = imagePath.publicUrl;
+    // const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/socialing/${fileName}`);
+    // const imageUrl = imagePath.publicUrl;
 
-    const submitResponse = await createSocialPost(
+    const submitResponse = await createLoungePost(
+      // {
+      //   title: title.value,
+      //   description: description.value,
+      //   images: imageUrl,
+      //   fee: 3000,
+      //   gender: "남성",
+      //   max_people: 10,
+      //   place: "오프라인",
+      //   age_limit: 50,
+      //   date: date.value,
+      //   category: "재테크",
+      // },
       {
         title: title.value,
         description: description.value,
-        images: imageUrl,
-        fee: 3000,
-        gender: "남성",
-        max_people: 10,
-        place: "오프라인",
-        age_limit: 50,
-        date: date.value,
+        images: imageUrls,
         category: "재테크",
       },
       "91021736-14c0-4b73-a92f-89429ca7a65d",

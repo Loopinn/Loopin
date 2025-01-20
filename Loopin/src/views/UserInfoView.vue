@@ -1,30 +1,112 @@
 <script setup>
 import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
+import supabase from "@/config/supabase";
+import { usePostStore } from "@/stores/postStore";
 import { twMerge } from "tailwind-merge";
-import { computed, ref } from "vue";
+import { computed, onBeforeMount, onMounted, reactive, ref } from "vue";
+import { useRoute } from "vue-router";
 
-const infos = ref(["팔로워", "팔로잉", "피드"]);
+const postStore = usePostStore();
+const { loadLoungePosts } = postStore;
+
+const route = useRoute();
+const userNickName = route.params.id;
+const userData = ref(null);
+
+const userMeetingPosts = ref([]);
+const userFeedPosts = ref([]);
+
+const infos = computed(() => {
+  return [
+    {
+      name: "팔로워",
+      value: userData.value?.followers.length || 0,
+    },
+    {
+      name: "팔로잉",
+      value: userData.value?.following.length || 0,
+    },
+    {
+      name: "피드",
+      value: userData.value?.posts.length || 0,
+    },
+  ];
+});
 const feedNav = ref("피드");
 
-const desc = ref(
-  "한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄 소개한줄소개",
-);
+onBeforeMount(async () => {
+  try {
+    const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName);
+    if (error) throw new Error("유저 정보 불러오기 실패" + error);
 
-const shortDesc = computed(() => {
-  if (desc.value.length > 40 && !moreDesc.value) {
-    return desc.value.replace(desc.value.slice(41), "...");
-  } else {
-    return desc.value;
+    userData.value = data[0];
+    console.log(userData.value);
+
+    // 모임 게시글 불러오기
+    const filterMeetingId = userData.value.posts.filter((postInfo) => {
+      const info = JSON.parse(postInfo);
+      return info.type !== "lounge_posts";
+    });
+    console.log(filterMeetingId);
+
+    const meeting = filterMeetingId.map(async (meetingId) => {
+      const info = JSON.parse(meetingId);
+      const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+      if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
+      return data[0];
+    });
+
+    userMeetingPosts.value = [...userMeetingPosts.value, ...(await Promise.all(meeting))];
+    console.log("모임 게시글", userMeetingPosts.value);
+    // 피드 게시글 불러오기
+    const filterFeedId = userData.value.posts.filter((postInfo) => {
+      const info = JSON.parse(postInfo);
+      return info.type === "lounge_posts";
+    });
+
+    const feed = filterFeedId.map(async (meetingId) => {
+      const info = JSON.parse(meetingId);
+      const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+      if (error) throw new Error("피드 게시글 정보 불러오기 실패", error);
+
+      return data[0];
+    });
+    userFeedPosts.value = [...userFeedPosts.value, ...(await Promise.all(feed))];
+    console.log("피드 게시글", userFeedPosts.value);
+  } catch (error) {
+    console.error(error);
   }
 });
 
-const moreDesc = ref(false);
+const shortDesc = computed(() => {
+  const desc = userData.value?.description || "";
+
+  if (desc.length > 40 && !moreDesc.value) {
+    return desc.replace(desc.slice(41), "...");
+  } else {
+    return desc;
+  }
+});
+const moreDesc = computed(() => {
+  const desc = userData.value?.description;
+  if (desc && desc.length < 40) {
+    return true;
+  } else {
+    return false;
+  }
+});
 </script>
 <template>
   <div>
     <div class="py-5 px-3">
-      <div class="w-[75px] h-[75px] rounded-full bg-pink-500"></div>
-      <h1 class="font-extrabold text-[18px] my-3">철수</h1>
+      <img
+        v-if="userData?.profile_img"
+        :src="userData.profile_img"
+        alt="프로필 사진"
+        class="w-[75px] h-[75px] rounded-full"
+      />
+      <div v-else class="w-[75px] h-[75px] rounded-full bg-pink-500"></div>
+      <h1 class="font-extrabold text-[18px] my-3">{{ userData?.nickname }}</h1>
       <p class="w-[350px] text-[#383535]">
         {{ shortDesc }}
       </p>
@@ -35,8 +117,8 @@ const moreDesc = ref(false);
     <div class="flex justify-between items-center mt-[20px] px-3">
       <div class="flex gap-5">
         <div v-for="(info, index) in infos" :key="index" class="flex flex-col items-center text-[14px]">
-          <p class="">{{ info }}</p>
-          <p class="font-bold">0</p>
+          <p class="">{{ info.name }}</p>
+          <p class="font-bold">{{ info.value }}</p>
         </div>
       </div>
       <!-- 로그인한 유저만 보임 -->
@@ -78,18 +160,9 @@ const moreDesc = ref(false);
         </li>
       </ul>
       <div class="flex flex-wrap" v-if="feedNav === '피드'">
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
-        <UserInfoFeed />
+        <UserInfoFeed v-if="userFeedPosts.length > 0" v-for="userFeedPost in userFeedPosts" :feed-data="userFeedPost" />
       </div>
+      <div v-else-if="feedNav === '모임'">asdasd</div>
     </div>
   </div>
 </template>
