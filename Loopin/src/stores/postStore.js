@@ -8,6 +8,7 @@ export const usePostStore = defineStore("postStore", () => {
   const challengePosts = ref([]);
   const loungePosts = ref([]);
 
+  //클럽
   const loadClubPosts = async () => {
     let { data, error } = await supabase.from("club_posts").select("*");
 
@@ -17,8 +18,86 @@ export const usePostStore = defineStore("postStore", () => {
     }
     if (data) {
       clubPosts.value = data;
+      subscribeClubPosts();
     }
   };
+  const subscribeClubPosts = () => {
+    supabase
+      .channel("club-posts-channel")
+      .on("postgres_changes", { event: "*", schema: "public", table: "club_posts" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          clubPosts.value.push(payload.new);
+        }
+        if (payload.eventType === "DELETE") {
+          const index = getClubPostIndexById(payload.old.id);
+          clubPosts.value.splice(index, 1);
+        }
+        if (payload.eventType === "UPDATE") {
+          const index = getClubPostIndexById(payload.new.id);
+          Object.assign(clubPosts.value[index], payload.new);
+        }
+      })
+      .subscribe();
+  };
+
+  const getClubPostIndexById = (postId) => {
+    return clubPosts.value.findIndex((post) => post.id === postId);
+  };
+
+  const deleteClubPost = async (postId) => {
+    const { error } = await supabase.from("club_posts").delete().eq("id", postId);
+
+    if (error) {
+      console.log("failed to delete", error);
+    }
+  };
+
+  const createClubPost = async (postInfo, userId) => {
+    try {
+      const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([postInfo]).select();
+      console.log(clubPost);
+      if (clubError) throw new Error("클럽 업로드 에러", clubError);
+
+      const postId = clubPost[0].id;
+
+      // 유저 정보 가져옴
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select("posts")
+        .eq("id", userId)
+        .single();
+
+      if (userError) throw userError;
+
+      const currentPosts = userData.posts || [];
+
+      const updatePosts = [...currentPosts, postId];
+
+      // 유저 정보 업데이트
+      const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
+      console.log("updateResponse", updateResponse);
+
+      return clubPost;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateClubPost = async (postId, updates) => {
+    const index = getClubPostIndexById(postId);
+    //반응형으로 복사히지 않기 위해//useNonReactiveCopy훅으로 빼기
+    const oldPost = JSON.parse(JSON.stringify(clubPosts.value[index]));
+
+    Object.assign(clubPosts.value[index], updates);
+
+    const { error } = await supabase.from("club_posts").update(updates).eq("id", postId).select();
+    if (error) {
+      console.log("failed to update", error);
+      Object.assign(clubPosts.value[index], oldPost);
+    }
+  };
+
+  //챌린지
   const loadChallengePosts = async () => {
     let { data, error } = await supabase.from("challenge_posts").select("*");
 
@@ -64,13 +143,37 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
-  const createChallengePost = async (createChallengeForm) => {
-    const newPost = Object.assign({}, createChallengeForm);
+  const createChallengePost = async (postInfo, userId) => {
+    try {
+      const { data: challengePost, error: challengeError } = await supabase
+        .from("challenge_posts")
+        .insert([postInfo])
+        .select();
+      console.log(challengePost);
+      if (challengeError) throw new Error("챌린지 업로드 에러", challengeError);
 
-    const { error } = await supabase.from("challenge_posts").insert([newPost]).select();
-    if (error) {
-      //오류 발생 시 로직
-      console.log(error);
+      const postId = challengePost[0].id;
+
+      // 유저 정보 가져옴
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select("posts")
+        .eq("id", userId)
+        .single();
+
+      if (userError) throw userError;
+
+      const currentPosts = userData.posts || [];
+
+      const updatePosts = [...currentPosts, postId];
+
+      // 유저 정보 업데이트
+      const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
+      console.log("updateResponse", updateResponse);
+
+      return challengePost;
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -220,6 +323,9 @@ export const usePostStore = defineStore("postStore", () => {
   return {
     challengePosts,
     loadClubPosts,
+    createClubPost,
+    deleteClubPost,
+    updateClubPost,
     loadChallengePosts,
     createChallengePost,
     deleteChallengePost,
