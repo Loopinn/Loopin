@@ -173,7 +173,10 @@ const toggleFollow = async (userId) => {
     updatedFollowing.push(userId);
   }
 
-  const { error } = await supabase.from("userinfo").update({ following: updatedFollowing }).eq("id", currentUser.value.id);
+  const { error } = await supabase
+    .from("userinfo")
+    .update({ following: updatedFollowing })
+    .eq("id", currentUser.value.id);
   if (error) {
     console.error("Failed to update following list:", error.message);
     return;
@@ -182,7 +185,7 @@ const toggleFollow = async (userId) => {
   currentUser.value.following = updatedFollowing;
 };
 
-onMounted(async() => {
+onMounted(async () => {
   subscribeToUserInfo();
   await fetchAllUsers();
 });
@@ -196,7 +199,7 @@ onMounted(async() => {
       <img :src="currentUser.profile_img" alt="프로필이미지" />
     </div>
     <div>이름: {{ currentUser.nickname }}</div>
-    <div>자기소개: {{ currentUser.description }}</div>
+    <div class="break-all">자기소개: {{ currentUser.description }}</div>
   </div>
 
   <form @submit.prevent="handleUpdateSubmit" class="border">
@@ -241,20 +244,17 @@ onMounted(async() => {
         class="border border-black"
       >
         <div>
-          <img :src="user.profile_img" alt="프로필이미지" />
+          <img :src="user.profile_img" alt="프로필이미지-all" />
         </div>
         <div>이름: {{ user.nickname }}</div>
-        <div>자기소개: {{ user.description }}</div>
-        <button
-          @click="toggleFollow(user.id)"
-          class="border"
-        >
+        <div class="break-all">자기소개: {{ user.description }}</div>
+        <button @click="toggleFollow(user.id)" class="border">
           {{ currentUser?.following?.includes(user.id) ? "팔로잉" : "팔로우" }}
         </button>
       </li>
     </ul>
   </div>
 
-  <PostCreateView/>
+  <PostCreateView />
 </template>
 <style scoped></style>
