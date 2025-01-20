@@ -1,5 +1,6 @@
 <script setup>
 import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
+import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { twMerge } from "tailwind-merge";
@@ -162,7 +163,9 @@ const moreDesc = computed(() => {
       <div class="flex flex-wrap" v-if="feedNav === '피드'">
         <UserInfoFeed v-if="userFeedPosts.length > 0" v-for="userFeedPost in userFeedPosts" :feed-data="userFeedPost" />
       </div>
-      <div v-else-if="feedNav === '모임'">asdasd</div>
+      <div v-else-if="feedNav === '모임'" class="px-4">
+        <UserInfoMeeting :meeting-data="userMeetingPosts" />
+      </div>
     </div>
   </div>
 </template>
