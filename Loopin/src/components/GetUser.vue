@@ -3,6 +3,7 @@ import supabase from "@/config/supabase";
 import { login } from "@/utils/auth/login";
 import { logout } from "@/utils/auth/logout";
 import { register } from "@/utils/auth/register";
+import PostCreateView from "@/views/PostCreateView.vue";
 import { onMounted, ref } from "vue";
 
 const currentUser = ref(null);
@@ -253,5 +254,7 @@ onMounted(async() => {
       </li>
     </ul>
   </div>
+
+  <PostCreateView/>
 </template>
 <style scoped></style>
