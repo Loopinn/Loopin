@@ -32,9 +32,9 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8">
+  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
     <!-- 게시물 카드 -->
-    <div class="bg-white">
+    <div class="">
       <!-- 헤더 영역 -->
       <div class="flex items-center justify-between p-4">
         <div class="flex items-center gap-2">
@@ -62,7 +62,8 @@ onBeforeMount(() => {
       </div>
 
       <!-- 게시물 정보 영역 -->
-      <div class="p-4 bg-white rounded-b-lg">
+      <div class="p-4  rounded-b-lg">
+        <div class="text-black bg-white text-[14px] rounded-2xl inline-block px-2 py-1 mr-[6px] mb-2 border border-black ">푸드·드링크</div>
         <!-- 하단 액션 버튼 영역 -->
         <div class="flex items-center gap-4 my-3">
           <button class="flex items-center gap-1">

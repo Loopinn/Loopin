@@ -17,7 +17,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8">
+  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
     <PageInfoSection
       :icon="loungeLogo"
       title="라운지"
@@ -25,7 +25,7 @@ onMounted(() => {
         멤버들의 취향 피드 구독하기"
       alt="라운지 로고"
     />
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 ">
       <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2">
         <RouterLink :to="{ path: `/lounge/${feed.id}` }">
           <img

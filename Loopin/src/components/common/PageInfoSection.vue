@@ -25,7 +25,7 @@ const props = defineProps({
       <img :src="icon" :alt="alt" class="w-5 h-5" />
       {{ title }}
     </h2>
-    <h3 class="text-2xl font-bold leading-relaxed">
+    <h3 class="text-2xl leading-relaxed">
       <template v-for="(line, index) in subtitle.split('\n')" :key="index">
         {{ line }}
         <br v-if="index < subtitle.split('\n').length - 1" />
@@ -33,3 +33,4 @@ const props = defineProps({
     </h3>
   </div>
 </template>
+
