@@ -7,7 +7,16 @@ import { twMerge } from "tailwind-merge";
 import { computed, onBeforeMount, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+// 임시
 const isMyPage = ref(true);
+const currentUser = ref(null);
+onBeforeMount(async () => {
+  const { data, error } = await supabase.from("userinfo").select().eq("nickname", "테스트용");
+  if (error) throw new Error(error);
+  console.log(data);
+  currentUser.value = data[0];
+  console.log(currentUser.value);
+});
 
 const postStore = usePostStore();
 const { loadLoungePosts } = postStore;
@@ -100,7 +109,34 @@ const moreDesc = computed(() => {
   }
 });
 
-const handlefollow = () => {};
+const toggleFollow = async (userId) => {
+  if (!currentUser.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  const isFollowing = currentUser.value.following?.includes(userId);
+  let updatedFollowing = currentUser.value.following || [];
+
+  if (isFollowing) {
+    updatedFollowing = updatedFollowing.filter((id) => id !== userId);
+  } else {
+    updatedFollowing.push(userId);
+  }
+
+  const { data, error } = await supabase
+    .from("userinfo")
+    .update({ following: updatedFollowing })
+    .eq("id", currentUser.value.id)
+    .select();
+  console.log(data);
+  if (error) {
+    console.error("Failed to update following list:", error.message);
+    return;
+  }
+
+  currentUser.value.following = updatedFollowing;
+};
 
 const handleShare = () => {
   navigator.clipboard
@@ -152,7 +188,14 @@ const handleShare = () => {
       </button>
 
       <!-- 로그인한 유저만 보임 -->
-      <button v-else type="button" class="bg-[#F43630] text-white w-[65px] h-[30px] rounded-[25px]">팔로우</button>
+      <button
+        v-else
+        type="button"
+        class="bg-[#F43630] text-white w-[65px] h-[30px] rounded-[25px]"
+        @click="toggleFollow(userData.id)"
+      >
+        팔로우
+      </button>
     </div>
 
     <!-- 피드 정보 -->
