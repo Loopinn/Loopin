@@ -4,7 +4,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
-import { onMounted, computed } from "vue";
+import { onMounted, computed, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
@@ -24,7 +24,7 @@ const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
 });
 
-onMounted(() => {
+onBeforeMount(() => {
   loadLoungePosts();
   console.log("전체 데이터:", loungePosts);
   console.log("이미지 URL:", loungePosts.images);
