@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import InputField from "@/components/Input/InputField.vue";
+import Loading from "@/components/Loading.vue";
 
 import showPassword from "@/assets/images/show-password.svg";
 import kakaoIcon from "@/assets/images/kakaoIcon.svg";
@@ -12,14 +13,21 @@ const email = ref("");
 const password = ref("");
 const passwordVisible = ref(false);
 
+const isLoading = ref(false);
+
 const router = useRouter();
 
 const handleSubmit = (e) => {
   e.preventDefault();
-  console.log({
-    email: email.value,
-    password: password.value,
-  });
+  isLoading.value = true;
+
+  setTimeout(() => {
+    console.log({
+      email: email.value,
+      password: password.value,
+    });
+    isLoading.value = false;
+  }, 2000);
 };
 
 const togglePasswordVisible = (e) => {
@@ -33,6 +41,7 @@ const navigateToSignUp = () => {
 </script>
 <template>
   <div class="flex flex-col w-full min-h-[calc(100vh-144px)] items-center align-center">
+    <Loading v-if="isLoading" />
     <h1 class="my-[72px] font-bold text-[36px]">로그인</h1>
     <div class="flex-grow flex flex-col w-[400px] mb-[80px]">
       <form @submit="handleSubmit" class="space-y-6">
