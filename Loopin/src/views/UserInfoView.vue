@@ -5,11 +5,14 @@ import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { twMerge } from "tailwind-merge";
 import { computed, onBeforeMount, onMounted, reactive, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+
+const isMyPage = ref(true);
 
 const postStore = usePostStore();
 const { loadLoungePosts } = postStore;
 
+const router = useRouter();
 const route = useRoute();
 const userNickName = route.params.id;
 const userData = ref(null);
@@ -96,6 +99,14 @@ const moreDesc = computed(() => {
     return false;
   }
 });
+
+const handlefollow = () => {};
+
+const handleShare = () => {
+  navigator.clipboard
+    .writeText(`http://localhost:5173/user/${route.params.id}`)
+    .then(() => alert("프로필 주소가 복사되었습니다!"));
+};
 </script>
 <template>
   <div>
@@ -114,6 +125,14 @@ const moreDesc = computed(() => {
       <p class="text-[#b9b6b6] hover:underline cursor-pointer" v-if="!moreDesc" @click="moreDesc = true">...더보기</p>
     </div>
 
+    <!-- 마이페이지 (로그인한 유저) -->
+    <div v-if="isMyPage" class="flex justify-center gap-8 my-10">
+      <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]">프로필 변경</button>
+      <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]" @click="handleShare">
+        프로필 공유
+      </button>
+    </div>
+
     <!-- 팔로워 피드 -->
     <div class="flex justify-between items-center mt-[20px] px-3">
       <div class="flex gap-5">
@@ -122,12 +141,22 @@ const moreDesc = computed(() => {
           <p class="font-bold">{{ info.value }}</p>
         </div>
       </div>
+      <!-- 마이페이지 -->
+      <button
+        v-if="isMyPage"
+        type="button"
+        class="bg-white w-[65px] h-[30px] rounded-[25px] border"
+        @click="router.push('/lounge/write')"
+      >
+        글쓰기
+      </button>
+
       <!-- 로그인한 유저만 보임 -->
-      <button type="button" class="bg-[#F43630] text-white w-[65px] h-[30px] rounded-[25px]">팔로우</button>
+      <button v-else type="button" class="bg-[#F43630] text-white w-[65px] h-[30px] rounded-[25px]">팔로우</button>
     </div>
 
     <!-- 피드 정보 -->
-    <div>
+    <div class="mt-10">
       <ul class="h-[45px] flex">
         <li
           :class="
