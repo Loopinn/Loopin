@@ -32,34 +32,27 @@ const handleUpdate = (commentId) => {
 
 onMounted(() => {
   loadChallengeComments(props.postId); // postId로 댓글 로드
-  console.log("postId",props.postId);
-  console.log("comments",comments);
+  console.log("postId", props.postId);
+  console.log("comments", comments);
 });
-
 
 // 날짜 포맷팅 함수
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}.${month}.${day}`;
 };
-
 </script>
 <template>
   <div class="p-4 bg-white rounded-b-lg">
-    <form @submit.prevent="handleSubmit" class="flex items-center gap-2 mb-4  p-3 rounded">
+    <form @submit.prevent="handleSubmit" class="flex items-center gap-2 mb-4 p-3 rounded">
       <div class="relative inline-block">
         <div class="absolute inset-0 w-10 h-10 bg-gray-700 rounded-full -z-10"></div>
         <img :src="userProfile" alt="유저 아이콘" class="w-8 h-8 mr-2" />
       </div>
-      <input 
-        v-model="inputText" 
-        type="text" 
-        class="bg-transparent border-none flex-1 " 
-        placeholder="댓글 달기..." 
-      />
+      <input v-model="inputText" type="text" class="bg-transparent border-none flex-1" placeholder="댓글 달기..." />
       <button type="submit" class="bg-gray-400 text-white p-2 rounded-full">
         <img :src="commentsbutton" alt="전송" class="w-4 h-4" />
       </button>
@@ -73,7 +66,7 @@ const formatDate = (dateString) => {
             <p class="text-gray-800 mb-2 mt-3">{{ comment.content }}</p>
             <div class="flex text-[11px] text-gray-500">
               <span>{{ formatDate(comment.created_at) }}</span>
-              <span class="ml-2">좋아요 {{ comment.likes || 0}}개</span>
+              <span class="ml-2">좋아요 {{ comment.likes || 0 }}개</span>
               <span class="ml-2 text-red-600">삭제</span>
             </div>
           </div>
