@@ -1,17 +1,17 @@
 <script setup>
-import { onMounted, computed } from "vue";
-import noImage from "../assets/images/noImage.svg";
-import userProfile from "../assets/images/defaultprofile30.svg";
-import { useRoute } from "vue-router";
-import { usePostStore } from "@/stores/postStore";
-import { storeToRefs } from "pinia";
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import WriteButton from "@/components/lounge/WriteButton.vue";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
+import { onMounted, computed } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute } from "vue-router";
+import { usePostStore } from "@/stores/postStore";
 import DetailComment from "@/components/lounge/DetailComment.vue";
+import WriteButton from "@/components/lounge/WriteButton.vue";
+import noImage from "../assets/images/noImage.svg";
+import userProfile from "../assets/images/defaultprofile30.svg";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
