@@ -6,6 +6,7 @@ import { computed } from "vue";
 import LogoHeader from "@/components/header/LogoHeader.vue";
 import CenteredHeader from "@/components/header/CenteredHeader.vue";
 import Footer from "@/components/footer/Footer.vue";
+import PostCreateView from "./views/PostCreateView.vue";
 
 const route = useRoute();
 
@@ -28,7 +29,10 @@ const headerComponent = computed(() => {
 });
 </script>
 <template>
-  <div class="flex flex-col w-full h-full min-h-screen bg-white">
+  <div v-if="route.path === '/write'">
+    <PostCreateView />
+  </div>
+  <div v-else class="flex flex-col w-full h-full min-h-screen bg-white">
     <header>
       <component :is="headerComponent" />
     </header>
@@ -49,7 +53,9 @@ const headerComponent = computed(() => {
     <div class="flex-grow mb-[64px]">
       <RouterView />
     </div>
-    <footer class="flex fixed bottom-0 w-[600px] h-[64px] bg-[white] border-[#D9D9D9] border-t left-1/2 -translate-x-1/2">
+    <footer
+      class="flex fixed bottom-0 w-[600px] h-[64px] bg-[white] border-[#D9D9D9] border-t left-1/2 -translate-x-1/2"
+    >
       <Footer />
     </footer>
   </div>

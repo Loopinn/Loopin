@@ -21,3 +21,9 @@ body {
     0 4px 4px -1px rgba(0, 0, 0, 0.2);
   overflow-y: scroll;
 }
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
