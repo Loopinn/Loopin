@@ -76,6 +76,12 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/profile/edit",
+      name: "profileEdit",
+      component: () => import("@/views/ProfileEdit.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
       component: () => import("@/views/NotFoundView.vue"),
