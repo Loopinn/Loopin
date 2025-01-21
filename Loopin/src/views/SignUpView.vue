@@ -5,7 +5,6 @@ import { register } from "@/utils/auth/register";
 
 import InputField from "@/components/Input/InputField.vue";
 import ConfirmModal from "@/components/modal/ConfirmModal.vue";
-import ChoiceModal from "@/components/modal/ChoiceModal.vue";
 
 import showPassword from "@/assets/images/show-password.svg";
 
@@ -130,7 +129,5 @@ const toggleModal = () => {
     </form>
     <ConfirmModal :isOpen="isModalOpen" :message="modalMessage" :buttonMessage="'확인'" @close="toggleModal">
     </ConfirmModal>
-    <!-- <ChoiceModal :isOpen="isModalOpen" :message="modalMessage" :buttonMessage="'신청'" @close="toggleModal">
-    </ChoiceModal> -->
   </div>
 </template>

@@ -16,8 +16,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["confirm", "close"]);
 
+const confirmAction = () => {
+  emit("confirm");
+};
 const closeModal = () => {
   emit("close");
 };
@@ -36,7 +39,7 @@ const closeModal = () => {
       <div class="flex space-x-8">
         <button
           class="w-[120px] px-4 py-2 bg-[#F43630] text-white rounded-md hover:bg-[#E53030] font-bold"
-          @click="closeModal"
+          @click="confirmAction"
           v-text="buttonMessage"
         ></button>
 
