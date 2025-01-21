@@ -213,11 +213,11 @@ const filterRange = () => {
   if (start === minValue && end === maxValue) {
     return "누구나"; // 전체 범위
   } else if (start === minValue) {
-    return `${end} 이하`; // 최소값은 고정, 끝 값만 기준
+    return `${end}세 이하`; // 최소값은 고정, 끝 값만 기준
   } else if (end === maxValue) {
-    return `${start} 이상`; // 끝값은 고정, 시작 값만 기준
+    return `${start}세 이상`; // 끝값은 고정, 시작 값만 기준
   } else {
-    return `${start} 이상 ${end} 이하`; // 두 값 모두 지정된 경우
+    return `${start} ~ ${end}세`; // 두 값 모두 지정된 경우
   }
 };
 
@@ -234,7 +234,6 @@ const convertGender = () => {
 };
 //datepicker format
 const format = (date) => {
-  console.log(meetTime);
   const day = date.getDate();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
@@ -756,8 +755,10 @@ const handleReset = () => {
             <VueScrollPicker v-model="maxPeople" :options="options" />
           </div>
           <div>
-            <p>성별</p>
-            <p>{{ convertGender() }}</p>
+            <div class="flex">
+              <p>성별</p>
+              <p>{{ convertGender() }}</p>
+            </div>
             <div class="flex gap-[20px]">
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
@@ -796,8 +797,10 @@ const handleReset = () => {
             </div>
           </div>
           <div>
-            <p>나이</p>
-            <p>{{ filterRange() }}</p>
+            <div class="flex">
+              <p>나이</p>
+              <p>{{ filterRange() }}</p>
+            </div>
             <vue-slider
               v-model="range"
               :min="minValue"
@@ -922,7 +925,7 @@ const handleReset = () => {
             />
             <textarea
               v-model="description"
-              class="border border-[#999996] h-[400px] rounded-[16px] p-3"
+              class="post-textarea border border-[#999996] h-[400px] rounded-[16px] p-3 resize-none"
               placeholder="소개글을 입력해 주세요.(선택)"
             ></textarea>
           </div>
