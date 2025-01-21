@@ -1,6 +1,9 @@
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 
 export function useFunnel(initialSteps) {
+  const router = useRouter();
+
   const steps = ref(initialSteps); // 단계 배열
   const currentStepIndex = ref(0); // 현재 단계 인덱스
   const state = ref({}); // 추가 상태
@@ -18,7 +21,15 @@ export function useFunnel(initialSteps) {
   };
 
   const prevStep = () => {
-    if (currentStepIndex.value > 0) {
+    if (currentStepIndex.value === 0) {
+      router.go(-1);
+    } else if (currentStepIndex.value === 1) {
+      const confirm = window.confirm("소셜링을 다음에 여시겠어요?");
+      if (confirm) {
+        //로컬스토리지에 저장
+        currentStepIndex.value--;
+      }
+    } else {
       currentStepIndex.value--;
     }
   };

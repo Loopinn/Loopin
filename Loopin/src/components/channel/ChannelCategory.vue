@@ -105,7 +105,7 @@ const handleWheel = (event) => {
       :class="[
         twMerge(
           'text-[#8A8A8A] text-[14px] rounded-2xl inline-block px-2 py-1 mr-[6px] mb-2 border border-[#D9D9D9] cursor-pointer',
-          selectedCategory === index ? 'border-2 border-black bg-white' : '',
+          selectedCategory === index ? 'text-[black] border-[1px] border-black bg-white' : '',
         ),
       ]"
       @click="clickCategory(index)"

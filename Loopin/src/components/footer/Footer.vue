@@ -42,7 +42,10 @@ const getImageUrl = (path) => {
 };
 // 현재 페이지 아이콘 확인 함수
 const getIcon = (item) => {
-  console.log(route.path);
+  const activeRoutes = ["/", "/socialing", "/club", "/challenge"]; // 홈 아이콘을 활성화할 경로들
+  if (item.route === "/" && activeRoutes.includes(route.path)) {
+    return getImageUrl(item.activeImg);
+  }
   return route.path === item.route ? getImageUrl(item.activeImg) : getImageUrl(item.img);
 };
 </script>
