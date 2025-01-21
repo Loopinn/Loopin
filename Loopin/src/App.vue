@@ -58,7 +58,7 @@ const links = computed(() => {
     return [...baseLinks];
   } else {
     return [...baseLinks, { name: "로그인", path: "/signIn" }, { name: "회원가입", path: "/signUp" }];
-  // }
+  }
 });
 
 const headerComponent = computed(() => {
