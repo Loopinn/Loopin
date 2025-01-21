@@ -3,39 +3,15 @@ import Funnel from "@/components/Funnel.vue";
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { useFunnel } from "@/utils/useFunnel";
-import { ref, computed } from "vue";
+import { ref, computed, reactive } from "vue";
 
 import { VueScrollPicker } from "vue-scroll-picker";
 
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
 
-//나이 슬라이더
-const range = ref([20, 50]); // 기본 선택 범위
-const minValue = 20; // 최소값
-const maxValue = 50; // 최대값
-const interval = 5; // 간격
-const marks = {
-  20: "20",
-  25: "25",
-  30: "30",
-  35: "35",
-  40: "40",
-  45: "45",
-  50: "50",
-};
-const railStyle = {
-  backgroundColor: "#999996", // 트랙 배경 색상
-};
-// 슬라이더 프로세스 색상
-const processStyle = {
-  backgroundColor: "#F43630", // 선택된 범위 색상
-};
-// 슬라이더 핸들 색상
-const handleStyle = {
-  backgroundColor: "#F43630", // 핸들 색상
-  borderColor: "#F43630", // 핸들 테두리 색상
-};
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
 const postStore = usePostStore();
 const { createSocialPost, createClubPost, createChallengePost } = postStore;
@@ -54,22 +30,28 @@ const { currentStep, nextStep, prevStep, reset, setState, state, updateSteps } =
 // 선택한 활동 상태 관리
 const selectedActivity = ref("");
 const socialingType = ref("");
+// const private = ref(null);
 const isFee = ref(null);
-const fee = ref(null);
+const fee = ref(0);
 const feeInfo = ref([]);
 const category = ref("");
 const isOffline = ref(null);
 const place = ref("");
 const maxPeople = ref(3);
-const gender = ref('all');
-// const age = ref(0); range
+const gender = ref("all");
+// const age = ref(0); range로 대체
 const meetDate = ref(null);
+const meetTime = reactive({ hours: 0, minutes: 0, seconds: 0 });
 const startDate = ref(null);
 const endDate = ref(null);
-const tpw = ref(0);
+const tpw = ref("주 1회");
 const selectedImage = ref(null);
 const title = ref("");
 const description = ref("");
+
+const fileInput = ref(null);
+const fileCount = ref(0);
+const previewImage = ref(null);
 
 const activeIndex = ref(null);
 
@@ -161,8 +143,67 @@ const categoryList = ref([
   },
 ]);
 
+const getCheckboxImage = (fee) => {
+  if (feeInfo.value.includes(fee)) {
+    if (selectedActivity.value === "소셜링") {
+      return "/src/assets/images/check-active-social.svg";
+    } else if (selectedActivity.value === "클럽") {
+      return "/src/assets/images/check-active-club.svg";
+    } else {
+      return "/src/assets/images/check-active-challenge.svg";
+    }
+  } else {
+    return "/src/assets/images/check.svg";
+  }
+};
+
+//나이 슬라이더
+const range = ref([20, 50]); // 기본 선택 범위
+const minValue = 20; // 최소값
+const maxValue = 50; // 최대값
+const interval = 5; // 간격
+const marks = {
+  20: "20",
+  25: "25",
+  30: "30",
+  35: "35",
+  40: "40",
+  45: "45",
+  50: "50",
+};
+const railStyle = {
+  backgroundColor: "#999996", // 트랙 배경 색상
+};
+// 슬라이더 프로세스 색상
+// const processStyle = {
+//   backgroundColor: "#F43630", // 선택된 범위 색상
+// };
+const processStyle = computed(() => {
+  const colors = {
+    소셜링: "#F43630",
+    클럽: "#1C8A6A",
+    챌린지: "#3498D0",
+  };
+  return {
+    backgroundColor: colors[selectedActivity.value] || "#F43630",
+  };
+});
+// 슬라이더 핸들 색상
+const handleStyle = computed(() => {
+  const colors = {
+    소셜링: "#F43630",
+    클럽: "#1C8A6A",
+    챌린지: "#3498D0",
+  };
+  return {
+    backgroundColor: colors[selectedActivity.value] || "#F43630", // 핸들 색상
+    borderColor: colors[selectedActivity.value] || "#F43630", // 핸들 테두리 색상
+  };
+});
+
 //인원 옵션
 const options = [3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const tpwOptions = ["주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
 
 const filterRange = () => {
   const [start, end] = range.value;
@@ -189,6 +230,19 @@ const convertGender = () => {
     return "잘못된 값"; // 잘못된 값 처리
   }
 };
+//datepicker format
+const format = (date) => {
+  console.log(meetTime);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+
+  return `${year}/${month}/${day}`;
+};
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
 
 // 다음 버튼 활성화 여부
 const isNextEnabled = computed(() => {
@@ -211,11 +265,11 @@ const isNextEnabled = computed(() => {
   } else if (currentStep.value === "멤버") {
     return maxPeople.value !== 0 && gender.value !== null;
   } else if (currentStep.value === "시간") {
-    return meetDate.value !== null;
+    return meetDate.value !== null && meetTime.value !== null;
   } else if (currentStep.value === "시작종료") {
     return startDate.value !== null && endDate.value !== null;
   } else if (currentStep.value === "주몇회") {
-    return tpw.value !== 0;
+    return tpw.value !== "";
   } else if (currentStep.value === "소개") {
     return selectedImage.value !== null && title.value.length >= 5;
   }
@@ -246,11 +300,28 @@ const toggleFeeSelection = (feeType) => {
   }
 };
 
+const handleOnlineClick = () => {
+  place.value = "온라인";
+  isOffline.value = false;
+};
+const handleOfflineClick = () => {
+  if (isOffline.value === false) place.value = "";
+  isOffline.value = true;
+};
+
 //소개 이미지 선택
 const handleFileChange = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    selectedImage.value = file;
+  const files = event.target.files;
+  if (files) {
+    fileCount.value = files.length;
+    selectedImage.value = files;
+    //여러개로 수정필요
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImage.value = e.target.result; // 파일 읽은 후 미리보기 이미지 URL 설정
+    };
+    reader.readAsDataURL(file);
   } else {
     selectedImage.value = null;
   }
@@ -259,13 +330,13 @@ const handleFileChange = (event) => {
 // 완료 버튼 액션
 const finish = async () => {
   await handlePostSubmit();
-  console.log("완료되었습니다!");
-  handleReset();
+  // handleReset();
 };
+
 const handlePostSubmit = async () => {
   let imageUrl = null;
   if (selectedImage.value) {
-    const fileName = `${Date.now()}-${selectedImage.value.name}`;
+    const fileName = `${Date.now()}-${selectedImage.value[0].name}`;
     const { data, error } = await supabase.storage
       .from("post-images")
       .upload(`images/${fileName}`, selectedImage.value);
@@ -295,15 +366,14 @@ const handlePostSubmit = async () => {
         category: category.value,
         title: title.value,
         description: description.value,
-        images: imageUrl,
-        creator: userId,
+        images: [imageUrl],
         max_people: maxPeople.value,
         age_limit: range.value,
         gender: gender.value,
         place: place.value,
         type: socialingType.value,
         date: meetDate.value,
-        // 시간추가
+        time: meetTime,
       },
       userId,
     );
@@ -315,7 +385,7 @@ const handlePostSubmit = async () => {
         category: category.value,
         title: title.value,
         description: description.value,
-        images: imageUrl,
+        images: [imageUrl],
         max_people: maxPeople.value,
         age_limit: range.value,
         gender: gender.value,
@@ -331,7 +401,7 @@ const handlePostSubmit = async () => {
         category: category.value,
         title: title.value,
         description: description.value,
-        images: imageUrl,
+        images: [imageUrl],
         max_people: maxPeople.value,
         start_date: startDate.value,
         end_date: endDate.value,
@@ -367,7 +437,7 @@ const handleReset = () => {
 
 <template>
   <div class="relative px-[15px]">
-    <div>
+    <div class="h-[80px] flex">
       <button @click="prevStep"><img src="@/assets/images/arrow-left.svg" alt="" /></button>
     </div>
     <Funnel :steps="state.steps || steps" :currentStep="currentStep">
@@ -476,7 +546,11 @@ const handleReset = () => {
           <div class="flex gap-[20px]">
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
-              :class="{ 'bg-[#F43630] text-white': isFee === true }"
+              :class="{
+                'bg-[#F43630] text-white': isFee === true && selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': isFee === true && selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': isFee === true && selectedActivity === '챌린지',
+              }"
               @click="isFee = true"
             >
               <p>있음</p>
@@ -484,7 +558,11 @@ const handleReset = () => {
 
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
-              :class="{ 'bg-[#F43630] text-white': isFee === false }"
+              :class="{
+                'bg-[#F43630] text-white': isFee === false && selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': isFee === false && selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': isFee === false && selectedActivity === '챌린지',
+              }"
               @click="isFee = false"
             >
               <p>없음</p>
@@ -508,14 +586,7 @@ const handleReset = () => {
                     @change="toggleFeeSelection('contentFee')"
                   />
                   <label for="contentFee" class="flex">
-                    <img
-                      :src="
-                        feeInfo.includes('contentFee')
-                          ? '/src/assets/images/check-active.svg'
-                          : '/src/assets/images/check.svg'
-                      "
-                      alt="content fee"
-                    />
+                    <img :src="getCheckboxImage('contentFee')" alt="content fee" />
                     <span>콘텐츠 제작비</span></label
                   >
                   <input
@@ -526,14 +597,7 @@ const handleReset = () => {
                     @change="toggleFeeSelection('hostFee')"
                   />
                   <label for="hostFee" class="flex">
-                    <img
-                      :src="
-                        feeInfo.includes('hostFee')
-                          ? '/src/assets/images/check-active.svg'
-                          : '/src/assets/images/check.svg'
-                      "
-                      alt="content fee"
-                    />
+                    <img :src="getCheckboxImage('hostFee')" alt="host fee" />
                     <span>호스트 수고비</span></label
                   >
                 </div>
@@ -550,14 +614,7 @@ const handleReset = () => {
                     @change="toggleFeeSelection('noshowFee')"
                   />
                   <label for="noshowFee" class="flex">
-                    <img
-                      :src="
-                        feeInfo.includes('noshowFee')
-                          ? '/src/assets/images/check-active.svg'
-                          : '/src/assets/images/check.svg'
-                      "
-                      alt="noshow fee"
-                    />
+                    <img :src="getCheckboxImage('noshowFee')" alt="noshow fee" />
                     <span>노쇼 방지비</span></label
                   >
 
@@ -569,14 +626,7 @@ const handleReset = () => {
                     @change="toggleFeeSelection('rentalFee')"
                   />
                   <label for="rentalFee" class="flex">
-                    <img
-                      :src="
-                        feeInfo.includes('rentalFee')
-                          ? '/src/assets/images/check-active.svg'
-                          : '/src/assets/images/check.svg'
-                      "
-                      alt="rental fee"
-                    />
+                    <img :src="getCheckboxImage('rentalFee')" alt="rental fee" />
                     <span>대관료</span></label
                   >
 
@@ -588,14 +638,7 @@ const handleReset = () => {
                     @change="toggleFeeSelection('materialFee')"
                   />
                   <label for="materialFee" class="flex">
-                    <img
-                      :src="
-                        feeInfo.includes('materialFee')
-                          ? '/src/assets/images/check-active.svg'
-                          : '/src/assets/images/check.svg'
-                      "
-                      alt="material fee"
-                    />
+                    <img :src="getCheckboxImage('materialFee')" alt="material fee" />
                     <span>재료비</span></label
                   >
 
@@ -607,14 +650,7 @@ const handleReset = () => {
                     @change="toggleFeeSelection('dessertFee')"
                   />
                   <label for="dessertFee" class="flex">
-                    <img
-                      :src="
-                        feeInfo.includes('dessertFee')
-                          ? '/src/assets/images/check-active.svg'
-                          : '/src/assets/images/check.svg'
-                      "
-                      alt="dessert fee"
-                    />
+                    <img :src="getCheckboxImage('dessertFee')" alt="dessert fee" />
                     <span>다과비</span></label
                   >
                 </div>
@@ -676,16 +712,24 @@ const handleReset = () => {
           <div class="flex gap-[20px]">
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
-              :class="{ 'bg-[#F43630] text-white': isOffline === true }"
-              @click="isOffline = true"
+              :class="{
+                'bg-[#F43630] text-white': isOffline === true && selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': isOffline === true && selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': isOffline === true && selectedActivity === '챌린지',
+              }"
+              @click="handleOfflineClick"
             >
               <p>오프라인</p>
             </button>
 
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
-              :class="{ 'bg-[#F43630] text-white': isOffline === false }"
-              @click="isOffline = false"
+              :class="{
+                'bg-[#F43630] text-white': isOffline === false && selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': isOffline === false && selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': isOffline === false && selectedActivity === '챌린지',
+              }"
+              @click="handleOnlineClick"
             >
               <p>온라인</p>
             </button>
@@ -713,7 +757,11 @@ const handleReset = () => {
             <div class="flex gap-[20px]">
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
-                :class="{ 'bg-[#F43630] text-white': gender === 'all' }"
+                :class="{
+                  'bg-[#F43630] text-white': gender === 'all' && selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': gender === 'all' && selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': gender === 'all' && selectedActivity === '챌린지',
+                }"
                 @click="gender = 'all'"
               >
                 <p>아무나</p>
@@ -721,14 +769,22 @@ const handleReset = () => {
 
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
-                :class="{ 'bg-[#F43630] text-white': gender === 'male' }"
+                :class="{
+                  'bg-[#F43630] text-white': gender === 'male' && selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': gender === 'male' && selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': gender === 'male' && selectedActivity === '챌린지',
+                }"
                 @click="gender = 'male'"
               >
                 <p>남자만</p>
               </button>
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
-                :class="{ 'bg-[#F43630] text-white': gender === 'female' }"
+                :class="{
+                  'bg-[#F43630] text-white': gender === 'female' && selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': gender === 'female' && selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': gender === 'female' && selectedActivity === '챌린지',
+                }"
                 @click="gender = 'female'"
               >
                 <p>여자만</p>
@@ -756,20 +812,62 @@ const handleReset = () => {
       <!-- 시간/주차 선택 단계 -->
       <template #시간>
         <div>
-          <h2>언제 만날까요?</h2>
-          <input v-model="meetDate" type="date" />
-          <div>시간</div>
-          <!-- 시간추가 -->
+          <h2 class="text-[30px] mb-[43px]">언제 만날까요?</h2>
+          <div class="flex justify-between">
+            <div>
+              <VueDatePicker
+                v-model="meetDate"
+                :enable-time-picker="false"
+                :format="format"
+                :inline="{ input: true }"
+                auto-apply
+                class="datepicker-input"
+              />
+            </div>
+            <div>
+              <VueDatePicker
+                v-model="meetTime"
+                :enable-time-picker="true"
+                :enable-date-picker="false"
+                :time-picker="true"
+                :inline="{ input: true }"
+                auto-apply
+                class="timepicker-input"
+              />
+            </div>
+          </div>
         </div>
       </template>
 
       <!-- 시작/종료 시간 선택 단계 -->
       <template #시작종료>
         <div>
-          <h2>시작/종료 시간을 선택하세요</h2>
+          <h2 class="text-[30px] mb-[43px]">시작/종료 시간을 선택하세요</h2>
           <div>
-            <input v-model="startDate" type="date" />
-            <input v-model="endDate" type="date" />
+            <div class="flex justify-between">
+              <div>
+                <h2>시작 날짜</h2>
+                <VueDatePicker
+                  v-model="startDate"
+                  :enable-time-picker="false"
+                  :format="format"
+                  :inline="{ input: true }"
+                  auto-apply
+                  class="datepicker-input"
+                />
+              </div>
+              <div>
+                <h2>종료 날짜</h2>
+                <VueDatePicker
+                  v-model="endDate"
+                  :enable-time-picker="false"
+                  :format="format"
+                  :inline="{ input: true }"
+                  auto-apply
+                  class="datepicker-input"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </template>
@@ -777,34 +875,76 @@ const handleReset = () => {
       <!-- 주몇회 선택 단계 -->
       <template #주몇회>
         <div>
-          <h2>활동 주기를 선택하세요</h2>
-          <input v-model="tpw" type="number" />
+          <h2 class="text-[30px] mb-[43px]">인증은 일주일에 몇 회씩 할까요?</h2>
+          <VueScrollPicker v-model="tpw" :options="tpwOptions" />
         </div>
       </template>
 
       <!-- 소개 단계 -->
       <template #소개>
         <div>
-          <h2 v-if="['소셜링', '클럽'].includes(selectedActivity)">{{ selectedActivity }}을 소개해볼까요?</h2>
-          <h2 v-else>{{ selectedActivity }}를 소개해볼까요?</h2>
-          <div>
-            <input type="file" @change="handleFileChange" />
-            <input v-model="title" type="text" placeholder="제목을 입력해 주세요.(최소 5글자)" />
-            <input v-model="description" type="text" placeholder="소개글을 입력해 주세요.(선택)" />
+          <h2 v-if="['소셜링', '클럽'].includes(selectedActivity)" class="text-[30px] mb-[43px]">
+            {{ selectedActivity }}을 소개해볼까요?
+          </h2>
+          <h2 v-else class="text-[30px] mb-[43px]">{{ selectedActivity }}를 소개해볼까요?</h2>
+          <div class="flex flex-col gap-[15px]">
+            <div class="flex gap-2">
+              <div class="border rounded-lg flex flex-col items-center justify-center w-32 h-32">
+                <img
+                  src="@/assets/images/addImages.svg"
+                  alt="addImage"
+                  class="w-16 h-16 ml-4 mt-2 cursor-pointer"
+                  @click="triggerFileInput"
+                />
+                <input
+                  type="file"
+                  id="file"
+                  accept="image/*"
+                  class="hidden"
+                  ref="fileInput"
+                  @change="handleFileChange"
+                />
+                <div class="text-sm text-gray-500">{{ fileCount }}/10</div>
+              </div>
+              <div v-if="previewImage">
+                <img :src="previewImage" alt="Preview" class="w-32 h-32 rounded-lg object-cover" />
+              </div>
+            </div>
+            <input
+              v-model="title"
+              type="text"
+              class="border border-[#999996] h-[50px] rounded-[16px] px-3"
+              placeholder="제목을 입력해 주세요.(최소 5글자)"
+            />
+            <textarea
+              v-model="description"
+              class="border border-[#999996] h-[400px] rounded-[16px] p-3"
+              placeholder="소개글을 입력해 주세요.(선택)"
+            ></textarea>
           </div>
-          <button @click="prevStep">이전 단계로</button>
-          <button :disabled="!isNextEnabled" @click="finish">완료</button>
         </div>
       </template>
     </Funnel>
-
     <button
+      v-if="currentStep === '소개'"
       class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
       :class="{
         'bg-[#F43630]': selectedActivity === '소셜링',
         'bg-[#1C8A6A]': selectedActivity === '클럽',
         'bg-[#3498D0]': selectedActivity === '챌린지',
-        // 'bg-gray-500': !['소셜링', '클럽', '챌린지'].includes(selectedActivity),
+      }"
+      :disabled="!isNextEnabled"
+      @click="finish"
+    >
+      완료
+    </button>
+    <button
+      v-else
+      class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
+      :class="{
+        'bg-[#F43630]': selectedActivity === '소셜링',
+        'bg-[#1C8A6A]': selectedActivity === '클럽',
+        'bg-[#3498D0]': selectedActivity === '챌린지',
       }"
       :disabled="!isNextEnabled"
       @click="nextStep"
