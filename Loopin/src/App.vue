@@ -36,7 +36,9 @@ const headerComponent = computed(() => {
     <header>
       <component :is="headerComponent" />
     </header>
-    <nav class="flex gap-3 w-full h-[50px] items-center px-3.5 sticky top-0 bg-white border-[#D9D9D9] border-b z-10">
+    
+    <!-- sticky top-0 -->
+    <nav class="flex gap-3 w-full h-[50px] items-center px-3.5 bg-white border-[#D9D9D9] border-b z-10">
       <RouterLink
         v-for="(link, index) in links"
         :key="index"
