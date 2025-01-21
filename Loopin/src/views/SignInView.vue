@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { login } from "@/utils/auth/login";
 
 import InputField from "@/components/Input/InputField.vue";
 import Loading from "@/components/Loading.vue";
+import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 
 import showPassword from "@/assets/images/show-password.svg";
 import kakaoIcon from "@/assets/images/kakaoIcon.svg";
@@ -14,25 +16,37 @@ const password = ref("");
 const passwordVisible = ref(false);
 
 const isLoading = ref(false);
+const isModalOpen = ref(false);
+const modalMessage = ref("");
 
 const router = useRouter();
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
-  isLoading.value = true;
-
-  setTimeout(() => {
-    console.log({
-      email: email.value,
-      password: password.value,
-    });
-    isLoading.value = false;
-  }, 2000);
+  try {
+    const response = await login(email.value, password.value);
+    if (response && response.error) {
+      if (response.error.message === "Invalid login credentials") {
+        console.log("로그인 중 에러 발생: Invalid login credentials");
+        throw new Error(response.error.message);
+      }
+    }
+    console.log("로그인 성공: ", response);
+    router.push("/");
+  } catch (error) {
+    modalMessage.value = "<b style='font-size: 18px; color: #000;'>올바른 이메일과 비밀번호를 입력해주세요.</b>";
+    isModalOpen.value = true;
+  }
 };
 
 const togglePasswordVisible = (e) => {
   e.preventDefault();
   passwordVisible.value = !passwordVisible.value;
+};
+
+// 모달 닫기
+const toggleModal = () => {
+  isModalOpen.value = false;
 };
 
 const navigateToSignUp = () => {
@@ -54,7 +68,11 @@ const navigateToSignUp = () => {
             placeholder="비밀번호를 입력해 주세요."
             v-model="password"
           />
-          <button @click="togglePasswordVisible" class="absolute right-4 bottom-0 transform -translate-y-1/2">
+          <button
+            type="button"
+            @click="togglePasswordVisible"
+            class="absolute right-4 bottom-0 transform -translate-y-1/2"
+          >
             <img :src="showPassword" alt="Show password " />
           </button>
         </div>
@@ -76,6 +94,8 @@ const navigateToSignUp = () => {
         </div>
       </button>
     </div>
+    <ConfirmModal :isOpen="isModalOpen" :message="modalMessage" :buttonMessage="'확인'" @close="toggleModal">
+    </ConfirmModal>
   </div>
 </template>
 <style scoped></style>
