@@ -9,17 +9,13 @@ import { useAuthStore } from "@/stores/authStore";
 const authStore = useAuthStore();
 
 const checkPW = ref(false);
-watchEffect(() => {
-  console.log(checkPW.value);
-});
 
 const currentUser = ref(null);
 const newNickname = ref(null);
 const newDesc = ref(null);
 
 onBeforeMount(async () => {
-  console.log("authStore", authStore.loginUser);
-  const { data, error } = await supabase.from("userinfo").select().eq("nickname", "테스트용");
+  const { data, error } = await supabase.from("userinfo").select().eq("nickname", authStore.loginUser.nickname);
   if (error) throw new Error("유저 에러" + error);
   console.log(data[0]);
   currentUser.value = data[0];
