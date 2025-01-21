@@ -162,7 +162,13 @@ const handleShare = () => {
 
     <!-- 마이페이지 (로그인한 유저) -->
     <div v-if="isMyPage" class="flex justify-center gap-8 my-10">
-      <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]">프로필 변경</button>
+      <button
+        type="button"
+        class="text-[14px] border w-[170px] h-[40px] rounded-[10px]"
+        @click="router.push('/profile/edit')"
+      >
+        프로필 변경
+      </button>
       <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]" @click="handleShare">
         프로필 공유
       </button>
