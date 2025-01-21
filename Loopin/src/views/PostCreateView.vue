@@ -12,7 +12,9 @@ import "vue-slider-component/theme/default.css";
 
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const postStore = usePostStore();
 const { createSocialPost, createClubPost, createChallengePost } = postStore;
 
@@ -410,6 +412,8 @@ const handlePostSubmit = async () => {
       userId,
     );
   }
+  window.alert("포스팅 완료!");
+  router.push("/");
 };
 
 const handleReset = () => {
