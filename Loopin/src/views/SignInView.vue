@@ -10,6 +10,8 @@ import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 import showPassword from "@/assets/images/show-password.svg";
 import kakaoIcon from "@/assets/images/kakaoIcon.svg";
 import kakaoLogin from "@/assets/images/kakaoLogin.svg";
+import { useAuthStore } from "@/stores/authStore";
+import supabase from "@/config/supabase";
 
 const email = ref("");
 const password = ref("");
@@ -20,6 +22,8 @@ const isModalOpen = ref(false);
 const modalMessage = ref("");
 
 const router = useRouter();
+
+const authStore = useAuthStore();
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -32,8 +36,17 @@ const handleSubmit = async (e) => {
       }
     }
     console.log("로그인 성공: ", response);
+    if (response.data.session) {
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select()
+        .eq("id", response.data.user.id);
+      authStore.setUser(userData[0]);
+      console.log("authStore", authStore.loginUser);
+    }
     router.push("/");
   } catch (error) {
+    console.error(error);
     modalMessage.value = "<b style='font-size: 18px; color: #000;'>올바른 이메일과 비밀번호를 입력해주세요.</b>";
     isModalOpen.value = true;
   }

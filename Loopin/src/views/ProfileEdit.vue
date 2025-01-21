@@ -4,6 +4,9 @@ import { twMerge } from "tailwind-merge";
 import { onBeforeMount, ref, watchEffect } from "vue";
 import imgEditIcon from "../assets/images/profile_edit.svg";
 import CheckPw from "@/components/profileEdit/CheckPw.vue";
+import { useAuthStore } from "@/stores/authStore";
+
+const authStore = useAuthStore();
 
 const checkPW = ref(false);
 watchEffect(() => {
@@ -15,6 +18,7 @@ const newNickname = ref(null);
 const newDesc = ref(null);
 
 onBeforeMount(async () => {
+  console.log("authStore", authStore.loginUser);
   const { data, error } = await supabase.from("userinfo").select().eq("nickname", "테스트용");
   if (error) throw new Error("유저 에러" + error);
   console.log(data[0]);
