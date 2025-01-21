@@ -1,3 +1,5 @@
+import CenteredHeader from "@/components/header/CenteredHeader.vue";
+import supabase from "@/config/supabase";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -76,10 +78,16 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/views/UserInfoView.vue"),
+      meta: { layout: "CenteredHeader", requireAuth: true },
+    },
+    {
       path: "/profile/edit",
       name: "profileEdit",
       component: () => import("@/views/ProfileEdit.vue"),
-      meta: { layout: "CenteredHeader" },
+      meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
       path: "/:pathMatch(.*)*",
@@ -88,6 +96,21 @@ const router = createRouter({
       meta: { layout: "LogoHeader" },
     },
   ],
+});
+router.beforeEach(async (to, from, next) => {
+  const { data } = await supabase.auth.getSession();
+  const isLoggedIn = !!data.session;
+
+  if (to.matched.some((record) => record.meta.requireAuth)) {
+    if (!isLoggedIn) {
+      alert("인증이 필요합니다.");
+      next({ name: "signIn" });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
 });
 
 router.afterEach(() => {

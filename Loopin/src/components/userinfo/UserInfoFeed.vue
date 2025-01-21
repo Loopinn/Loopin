@@ -2,7 +2,6 @@
 import { useRouter } from "vue-router";
 
 const props = defineProps(["feedData"]);
-console.log(props.feedData);
 
 const router = useRouter();
 </script>
