@@ -53,8 +53,20 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   const createClubPost = async (postInfo, userId) => {
+    const post = {
+      age_limit: Array.from(postInfo.age_limit) || [], // Proxy(Array) -> 일반 배열
+      fee_info: Array.from(postInfo.fee_info) || [], // Proxy(Array) -> 일반 배열
+      images: [...postInfo.images], // 이미지 URL
+      title: postInfo.title,
+      description: postInfo.description,
+      category: postInfo.category,
+      fee: postInfo.fee,
+      gender: postInfo.gender,
+      max_people: postInfo.max_people,
+      place: postInfo.place,
+    };
     try {
-      const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([postInfo]).select();
+      const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([post]).select();
       console.log(clubPost);
       if (clubError) throw new Error("클럽 업로드 에러", clubError);
 
@@ -144,10 +156,23 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   const createChallengePost = async (postInfo, userId) => {
+    const post = {
+      fee_info: Array.from(postInfo.fee_info) || [], // Proxy(Array) -> 일반 배열
+      start_date: new Date(postInfo.start_date).toISOString().split("T")[0], // 날짜 포맷 변경
+      end_date: new Date(postInfo.end_date).toISOString().split("T")[0], // 날짜 포맷 변경
+      images: [...postInfo.images], // 이미지 URL
+      title: postInfo.title,
+      description: postInfo.description,
+      category: postInfo.category,
+      fee: postInfo.fee,
+      max_people: postInfo.max_people,
+      times_per_week: postInfo.times_per_week,
+    };
+    console.log(post);
     try {
       const { data: challengePost, error: challengeError } = await supabase
         .from("challenge_posts")
-        .insert([postInfo])
+        .insert([post])
         .select();
       console.log(challengePost);
       if (challengeError) throw new Error("챌린지 업로드 에러", challengeError);
@@ -267,8 +292,25 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   const createSocialPost = async (postInfo, userId) => {
+    const post = {
+      age_limit: Array.from(postInfo.age_limit) || [], // Proxy(Array) -> 일반 배열
+      fee_info: Array.from(postInfo.fee_info) || [], // Proxy(Array) -> 일반 배열
+      time: JSON.stringify({ ...postInfo.time }) || {}, // Proxy(Object) -> 일반 객체
+      date: new Date(postInfo.date).toISOString().split("T")[0], // 날짜 포맷 변경
+      images: [...postInfo.images], // 이미지 URL
+      title: postInfo.title,
+      description: postInfo.description,
+      category: postInfo.category,
+      fee: postInfo.fee,
+      gender: postInfo.gender,
+      max_people: postInfo.max_people,
+      place: postInfo.place,
+      type: postInfo.type,
+    };
+    console.log(post);
+
     try {
-      const { data: socialPost, error: socialError } = await supabase.from("socialing_posts").insert(postInfo).select();
+      const { data: socialPost, error: socialError } = await supabase.from("socialing_posts").insert([post]).select();
       console.log(socialPost);
       if (socialError) throw new Error("소셜링 업로드 에러", socialError);
 

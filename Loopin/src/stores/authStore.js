@@ -1,12 +1,21 @@
-// import { defineStore } from "pinia";
-// import { reactive } from "vue";
+import { defineStore } from "pinia";
+import { reactive, ref } from "vue";
 
-// export const useAuthStore = defineStore("authStore", () => {
-//   const currentUser = reactive({});
+export const useAuthStore = defineStore(
+  "authStore",
+  () => {
+    const loginUser = ref(null);
+    const setUser = (user) => {
+      loginUser.value = user;
+    };
 
-//   const updateUser = () => {};
+    const clearUser = () => {
+      loginUser.value = null;
+    };
 
-//   return {
-//     currentUser,
-//   };
-// });
+    return { loginUser, setUser, clearUser };
+  },
+  {
+    persist: true,
+  },
+);
