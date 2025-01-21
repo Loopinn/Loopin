@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { register } from "@/utils/auth/register";
 
 import InputField from "@/components/Input/InputField.vue";
 import ConfirmModal from "@/components/modal/ConfirmModal.vue";
@@ -16,17 +18,61 @@ const passwordVisible = ref(false);
 const verifyPasswordVisible = ref(false);
 
 const isModalOpen = ref(false);
-const modalMessage = ref("<b style='font-size: 22px; color: #000;'>회원가입이 완료되었습니다</b>");
+const modalMessage = ref("");
 
-const handleSubmit = (e) => {
+const router = useRouter();
+
+// 유효성 검사
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/;
+const idRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{4,12}$/;
+
+// 유효성 검사 함수
+const validateEmail = (email) => emailRegex.test(email);
+const validatePassword = (password) => passwordRegex.test(password);
+const validateName = (name) => idRegex.test(name);
+
+const handleSubmit = async (e) => {
   e.preventDefault();
-  console.log({
-    email: email.value,
-    password: password.value,
-    verifyPassword: verifyPassword.value,
-    name: name.value,
-  });
-  isModalOpen.value = true;
+
+  // 유효성 검사
+  if (!validateEmail(email.value)) {
+    alert("올바른 이메일 형식이 아닙니다.");
+    return;
+  }
+  if (!validatePassword(password.value)) {
+    alert("비밀번호는 8~16자의 길이이며, 소문자, 대문자, 숫자, 특수문자를 모두 포함해야 합니다.");
+    return;
+  }
+  if (!validateName(name.value)) {
+    alert("이름은 4~12자의 영문 대소문자와 숫자로 구성되어야 합니다.");
+    return;
+  }
+
+  if (password.value !== verifyPassword.value) {
+    alert("비밀번호와 비밀번호 확인이 일치하지 않아요.");
+    return;
+  }
+
+  try {
+    const response = await register(email.value, password.value, name.value);
+
+    if (response.error) {
+      alert(`회원가입 실패: ${response.error.message}`);
+    } else {
+      modalMessage.value = "<b style='font-size: 22px; color: #000;'>회원가입이 완료되었습니다</b>";
+      isModalOpen.value = true;
+      console.log({
+        email: email.value,
+        password: password.value,
+        verifyPassword: verifyPassword.value,
+        name: name.value,
+      });
+    }
+  } catch (error) {
+    console.log("회원가입 중 오류 발생", error.message);
+    alert("회원가입 중 오류 발생");
+  }
 };
 
 const togglePasswordVisible = (e) => {
@@ -42,6 +88,7 @@ const toggleVerifyPasswordVisible = (e) => {
 // 모달 닫기
 const toggleModal = () => {
   isModalOpen.value = false;
+  router.push("/signIn");
 };
 </script>
 <template>
