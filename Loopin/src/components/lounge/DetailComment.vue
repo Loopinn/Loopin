@@ -46,7 +46,7 @@ const formatDate = (dateString) => {
 };
 </script>
 <template>
-  <div class="p-4 bg-white rounded-b-lg">
+  <div class="p-4  rounded-b-lg">
     <form @submit.prevent="handleSubmit" class="flex items-center gap-2 mb-4 p-3 rounded">
       <div class="relative inline-block">
         <div class="absolute inset-0 w-10 h-10 bg-gray-700 rounded-full -z-10"></div>
@@ -70,7 +70,7 @@ const formatDate = (dateString) => {
               <span class="ml-2 text-red-600">삭제</span>
             </div>
           </div>
-          <button class="ml-auto text-gray-500"><img src="../assets/images/likeblack.svg" alt="좋아요" /></button>
+          <button class="ml-auto text-gray-500"><img src="@/assets/images/likeblack.svg" alt="좋아요" /></button>
         </div>
       </li>
     </ul>

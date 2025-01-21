@@ -17,7 +17,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8">
+  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
     <PageInfoSection
       :icon="loungeLogo"
       title="라운지"
@@ -28,13 +28,15 @@ onMounted(() => {
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2">
         <RouterLink :to="{ path: `/lounge/${feed.id}` }">
-          <img
-            :src="feed.images[0] || noImage"
-            :alt="feed.description"
-            class="w-full aspect-square object-cover rounded-lg"
-          />
+          <div class="bg-white rounded-xl">
+            <img
+              :src="feed.images[0] || noImage"
+              :alt="feed.description"
+              class="w-full aspect-square object-cover rounded-xl"
+            />
+          </div>
         </RouterLink>
-        <p class="text-xs leading-relaxed text-gray-800">
+        <p class="text-xs leading-relaxed text-gray-800 line-clamp">
           {{ feed.description }}
         </p>
       </div>
@@ -42,3 +44,14 @@ onMounted(() => {
     <WriteButton />
   </div>
 </template>
+
+<style scoped>
+.line-clamp {
+  display: block; /* 기본 블록 요소로 설정 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 최대 2줄 */
+  overflow: hidden;
+  max-height: calc(2 * 1.4em); /* 2줄 높이 계산 (1.2em은 줄 높이) */
+}
+</style>

@@ -4,19 +4,12 @@ import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { twMerge } from "tailwind-merge";
-import { computed, onBeforeMount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeMount, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 // 임시
 const isMyPage = ref(true);
 const currentUser = ref(null);
-onBeforeMount(async () => {
-  const { data, error } = await supabase.from("userinfo").select().eq("nickname", "테스트용");
-  if (error) throw new Error(error);
-  console.log(data);
-  currentUser.value = data[0];
-  console.log(currentUser.value);
-});
 
 const postStore = usePostStore();
 const { loadLoungePosts } = postStore;
@@ -48,6 +41,13 @@ const infos = computed(() => {
 const feedNav = ref("피드");
 
 onBeforeMount(async () => {
+  // 임시
+  const { data, error } = await supabase.from("userinfo").select().eq("nickname", "테스트용");
+  if (error) throw new Error(error);
+  console.log(data);
+  currentUser.value = data[0];
+  console.log(currentUser.value);
+
   try {
     const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName);
     if (error) throw new Error("유저 정보 불러오기 실패" + error);
@@ -69,7 +69,7 @@ onBeforeMount(async () => {
       return data[0];
     });
 
-    userMeetingPosts.value = [...userMeetingPosts.value, ...(await Promise.all(meeting))];
+    userMeetingPosts.value = await Promise.all(meeting);
     console.log("모임 게시글", userMeetingPosts.value);
     // 피드 게시글 불러오기
     const filterFeedId = userData.value.posts.filter((postInfo) => {
@@ -84,7 +84,7 @@ onBeforeMount(async () => {
 
       return data[0];
     });
-    userFeedPosts.value = [...userFeedPosts.value, ...(await Promise.all(feed))];
+    userFeedPosts.value = await Promise.all(feed);
     console.log("피드 게시글", userFeedPosts.value);
   } catch (error) {
     console.error(error);
@@ -94,20 +94,13 @@ onBeforeMount(async () => {
 const shortDesc = computed(() => {
   const desc = userData.value?.description || "";
 
-  if (desc.length > 40 && !moreDesc.value) {
-    return desc.replace(desc.slice(41), "...");
+  if (desc.length >= 40 && !moreDesc.value) {
+    return desc.slice(0, 38) + "...";
   } else {
     return desc;
   }
 });
-const moreDesc = computed(() => {
-  const desc = userData.value?.description;
-  if (desc && desc.length < 40) {
-    return true;
-  } else {
-    return false;
-  }
-});
+const moreDesc = ref(false);
 
 const toggleFollow = async (userId) => {
   if (!currentUser.value) {
@@ -153,17 +146,29 @@ const handleShare = () => {
         alt="프로필 사진"
         class="w-[75px] h-[75px] rounded-full"
       />
-      <div v-else class="w-[75px] h-[75px] rounded-full bg-pink-500"></div>
+      <div v-else class="w-[75px] h-[75px] rounded-full bg-white border"></div>
       <h1 class="font-extrabold text-[18px] my-3">{{ userData?.nickname }}</h1>
-      <p class="w-[350px] text-[#383535]">
+      <p class="w-[350px] text-[#383535] break-words">
         {{ shortDesc }}
       </p>
-      <p class="text-[#b9b6b6] hover:underline cursor-pointer" v-if="!moreDesc" @click="moreDesc = true">...더보기</p>
+      <p
+        class="text-[#b9b6b6] hover:underline cursor-pointer"
+        v-if="userData?.description?.length >= 41 && !moreDesc"
+        @click="moreDesc = true"
+      >
+        ...더보기
+      </p>
     </div>
 
     <!-- 마이페이지 (로그인한 유저) -->
     <div v-if="isMyPage" class="flex justify-center gap-8 my-10">
-      <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]">프로필 변경</button>
+      <button
+        type="button"
+        class="text-[14px] border w-[170px] h-[40px] rounded-[10px]"
+        @click="router.push('/profile/edit')"
+      >
+        프로필 변경
+      </button>
       <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]" @click="handleShare">
         프로필 공유
       </button>

@@ -76,6 +76,12 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/profile/edit",
+      name: "profileEdit",
+      component: () => import("@/views/ProfileEdit.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
       component: () => import("@/views/NotFoundView.vue"),
@@ -84,4 +90,7 @@ const router = createRouter({
   ],
 });
 
+router.afterEach(() => {
+  window.scrollTo(0, 0);
+});
 export default router;
