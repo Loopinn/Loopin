@@ -54,23 +54,6 @@ const commentModalClose = () => {
         </button>
         <span>00</span>
       </div>
-      <div class="flex -space-x-[6px]">
-        <img
-          src="https://i.pinimg.com/474x/80/62/05/8062059a91ba1da4fde46dc9117371e8.jpg"
-          alt="userProfile"
-          class="rounded-full w-7 h-7 mt-[6px] border-2 border-[#f1f1f1]"
-        />
-        <img
-          src="https://i.pinimg.com/474x/80/62/05/8062059a91ba1da4fde46dc9117371e8.jpg"
-          alt="userProfile"
-          class="rounded-full w-7 h-7 mt-[6px] border-2 border-[#f1f1f1]"
-        />
-        <img
-          src="https://i.pinimg.com/474x/80/62/05/8062059a91ba1da4fde46dc9117371e8.jpg"
-          alt="userProfile"
-          class="rounded-full w-7 h-7 mt-[6px] border-2 border-[#f1f1f1]"
-        />
-      </div>
     </div>
     <div class="mt-3 flex gap-4">
       <img

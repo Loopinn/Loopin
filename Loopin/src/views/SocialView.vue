@@ -1,5 +1,6 @@
 <script setup>
 import ChannelCategory from "@/components/channel/ChannelCategory.vue";
+import ChannelEmpty from "@/components/channel/ChannelEmpty.vue";
 import ChannelPostCard from "@/components/channel/ChannelPostCard.vue";
 </script>
 <template>
@@ -7,6 +8,9 @@ import ChannelPostCard from "@/components/channel/ChannelPostCard.vue";
     <div class="mx-[15px]">
       <!-- categories -->
       <ChannelCategory />
+
+      <!-- 게시물이 없을 경우 -->
+      <ChannelEmpty />
       <!-- channelpostcard -->
       <ChannelPostCard />
       <ChannelPostCard />
