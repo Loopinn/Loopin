@@ -12,6 +12,7 @@ import "vue-slider-component/theme/default.css";
 
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
+import ko from "date-fns/locale/ko";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -851,9 +852,11 @@ const handleReset = () => {
                 :min-date="new Date().toLocaleDateString('ko-KR')"
                 :enable-time-picker="false"
                 :format="format"
+                :locale="ko"
                 :inline="{ input: true }"
                 auto-apply
                 class="datepicker-input"
+                :class="`datepicker-${selectedActivity}`"
               />
             </div>
             <div>
@@ -884,9 +887,11 @@ const handleReset = () => {
                   :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
+                  :locale="ko"
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
+                  :class="`datepicker-${selectedActivity}`"
                 />
               </div>
               <div>
@@ -896,9 +901,11 @@ const handleReset = () => {
                   :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
+                  :locale="ko"
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
+                  :class="`datepicker-${selectedActivity}`"
                 />
               </div>
             </div>
