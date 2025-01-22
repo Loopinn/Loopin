@@ -74,6 +74,10 @@ watch(
   () => route.meta.layout,
   () => {
     fetchSession();
+    if (window.location.hash.includes("access_token")) {
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
   },
 );
 </script>
