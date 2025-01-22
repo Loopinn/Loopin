@@ -44,6 +44,20 @@ input[type="number"]::-webkit-inner-spin-button {
   border-radius: 8px; /* 둥근 테두리 */
 }
 
+/* 날짜 선택 색상 변경 */
+.datepicker-소셜링 .dp__active_date {
+  background-color: #f43630;
+}
+.datepicker-소셜링 .dp__today {
+  border-color: #f43630;
+}
+.datepicker-챌린지 .dp__active_date {
+  background-color: #3498d0;
+}
+.datepicker-챌린지 .dp__today {
+  border-color: #3498d0;
+}
+
 /* TimePicker 팝업 크기 조절 */
 .timepicker-input .dp__outer_menu_wrap {
   width: 270px;
@@ -55,6 +69,7 @@ input[type="number"]::-webkit-inner-spin-button {
   display: none !important;
 }
 
+/* textarea */
 .post-textarea::-webkit-scrollbar {
   display: none;
 }

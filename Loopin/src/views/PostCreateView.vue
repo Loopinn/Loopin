@@ -854,6 +854,7 @@ const handleReset = () => {
                 :inline="{ input: true }"
                 auto-apply
                 class="datepicker-input"
+                :class="`datepicker-${selectedActivity}`"
               />
             </div>
             <div>
@@ -887,6 +888,7 @@ const handleReset = () => {
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
+                  :class="`datepicker-${selectedActivity}`"
                 />
               </div>
               <div>
@@ -899,6 +901,7 @@ const handleReset = () => {
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
+                  :class="`datepicker-${selectedActivity}`"
                 />
               </div>
             </div>
