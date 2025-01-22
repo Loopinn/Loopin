@@ -52,6 +52,6 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2; /* 최대 2줄 */
   overflow: hidden;
-  max-height: calc(2 * 1.4em); /* 2줄 높이 계산 (1.2em은 줄 높이) */
+  max-height: calc(2 * 1.6em); /* 2줄 높이 계산 (1.2em은 줄 높이) */
 }
 </style>

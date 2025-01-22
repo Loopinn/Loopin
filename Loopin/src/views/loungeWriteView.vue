@@ -27,7 +27,6 @@ const selectedImage = ref([]);
 
 const isLoading = ref(false);
 
-
 // 파일 선택 후 이미지 미리보기
 function handleFileChange(event) {
   const files = event.target.files;
@@ -93,17 +92,18 @@ const handleSubmit = async () => {
       },
       "5af12b20-f676-4152-917e-f57300b9d703",
     );
-    
+
     console.log("done", submitResponse);
     alert("피드가 등록되었습니다.");
     router.push(`/lounge/${submitResponse[0].id}`);
   } else {
+    isLoading.value = false;
     if (!category.value) {
-        return alert("카테고리를 선택해 주세요.");
+      return alert("카테고리를 선택해 주세요.");
     }
 
     if (!description.value) {
-        return alert("설명을 채워주세요.");
+      return alert("설명을 채워주세요.");
     }
   }
 };
@@ -195,11 +195,6 @@ textarea::-webkit-scrollbar-track {
 
 textarea::-webkit-scrollbar-thumb {
   background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.slide-container {
-  scrollbar-width: thin;
   border-radius: 10px;
 }
 </style>

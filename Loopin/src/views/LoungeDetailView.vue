@@ -4,14 +4,16 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
-import { computed, onBeforeMount } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import DetailComment from "@/components/lounge/DetailComment.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
-import noImage from "../assets/images/noImage.svg";
-import userProfile from "../assets/images/defaultprofile30.svg";
+import noImage from "@/assets/images/noImage.svg";
+import userProfile from "@/assets/images/defaultprofile30.svg";
+import more from "@/assets/images/more-black.svg";
+import MoreModal from "@/components/lounge/MoreModal.vue";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
@@ -23,6 +25,16 @@ const postId = route.params.id;
 const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
 });
+
+const isMoreModalOpen = ref(false);
+
+function openMoreModal() {
+  isMoreModalOpen.value = true;
+}
+
+function handleMore() {
+  console.log("삭제되었습니다.");
+}
 
 onBeforeMount(() => {
   loadLoungePosts();
@@ -43,6 +55,7 @@ onBeforeMount(() => {
         </div>
         <div class="flex items-center gap-2">
           <button class="text-red-500 font-bold">팔로우</button>
+          <button @click="openMoreModal"><img :src="more" alt="더보기" /></button>
         </div>
       </div>
 
@@ -87,6 +100,7 @@ onBeforeMount(() => {
       <DetailComment :post-id="currentPost.id" />
     </div>
     <WriteButton />
+    <MoreModal :isModalOpen="isMoreModalOpen" @close="isMoreModalOpen = false" @confirm="handleMore" />
   </div>
 </template>
 
