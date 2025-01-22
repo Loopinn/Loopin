@@ -12,7 +12,6 @@ import "vue-slider-component/theme/default.css";
 
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
-import ko from "date-fns/locale/ko";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -37,6 +36,7 @@ const socialingType = ref("");
 const isFee = ref(null);
 const fee = ref(0);
 const feeInfo = ref([]);
+const subject = ref("");
 const category = ref("");
 const isOffline = ref(null);
 const place = ref("");
@@ -145,6 +145,12 @@ const categoryList = ref([
     list: ["또래친구", "동네친구", "취향친구"],
   },
 ]);
+
+const handleCategoryClick = (subjectName, cate) => {
+  category.value = cate;
+  subject.value = subjectName;
+  console.log(category.value, subject.value);
+};
 
 const getCheckboxImage = (fee) => {
   if (feeInfo.value.includes(fee)) {
@@ -385,6 +391,7 @@ const handlePostSubmit = async () => {
       {
         fee: fee.value,
         fee_info: feeInfo.value,
+        subject: subject.value,
         category: category.value,
         title: title.value,
         description: description.value,
@@ -404,6 +411,7 @@ const handlePostSubmit = async () => {
       {
         fee: fee.value,
         fee_info: feeInfo.value,
+        subject: subject.value,
         category: category.value,
         title: title.value,
         description: description.value,
@@ -420,6 +428,7 @@ const handlePostSubmit = async () => {
       {
         fee: fee.value,
         fee_info: feeInfo.value,
+        subject: subject.value,
         category: category.value,
         title: title.value,
         description: description.value,
@@ -443,6 +452,7 @@ const handleReset = () => {
   isFee.value = null;
   fee.value = 0;
   feeInfo.value = [];
+  subject.value = "";
   category.value = "";
   isOffline.value = null;
   place.value = "";
@@ -722,7 +732,7 @@ const handleReset = () => {
                   'border-black text-black': category === cate,
                   'border-[#999996] text-[#666666]': category !== cate,
                 }"
-                @click.stop="category = cate"
+                @click.stop="handleCategoryClick(subject.name, cate)"
                 :key="index"
               >
                 {{ cate }}
@@ -852,7 +862,7 @@ const handleReset = () => {
                 :min-date="new Date().toLocaleDateString('ko-KR')"
                 :enable-time-picker="false"
                 :format="format"
-                :locale="ko"
+                locale="ko"
                 :inline="{ input: true }"
                 auto-apply
                 class="datepicker-input"
@@ -887,7 +897,7 @@ const handleReset = () => {
                   :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
-                  :locale="ko"
+                  locale="ko"
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
@@ -901,7 +911,7 @@ const handleReset = () => {
                   :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
-                  :locale="ko"
+                  locale="ko"
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"

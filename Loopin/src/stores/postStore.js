@@ -59,6 +59,7 @@ export const usePostStore = defineStore("postStore", () => {
       images: [...postInfo.images], // 이미지 URL
       title: postInfo.title,
       description: postInfo.description,
+      subject: postInfo.subject,
       category: postInfo.category,
       fee: postInfo.fee,
       gender: postInfo.gender,
@@ -163,6 +164,7 @@ export const usePostStore = defineStore("postStore", () => {
       images: [...postInfo.images], // 이미지 URL
       title: postInfo.title,
       description: postInfo.description,
+      subject: postInfo.subject,
       category: postInfo.category,
       fee: postInfo.fee,
       max_people: postInfo.max_people,
@@ -300,6 +302,7 @@ export const usePostStore = defineStore("postStore", () => {
       images: [...postInfo.images], // 이미지 URL
       title: postInfo.title,
       description: postInfo.description,
+      subject: postInfo.subject,
       category: postInfo.category,
       fee: postInfo.fee,
       gender: postInfo.gender,
