@@ -20,7 +20,7 @@ const items = ref([
   "동네·또래",
   "외국어",
 ]);
-const selectedItem = ref(null); 
+const selectedItem = ref(null);
 const emit = defineEmits(["close", "select"]);
 
 function closeModal() {
@@ -28,10 +28,10 @@ function closeModal() {
 }
 
 function handleSelection(item) {
-  selectedItem.value = item; 
+  selectedItem.value = item;
   emit("select", item);
   setTimeout(() => {
-    closeModal(); 
+    closeModal();
   }, 100);
 }
 </script>
@@ -42,7 +42,6 @@ function handleSelection(item) {
     <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-end z-50">
       <div
         class="bg-white border-t rounded-t-3xl w-[600px] h-[500px] overflow-auto container transform transition-transform duration-300"
-        :class="{ 'translate-y-0': isModalOpen, 'translate-y-full': !isModalOpen }"
       >
         <!-- 헤더 -->
         <div class="flex items-center p-4 border-b bg-white sticky top-0 z-10">
@@ -51,11 +50,7 @@ function handleSelection(item) {
         </div>
         <!-- 리스트 -->
         <ul class="divide-y">
-          <li
-            v-for="(item, index) in items"
-            :key="index"
-            class="flex justify-between p-4 cursor-pointer"
-          >
+          <li v-for="(item, index) in items" :key="index" class="flex justify-between p-4 cursor-pointer">
             <span @click="handleSelection(item)">{{ item }}</span>
             <input
               type="radio"
