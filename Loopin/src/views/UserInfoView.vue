@@ -2,22 +2,24 @@
 import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
 import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
+import { useAuthStore } from "@/stores/authStore";
 import { usePostStore } from "@/stores/postStore";
 import { twMerge } from "tailwind-merge";
 import { computed, onBeforeMount, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-// 임시
 const isMyPage = ref(true);
 const currentUser = ref(null);
 
-const postStore = usePostStore();
-const { loadLoungePosts } = postStore;
+const authStore = useAuthStore();
+const { loginUser } = authStore;
 
 const router = useRouter();
 const route = useRoute();
+
 const userNickName = route.params.id;
-const userData = ref(null);
+
+const userData = ref(null); // 유저페이지/유저데이터
 
 const userMeetingPosts = ref([]);
 const userFeedPosts = ref([]);
@@ -26,73 +28,118 @@ const infos = computed(() => {
   return [
     {
       name: "팔로워",
-      value: userData.value?.followers.length || 0,
+      value: isMyPage.value ? loginUser.followers.length || 0 : userData.value?.followers.length || 0,
     },
     {
       name: "팔로잉",
-      value: userData.value?.following.length || 0,
+      value: isMyPage.value ? loginUser.following.length || 0 : userData.value?.following.length || 0,
     },
     {
       name: "피드",
-      value: userData.value?.posts.length || 0,
+      value: isMyPage.value ? loginUser.posts.length || 0 : userData.value?.posts.length || 0,
     },
   ];
 });
 const feedNav = ref("피드");
 
+const isFollowing = ref(false);
+
 onBeforeMount(async () => {
-  // 임시
-  const { data, error } = await supabase.from("userinfo").select().eq("nickname", "테스트용");
-  if (error) throw new Error(error);
-  console.log(data);
-  currentUser.value = data[0];
-  console.log(currentUser.value);
+  if (route.path.includes("user")) {
+    isMyPage.value = false;
+  }
+  console.log("마이페이지 입니까?", isMyPage.value);
 
-  try {
-    const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName);
-    if (error) throw new Error("유저 정보 불러오기 실패" + error);
+  if (isMyPage.value) {
+    console.log(loginUser);
+    try {
+      // 모임 게시글 불러오기
+      const filterMeetingId = loginUser.posts.filter((postInfo) => {
+        const info = JSON.parse(postInfo);
+        return info.type !== "lounge_posts";
+      });
+      console.log(filterMeetingId);
 
-    userData.value = data[0];
-    console.log(userData.value);
+      const meeting = filterMeetingId.map(async (meetingId) => {
+        const info = JSON.parse(meetingId);
+        const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+        if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
+        return data[0];
+      });
 
-    // 모임 게시글 불러오기
-    const filterMeetingId = userData.value.posts.filter((postInfo) => {
-      const info = JSON.parse(postInfo);
-      return info.type !== "lounge_posts";
-    });
-    console.log(filterMeetingId);
+      userMeetingPosts.value = await Promise.all(meeting);
+      console.log("모임 게시글", userMeetingPosts.value);
+      // 피드 게시글 불러오기
+      const filterFeedId = loginUser.posts.filter((postInfo) => {
+        const info = JSON.parse(postInfo);
+        return info.type === "lounge_posts";
+      });
 
-    const meeting = filterMeetingId.map(async (meetingId) => {
-      const info = JSON.parse(meetingId);
-      const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
-      if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
-      return data[0];
-    });
+      const feed = filterFeedId.map(async (meetingId) => {
+        const info = JSON.parse(meetingId);
+        const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+        if (error) throw new Error("피드 게시글 정보 불러오기 실패", error);
 
-    userMeetingPosts.value = await Promise.all(meeting);
-    console.log("모임 게시글", userMeetingPosts.value);
-    // 피드 게시글 불러오기
-    const filterFeedId = userData.value.posts.filter((postInfo) => {
-      const info = JSON.parse(postInfo);
-      return info.type === "lounge_posts";
-    });
+        return data[0];
+      });
+      userFeedPosts.value = await Promise.all(feed);
+      console.log("피드 게시글", userFeedPosts.value);
+    } catch (error) {
+      console.error(error);
+    }
+  } else {
+    try {
+      const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName);
+      if (error) throw new Error("유저 정보 불러오기 실패" + error);
 
-    const feed = filterFeedId.map(async (meetingId) => {
-      const info = JSON.parse(meetingId);
-      const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
-      if (error) throw new Error("피드 게시글 정보 불러오기 실패", error);
+      userData.value = data[0];
+      console.log("유저정보", userData.value);
 
-      return data[0];
-    });
-    userFeedPosts.value = await Promise.all(feed);
-    console.log("피드 게시글", userFeedPosts.value);
-  } catch (error) {
-    console.error(error);
+      if (loginUser.following?.includes(userData.value.id)) {
+        isFollowing.value = true;
+      } else {
+        isFollowing.value = false;
+      }
+
+      // 모임 게시글 불러오기
+      const filterMeetingId = userData.value.posts.filter((postInfo) => {
+        const info = JSON.parse(postInfo);
+        return info.type !== "lounge_posts";
+      });
+      console.log(filterMeetingId);
+
+      const meeting = filterMeetingId.map(async (meetingId) => {
+        const info = JSON.parse(meetingId);
+        const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+        if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
+        return data[0];
+      });
+
+      userMeetingPosts.value = await Promise.all(meeting);
+      console.log("모임 게시글", userMeetingPosts.value);
+      // 피드 게시글 불러오기
+      const filterFeedId = userData.value.posts.filter((postInfo) => {
+        const info = JSON.parse(postInfo);
+        return info.type === "lounge_posts";
+      });
+
+      const feed = filterFeedId.map(async (meetingId) => {
+        const info = JSON.parse(meetingId);
+        const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+        if (error) throw new Error("피드 게시글 정보 불러오기 실패", error);
+
+        return data[0];
+      });
+      userFeedPosts.value = await Promise.all(feed);
+      console.log("피드 게시글", userFeedPosts.value);
+    } catch (error) {
+      console.error(error);
+    }
   }
 });
 
 const shortDesc = computed(() => {
-  const desc = userData.value?.description || "";
+  const desc = isMyPage.value ? loginUser?.description || "" : userData.value?.description || "";
 
   if (desc.length >= 40 && !moreDesc.value) {
     return desc.slice(0, 38) + "...";
@@ -103,15 +150,15 @@ const shortDesc = computed(() => {
 const moreDesc = ref(false);
 
 const toggleFollow = async (userId) => {
-  if (!currentUser.value) {
+  if (!loginUser) {
     alert("로그인이 필요합니다.");
     return;
   }
 
-  const isFollowing = currentUser.value.following?.includes(userId);
-  let updatedFollowing = currentUser.value.following || [];
+  // const isFollowing = loginUser.following?.includes(userId);
+  let updatedFollowing = loginUser.following || [];
 
-  if (isFollowing) {
+  if (isFollowing.value) {
     updatedFollowing = updatedFollowing.filter((id) => id !== userId);
   } else {
     updatedFollowing.push(userId);
@@ -120,7 +167,7 @@ const toggleFollow = async (userId) => {
   const { data, error } = await supabase
     .from("userinfo")
     .update({ following: updatedFollowing })
-    .eq("id", currentUser.value.id)
+    .eq("id", loginUser.id)
     .select();
   console.log(data);
   if (error) {
@@ -128,7 +175,7 @@ const toggleFollow = async (userId) => {
     return;
   }
 
-  currentUser.value.following = updatedFollowing;
+  loginUser.following = updatedFollowing;
 };
 
 const handleShare = () => {
@@ -141,19 +188,23 @@ const handleShare = () => {
   <div>
     <div class="py-5 px-3">
       <img
-        v-if="userData?.profile_img"
-        :src="userData.profile_img"
+        v-if="isMyPage ? loginUser.profile_img : userData?.profile_img"
+        :src="isMyPage ? loginUser.profile_img : userData.profile_img"
         alt="프로필 사진"
         class="w-[75px] h-[75px] rounded-full"
       />
       <div v-else class="w-[75px] h-[75px] rounded-full bg-white border"></div>
-      <h1 class="font-extrabold text-[18px] my-3">{{ userData?.nickname }}</h1>
+      <h1 class="font-extrabold text-[18px] my-3">{{ isMyPage ? loginUser.nickname : userData?.nickname }}</h1>
       <p class="w-[350px] text-[#383535] break-words">
         {{ shortDesc }}
       </p>
       <p
         class="text-[#b9b6b6] hover:underline cursor-pointer"
-        v-if="userData?.description?.length >= 41 && !moreDesc"
+        v-if="
+          isMyPage
+            ? loginUser?.description?.length >= 41 && !moreDesc
+            : userData?.description?.length >= 41 && !moreDesc
+        "
         @click="moreDesc = true"
       >
         ...더보기
@@ -194,12 +245,12 @@ const handleShare = () => {
 
       <!-- 로그인한 유저만 보임 -->
       <button
-        v-else
+        v-else-if="!isMyPage && loginUser"
         type="button"
         class="bg-[#F43630] text-white w-[65px] h-[30px] rounded-[25px]"
         @click="toggleFollow(userData.id)"
       >
-        팔로우
+        {{ isFollowing ? "언팔로우" : "팔로잉" }}
       </button>
     </div>
 
