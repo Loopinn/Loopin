@@ -5,7 +5,7 @@ const router = useRouter();
 const route = useRoute();
 
 function navigate(index) {
-  const routes = ["/", "/lounge", "/write", "/chat", "/user"];
+  const routes = ["/", "/lounge", "/write", "/chat", "/profile"];
   router.push(routes[index]);
 }
 
@@ -33,7 +33,7 @@ const footerItems = [
     text: "마이페이지",
     img: "/src/assets/images/user-footer.svg",
     activeImg: "/src/assets/images/user-active-footer.svg",
-    route: "/user",
+    route: "/profile",
   },
 ];
 
