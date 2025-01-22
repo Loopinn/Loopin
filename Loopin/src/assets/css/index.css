@@ -68,8 +68,29 @@ input[type="number"]::-webkit-inner-spin-button {
 .dp--clear-btn {
   display: none !important;
 }
+/* timepicker 화살표 색상 */
+.timepicker-input-소셜링 .dp__inc_dec_button:hover {
+  color: #f43630;
+}
+.timepicker-input-클럽 .dp__inc_dec_button:hover {
+  color: #1c8a6a;
+}
+.timepicker-input-챌린지 .dp__inc_dec_button:hover {
+  color: #3498d0;
+}
 
 /* textarea */
 .post-textarea::-webkit-scrollbar {
   display: none;
+}
+
+/* scroll-picker */
+.number-picker-소셜링 .vue-scroll-picker-item-selected {
+  color: #f43630;
+}
+.number-picker-클럽 .vue-scroll-picker-item-selected {
+  color: #1c8a6a;
+}
+.number-picker-챌린지 .vue-scroll-picker-item-selected {
+  color: #3498d0;
 }

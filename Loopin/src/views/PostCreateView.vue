@@ -607,90 +607,102 @@ const handleReset = () => {
             </button>
           </div>
 
-          <div v-if="isFee" class="flex flex-col">
-            <label for="fee">참가비</label>
-            <input v-model="fee" type="number" id="fee" class="h-[50px] border rounded-[16px] px-3" />
+          <div v-if="isFee" class="flex flex-col mt-[35px]">
+            <label for="fee" class="mb-[15px]">참가비</label>
+            <input v-model="fee" type="number" id="fee" class="h-[50px] border border-[#999996] rounded-[16px] px-3" />
 
-            <div class="mt-4">
+            <div class="mt-[50px]">
               <p>참가비 정보</p>
-              <div>
+              <div class="my-[35px]">
                 <p>운영비</p>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    id="contentFee"
-                    class="appearance-none"
-                    :checked="feeInfo.includes('contentFee')"
-                    @change="toggleFeeSelection('contentFee')"
-                  />
-                  <label for="contentFee" class="flex">
-                    <img :src="getCheckboxImage('contentFee')" alt="content fee" />
-                    <span>콘텐츠 제작비</span></label
-                  >
-                  <input
-                    type="checkbox"
-                    id="hostFee"
-                    class="appearance-none"
-                    :checked="feeInfo.includes('hostFee')"
-                    @change="toggleFeeSelection('hostFee')"
-                  />
-                  <label for="hostFee" class="flex">
-                    <img :src="getCheckboxImage('hostFee')" alt="host fee" />
-                    <span>호스트 수고비</span></label
-                  >
+                <div class="flex gap-[15px]">
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="contentFee"
+                      class="appearance-none"
+                      :checked="feeInfo.includes('contentFee')"
+                      @change="toggleFeeSelection('contentFee')"
+                    />
+                    <label for="contentFee" class="flex">
+                      <img :src="getCheckboxImage('contentFee')" alt="content fee" />
+                      <span class="ml-[13px]">콘텐츠 제작비</span></label
+                    >
+                  </div>
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="hostFee"
+                      class="appearance-none"
+                      :checked="feeInfo.includes('hostFee')"
+                      @change="toggleFeeSelection('hostFee')"
+                    />
+                    <label for="hostFee" class="flex">
+                      <img :src="getCheckboxImage('hostFee')" alt="host fee" />
+                      <span class="ml-[13px]">호스트 수고비</span></label
+                    >
+                  </div>
                 </div>
               </div>
 
               <div class="mt-2">
                 <p>모임비</p>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    id="noshowFee"
-                    class="appearance-none"
-                    :checked="feeInfo.includes('noshowFee')"
-                    @change="toggleFeeSelection('noshowFee')"
-                  />
-                  <label for="noshowFee" class="flex">
-                    <img :src="getCheckboxImage('noshowFee')" alt="noshow fee" />
-                    <span>노쇼 방지비</span></label
-                  >
+                <div class="flex gap-[15px]">
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="noshowFee"
+                      class="appearance-none"
+                      :checked="feeInfo.includes('noshowFee')"
+                      @change="toggleFeeSelection('noshowFee')"
+                    />
+                    <label for="noshowFee" class="flex">
+                      <img :src="getCheckboxImage('noshowFee')" alt="noshow fee" />
+                      <span class="ml-[13px]">노쇼 방지비</span></label
+                    >
+                  </div>
 
-                  <input
-                    type="checkbox"
-                    id="rentalFee"
-                    class="appearance-none"
-                    :checked="feeInfo.includes('rentalFee')"
-                    @change="toggleFeeSelection('rentalFee')"
-                  />
-                  <label for="rentalFee" class="flex">
-                    <img :src="getCheckboxImage('rentalFee')" alt="rental fee" />
-                    <span>대관료</span></label
-                  >
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="rentalFee"
+                      class="appearance-none"
+                      :checked="feeInfo.includes('rentalFee')"
+                      @change="toggleFeeSelection('rentalFee')"
+                    />
+                    <label for="rentalFee" class="flex">
+                      <img :src="getCheckboxImage('rentalFee')" alt="rental fee" />
+                      <span class="ml-[13px]">대관료</span></label
+                    >
+                  </div>
 
-                  <input
-                    type="checkbox"
-                    id="materialFee"
-                    class="appearance-none"
-                    :checked="feeInfo.includes('materialFee')"
-                    @change="toggleFeeSelection('materialFee')"
-                  />
-                  <label for="materialFee" class="flex">
-                    <img :src="getCheckboxImage('materialFee')" alt="material fee" />
-                    <span>재료비</span></label
-                  >
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="materialFee"
+                      class="appearance-none"
+                      :checked="feeInfo.includes('materialFee')"
+                      @change="toggleFeeSelection('materialFee')"
+                    />
+                    <label for="materialFee" class="flex">
+                      <img :src="getCheckboxImage('materialFee')" alt="material fee" />
+                      <span class="ml-[13px]">재료비</span></label
+                    >
+                  </div>
 
-                  <input
-                    type="checkbox"
-                    id="dessertFee"
-                    class="appearance-none"
-                    :checked="feeInfo.includes('dessertFee')"
-                    @change="toggleFeeSelection('dessertFee')"
-                  />
-                  <label for="dessertFee" class="flex">
-                    <img :src="getCheckboxImage('dessertFee')" alt="dessert fee" />
-                    <span>다과비</span></label
-                  >
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="dessertFee"
+                      class="appearance-none"
+                      :checked="feeInfo.includes('dessertFee')"
+                      @change="toggleFeeSelection('dessertFee')"
+                    />
+                    <label for="dessertFee" class="flex">
+                      <img :src="getCheckboxImage('dessertFee')" alt="dessert fee" />
+                      <span class="ml-[13px]">다과비</span></label
+                    >
+                  </div>
                 </div>
               </div>
             </div>
@@ -705,7 +717,7 @@ const handleReset = () => {
           <div
             v-for="(subject, index) in categoryList"
             class="border p-[15px] rounded-[16px] mb-[15px]"
-            :class="activeIndex === index ? '' : 'h-[80px]'"
+            :class="activeIndex === index ? 'bg-[#f9f9f9]' : 'h-[80px]'"
             @click="activeIndex === index ? (activeIndex = null) : (activeIndex = index)"
             :key="index"
           >
@@ -727,10 +739,12 @@ const handleReset = () => {
             <div v-if="activeIndex === index" class="grid grid-cols-5 gap-[15px]">
               <div
                 v-for="(cate, index) in subject.list"
-                class="flex justify-center items-center w-[96px] h-[47px] rounded-[16px] border text-[13px]"
+                class="flex justify-center items-center w-[96px] h-[47px] rounded-[16px] text-[13px]"
                 :class="{
-                  'border-black text-black': category === cate,
-                  'border-[#999996] text-[#666666]': category !== cate,
+                  'bg-[#F43630] text-white': selectedActivity === '소셜링' && category === cate,
+                  'bg-[#1C8A6A] text-white': selectedActivity === '클럽' && category === cate,
+                  'bg-[#3498D0] text-white': selectedActivity === '챌린지' && category === cate,
+                  'border border-[#999996] text-[#666666]': category !== cate,
                 }"
                 @click.stop="handleCategoryClick(subject.name, cate)"
                 :key="index"
@@ -782,15 +796,23 @@ const handleReset = () => {
       <template #멤버>
         <div>
           <h2 class="text-[30px] mb-[43px]">어떻게 멤버를 모을까요?</h2>
-          <div>
-            <p>신청 방식 선착순</p>
+          <div class="flex justify-between mb-[15px]">
+            <p>신청 방식</p>
+            <p>선착순</p>
           </div>
           <div>
-            <p>참여 인원 최대 {{ maxPeople }}명</p>
-            <VueScrollPicker v-model="maxPeople" :options="options" />
+            <div class="flex justify-between">
+              <p>참여 인원</p>
+              <p>최대 {{ maxPeople }}명</p>
+            </div>
+            <VueScrollPicker
+              v-model="maxPeople"
+              :options="options"
+              :class="`number-picker number-picker-${selectedActivity}`"
+            />
           </div>
-          <div>
-            <div class="flex">
+          <div class="mb-[40px]">
+            <div class="flex justify-between mb-[15px]">
               <p>성별</p>
               <p>{{ convertGender() }}</p>
             </div>
@@ -832,7 +854,7 @@ const handleReset = () => {
             </div>
           </div>
           <div>
-            <div class="flex">
+            <div class="flex justify-between mb-[15px]">
               <p>나이</p>
               <p>{{ filterRange() }}</p>
             </div>
@@ -877,7 +899,7 @@ const handleReset = () => {
                 :time-picker="true"
                 :inline="{ input: true }"
                 auto-apply
-                class="timepicker-input"
+                :class="`timepicker-input timepicker-input-${selectedActivity}`"
               />
             </div>
           </div>
