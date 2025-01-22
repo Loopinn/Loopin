@@ -12,6 +12,7 @@ import { useCommentStore } from "@/stores/commetStore";
 import { logout } from "@/utils/auth/logout";
 import { socialLike } from "@/utils/socialLike";
 import { joinSocialing } from "@/utils/joinSocialing";
+import { kakaoLogin } from "@/utils/auth/kakaoLogin";
 const postStore = usePostStore();
 const { createSocialPost, loadSocialPosts, deleteSocialPost, createLoungePost } = postStore;
 const { socialingPosts } = storeToRefs(postStore);
@@ -133,6 +134,7 @@ const isCommentLike = (commentLike, userId) => {
 };
 </script>
 <template>
+  <button class="bg-yellow-300" type="button" @click="kakaoLogin">kakao</button>
   <h1>lounge post</h1>
   <!-- 임시 로그인 -->
   <form @submit.prevent="login(uemail, upassword)">
