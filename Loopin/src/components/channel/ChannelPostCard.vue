@@ -2,14 +2,31 @@
 import { ref } from "vue";
 // 임시
 const tags = ref(["취미", "사진"]);
+
+// 좋아요 버튼
+const like = ref(false);
+
+const isLiked = () => {
+  like.value = !like.value;
+};
 </script>
 <template>
-  <div class="w-[570px] h-[200px] flex rounded-2xl bg-white mb-6">
-    <img
-      src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
-      alt="thumbnail"
-      class="w-40 h-40 rounded-2xl m-5"
-    />
+  <div class="h-[200px] flex rounded-2xl bg-white mb-6 cursor-pointer">
+    <div class="relative">
+      <img
+        src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
+        alt="thumbnail"
+        class="w-40 h-40 rounded-2xl m-5"
+      />
+      <button @click="isLiked">
+        <img
+          :src="like ? './src/assets/images/likewhite_full.svg' : './src/assets/images/likewhite.svg'"
+          alt="like"
+          class="absolute left-7 bottom-7 w-10 h-10"
+        />
+      </button>
+    </div>
+
     <div class="mt-5 space-y-[6px]">
       <!-- 카테고리 태그 -->
       <div
@@ -50,17 +67,17 @@ const tags = ref(["취미", "사진"]);
             alt="memberprofile"
             class="w-9 h-9 rounded-full border-2 border-white"
           />
-          <!-- 참여 멤버 수가 5명 이상 ... -->
+          <!-- 참여 멤버 수가 6명 이상 ... -->
           <div class="relative w-9 h-9">
             <img
               src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
               alt="memberprofile"
-              class="absolute top-0 left-0 w-9 h-9 rounded-full border-2 border-white"
+              class="w-9 h-9 rounded-full border-2 border-white"
             />
             <img
               src="@/assets/images/more.svg"
               alt="more"
-              class="absolute top-0 left-0 w-9 h-9 rounded-full border-2 border-white"
+              class="absolute inset-0 w-9 h-9 rounded-full border-2 border-white bg-black bg-opacity-40"
             />
           </div>
         </div>
