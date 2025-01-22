@@ -20,16 +20,22 @@ const items = ref([
   "동네·또래",
   "외국어",
 ]);
+const selectedItem = ref(null); 
 const emit = defineEmits(["close", "select"]);
+
 function closeModal() {
   emit("close");
 }
 
-function selectItem(item) {
+function handleSelection(item) {
+  selectedItem.value = item; 
   emit("select", item);
-  closeModal();
+  setTimeout(() => {
+    closeModal(); 
+  }, 100);
 }
 </script>
+
 <template>
   <div>
     <!-- 모달 -->
@@ -49,10 +55,16 @@ function selectItem(item) {
             v-for="(item, index) in items"
             :key="index"
             class="flex justify-between p-4 cursor-pointer"
-            @click="selectItem(item)"
           >
-            <span>{{ item }}</span>
-            <input type="radio" name="topic" @click.stop="selectItem(item)" />
+            <span @click="handleSelection(item)">{{ item }}</span>
+            <input
+              type="radio"
+              name="topic"
+              :id="`topic-${index}`"
+              :value="item"
+              v-model="selectedItem"
+              @change="handleSelection(item)"
+            />
           </li>
         </ul>
       </div>
