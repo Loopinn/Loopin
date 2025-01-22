@@ -47,13 +47,13 @@ const meetTime = reactive({ hours: 0, minutes: 0, seconds: 0 });
 const startDate = ref(null);
 const endDate = ref(null);
 const tpw = ref("주 1회");
-const selectedImage = ref(null);
+const selectedImage = ref([]);
 const title = ref("");
 const description = ref("");
 
 const fileInput = ref(null);
 const fileCount = ref(0);
-const previewImage = ref(null);
+const previewImages = ref([]);
 
 const activeIndex = ref(null);
 
@@ -176,10 +176,6 @@ const marks = {
 const railStyle = {
   backgroundColor: "#999996", // 트랙 배경 색상
 };
-// 슬라이더 프로세스 색상
-// const processStyle = {
-//   backgroundColor: "#F43630", // 선택된 범위 색상
-// };
 const processStyle = computed(() => {
   const colors = {
     소셜링: "#F43630",
@@ -213,11 +209,11 @@ const filterRange = () => {
   if (start === minValue && end === maxValue) {
     return "누구나"; // 전체 범위
   } else if (start === minValue) {
-    return `${end} 이하`; // 최소값은 고정, 끝 값만 기준
+    return `${end}세 이하`; // 최소값은 고정, 끝 값만 기준
   } else if (end === maxValue) {
-    return `${start} 이상`; // 끝값은 고정, 시작 값만 기준
+    return `${start}세 이상`; // 끝값은 고정, 시작 값만 기준
   } else {
-    return `${start} 이상 ${end} 이하`; // 두 값 모두 지정된 경우
+    return `${start} ~ ${end}세`; // 두 값 모두 지정된 경우
   }
 };
 
@@ -234,7 +230,6 @@ const convertGender = () => {
 };
 //datepicker format
 const format = (date) => {
-  console.log(meetTime);
   const day = date.getDate();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
@@ -269,11 +264,11 @@ const isNextEnabled = computed(() => {
   } else if (currentStep.value === "시간") {
     return meetDate.value !== null && meetTime.value !== null;
   } else if (currentStep.value === "시작종료") {
-    return startDate.value !== null && endDate.value !== null;
+    return startDate.value !== null && endDate.value !== null && startDate.value < endDate.value;
   } else if (currentStep.value === "주몇회") {
     return tpw.value !== "";
   } else if (currentStep.value === "소개") {
-    return selectedImage.value !== null && title.value.length >= 5;
+    return selectedImage.value.length > 0 && title.value.length >= 5;
   }
 });
 
@@ -315,18 +310,32 @@ const handleOfflineClick = () => {
 const handleFileChange = (event) => {
   const files = event.target.files;
   if (files) {
-    fileCount.value = files.length;
-    selectedImage.value = files;
+    fileCount.value += files.length;
+    selectedImage.value = [...selectedImage.value, ...Array.from(files)];
+
     //여러개로 수정필요
-    const file = files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      previewImage.value = e.target.result; // 파일 읽은 후 미리보기 이미지 URL 설정
-    };
-    reader.readAsDataURL(file);
-  } else {
-    selectedImage.value = null;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImages.value.push(e.target.result); // 미리보기 URL 배열에 추가
+      };
+      reader.readAsDataURL(file);
+    }
   }
+  // else {
+  //   selectedImage.value = [];
+  // }
+  event.target.value = "";
+};
+//이미지 제거
+const removeImage = (index) => {
+  previewImages.value.splice(index, 1); // 해당 인덱스의 이미지를 배열에서 제거
+  selectedImage.value.splice(index, 1);
+  fileCount.value = selectedImage.value.length;
+  console.log("preview", previewImages.value);
+  console.log("selected", selectedImage.value);
+  console.log("count", fileCount);
 };
 
 // 완료 버튼 액션
@@ -336,23 +345,33 @@ const finish = async () => {
 };
 
 const handlePostSubmit = async () => {
-  let imageUrl = null;
-  if (selectedImage.value) {
-    const fileName = `${Date.now()}-${selectedImage.value[0].name}`;
-    const { data, error } = await supabase.storage
-      .from("post-images")
-      .upload(`images/${fileName}`, selectedImage.value);
+  const imageUrls = [];
+  if (selectedImage.value.length > 0) {
+    for (let i = 0; i < selectedImage.value.length; i++) {
+      const file = selectedImage.value[i];
+      const fileName = `${Date.now()}-${file.name}`;
 
-    if (error) {
-      console.error("Image upload failed:", error.message);
-      return;
+      // 이미지 파일을 Supabase에 업로드
+      const { data, error } = await supabase.storage.from("post-images").upload(`images/${fileName}`, file);
+
+      if (error) {
+        console.error("Image upload failed:", error.message);
+        return; // 오류 발생 시 함수 종료
+      }
+
+      // 업로드된 이미지의 public URL 가져오기
+      const { data: publicUrlData, error: urlError } = supabase.storage
+        .from("post-images")
+        .getPublicUrl(`images/${fileName}`);
+
+      if (urlError) {
+        console.error("Error getting public URL:", urlError.message);
+        return;
+      }
+
+      // 이미지 URL 배열에 추가
+      imageUrls.push(publicUrlData.publicUrl);
     }
-
-    // 업로드된 이미지의 public URL 가져오기
-    const { data: publicUrlData, error: urlError } = supabase.storage
-      .from("post-images")
-      .getPublicUrl(`images/${fileName}`);
-    imageUrl = publicUrlData.publicUrl;
   }
 
   //post 생성
@@ -368,7 +387,7 @@ const handlePostSubmit = async () => {
         category: category.value,
         title: title.value,
         description: description.value,
-        images: [imageUrl],
+        images: imageUrls,
         max_people: maxPeople.value,
         age_limit: range.value,
         gender: gender.value,
@@ -387,7 +406,7 @@ const handlePostSubmit = async () => {
         category: category.value,
         title: title.value,
         description: description.value,
-        images: [imageUrl],
+        images: imageUrls,
         max_people: maxPeople.value,
         age_limit: range.value,
         gender: gender.value,
@@ -403,7 +422,7 @@ const handlePostSubmit = async () => {
         category: category.value,
         title: title.value,
         description: description.value,
-        images: [imageUrl],
+        images: imageUrls,
         max_people: maxPeople.value,
         start_date: startDate.value,
         end_date: endDate.value,
@@ -421,21 +440,25 @@ const handleReset = () => {
   selectedActivity.value = ""; // 선택 초기화
   socialingType.value = "";
   isFee.value = null;
-  fee.value = null;
+  fee.value = 0;
   feeInfo.value = [];
   category.value = "";
   isOffline.value = null;
   place.value = "";
-  maxPeople.value = 0;
-  gender.value = null;
+  maxPeople.value = 3;
+  gender.value = "all";
   range.value = [20, 50];
-  meetDate.value = null;
+  meetDate = { hours: 0, minutes: 0, seconds: 0 };
   startDate.value = null;
   endDate.value = null;
-  tpw.value = 0;
-  selectedImage.value = null;
+  tpw.value = "주 1회";
+  selectedImage.value = [];
   title.value = "";
   description.value = "";
+
+  fileCount.value = 0;
+  previewImages.value = [];
+  activeIndex.value = null;
 };
 </script>
 
@@ -756,8 +779,10 @@ const handleReset = () => {
             <VueScrollPicker v-model="maxPeople" :options="options" />
           </div>
           <div>
-            <p>성별</p>
-            <p>{{ convertGender() }}</p>
+            <div class="flex">
+              <p>성별</p>
+              <p>{{ convertGender() }}</p>
+            </div>
             <div class="flex gap-[20px]">
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
@@ -796,8 +821,10 @@ const handleReset = () => {
             </div>
           </div>
           <div>
-            <p>나이</p>
-            <p>{{ filterRange() }}</p>
+            <div class="flex">
+              <p>나이</p>
+              <p>{{ filterRange() }}</p>
+            </div>
             <vue-slider
               v-model="range"
               :min="minValue"
@@ -821,6 +848,7 @@ const handleReset = () => {
             <div>
               <VueDatePicker
                 v-model="meetDate"
+                :min-date="new Date().toLocaleDateString('ko-KR')"
                 :enable-time-picker="false"
                 :format="format"
                 :inline="{ input: true }"
@@ -853,6 +881,7 @@ const handleReset = () => {
                 <h2>시작 날짜</h2>
                 <VueDatePicker
                   v-model="startDate"
+                  :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
                   :inline="{ input: true }"
@@ -864,6 +893,7 @@ const handleReset = () => {
                 <h2>종료 날짜</h2>
                 <VueDatePicker
                   v-model="endDate"
+                  :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
                   :inline="{ input: true }"
@@ -906,12 +936,23 @@ const handleReset = () => {
                   accept="image/*"
                   class="hidden"
                   ref="fileInput"
+                  multiple
                   @change="handleFileChange"
                 />
                 <div class="text-sm text-gray-500">{{ fileCount }}/10</div>
               </div>
-              <div v-if="previewImage">
-                <img :src="previewImage" alt="Preview" class="w-32 h-32 rounded-lg object-cover" />
+              <div v-if="previewImages.length > 0" class="flex gap-2 relative">
+                <div v-for="(image, index) in previewImages" :key="index" class="relative">
+                  <!-- 미리보기 이미지 -->
+                  <img :src="image" alt="Preview-image" class="w-32 h-32 rounded-lg object-cover" />
+                  <!-- 삭제 버튼 -->
+                  <img
+                    src="@/assets/images/delete.svg"
+                    alt="delete"
+                    class="absolute top-2 right-2 opacity-50 cursor-pointer"
+                    @click="removeImage(index)"
+                  />
+                </div>
               </div>
             </div>
             <input
@@ -922,7 +963,7 @@ const handleReset = () => {
             />
             <textarea
               v-model="description"
-              class="border border-[#999996] h-[400px] rounded-[16px] p-3"
+              class="post-textarea border border-[#999996] h-[400px] rounded-[16px] p-3 resize-none"
               placeholder="소개글을 입력해 주세요.(선택)"
             ></textarea>
           </div>
