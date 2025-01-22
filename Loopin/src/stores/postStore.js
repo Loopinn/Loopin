@@ -64,7 +64,7 @@ export const usePostStore = defineStore("postStore", () => {
       fee: postInfo.fee,
       gender: postInfo.gender,
       max_people: postInfo.max_people,
-      place: postInfo.place,
+      place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
     };
     try {
       const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([post]).select();
@@ -294,6 +294,7 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   const createSocialPost = async (postInfo, userId) => {
+    console.log(postInfo.time);
     const post = {
       age_limit: Array.from(postInfo.age_limit) || [], // Proxy(Array) -> 일반 배열
       fee_info: Array.from(postInfo.fee_info) || [], // Proxy(Array) -> 일반 배열
@@ -307,7 +308,7 @@ export const usePostStore = defineStore("postStore", () => {
       fee: postInfo.fee,
       gender: postInfo.gender,
       max_people: postInfo.max_people,
-      place: postInfo.place,
+      place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
       type: postInfo.type,
     };
     console.log(post);

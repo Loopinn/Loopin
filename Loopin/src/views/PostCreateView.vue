@@ -13,6 +13,7 @@ import "vue-slider-component/theme/default.css";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { useRouter } from "vue-router";
+import KakaoMap from "@/components/KakaoMap.vue";
 
 const router = useRouter();
 const postStore = usePostStore();
@@ -39,12 +40,12 @@ const feeInfo = ref([]);
 const subject = ref("");
 const category = ref("");
 const isOffline = ref(null);
-const place = ref("");
+const place = ref({});
 const maxPeople = ref(3);
 const gender = ref("all");
 // const age = ref(0); range로 대체
 const meetDate = ref(null);
-const meetTime = reactive({ hours: 0, minutes: 0, seconds: 0 });
+const meetTime = ref({ hours: 0, minutes: 0, seconds: 0 });
 const startDate = ref(null);
 const endDate = ref(null);
 const tpw = ref("주 1회");
@@ -166,6 +167,11 @@ const getCheckboxImage = (fee) => {
   }
 };
 
+const getPlaceInfo = (placeInfo) => {
+  place.value = placeInfo;
+  console.log(place.value);
+};
+
 //나이 슬라이더
 const range = ref([20, 50]); // 기본 선택 범위
 const minValue = 20; // 최소값
@@ -263,7 +269,7 @@ const isNextEnabled = computed(() => {
     return category.value !== ""; // 주제 선택 단계에서는 category 비어있지 않은지 확인
   } else if (currentStep.value === "장소") {
     if (isOffline.value === true) {
-      return place.value !== "";
+      return Object.keys(place.value).length !== 0;
     }
     return isOffline.value === false; // 온라인을 선택한 경우 활성화
   } else if (currentStep.value === "멤버") {
@@ -309,7 +315,7 @@ const handleOnlineClick = () => {
   isOffline.value = false;
 };
 const handleOfflineClick = () => {
-  if (isOffline.value === false) place.value = "";
+  if (isOffline.value === false) place.value = {};
   isOffline.value = true;
 };
 
@@ -402,7 +408,7 @@ const handlePostSubmit = async () => {
         place: place.value,
         type: socialingType.value,
         date: meetDate.value,
-        time: meetTime,
+        time: meetTime.value,
       },
       userId,
     );
@@ -455,7 +461,7 @@ const handleReset = () => {
   subject.value = "";
   category.value = "";
   isOffline.value = null;
-  place.value = "";
+  place.value = {};
   maxPeople.value = 3;
   gender.value = "all";
   range.value = [20, 50];
@@ -786,8 +792,8 @@ const handleReset = () => {
               <p>온라인</p>
             </button>
           </div>
-          <div v-if="isOffline" class="flex flex-col">
-            <input v-model="place" type="text" placeholder="장소를 입력해주세요." />
+          <div v-if="isOffline">
+            <KakaoMap @get-place="getPlaceInfo" />
           </div>
         </div>
       </template>
