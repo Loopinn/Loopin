@@ -11,8 +11,6 @@ import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 import showPassword from "@/assets/images/show-password.svg";
 import kakaoIcon from "@/assets/images/kakaoIcon.svg";
 import kakaoLoginText from "@/assets/images/kakaoLogin.svg";
-import { useAuthStore } from "@/stores/authStore";
-import supabase from "@/config/supabase";
 
 const email = ref("");
 const password = ref("");
@@ -23,8 +21,6 @@ const isModalOpen = ref(false);
 const modalMessage = ref("");
 
 const router = useRouter();
-
-const authStore = useAuthStore();
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -37,14 +33,6 @@ const handleSubmit = async (e) => {
       }
     }
     console.log("로그인 성공: ", response);
-    if (response.data.session) {
-      const { data: userData, error: userError } = await supabase
-        .from("userinfo")
-        .select()
-        .eq("id", response.data.user.id);
-      authStore.setUser(userData[0]);
-      console.log("authStore", authStore.loginUser);
-    }
     router.push("/");
   } catch (error) {
     console.error(error);
@@ -55,36 +43,23 @@ const handleSubmit = async (e) => {
 
 const kakaoLoginHandler = async () => {
   try {
-    const { data, error } = await kakaoLogin();
+    const { data: kakaoData, error: kakaoError } = await kakaoLogin();
 
-    if (error) {
+    if (kakaoError) {
       // OAuth 호출 자체 실패
-      console.log("카카오 로그인 실패: ", error);
-      modalMessage.value =
-        modalMessage.value = `<b style='font-size: 18px; color: #000;'>카카오 로그인 중 문제가 발생했습니다.<br />다시 시도해주세요.</b>`;
+      console.log("카카오 로그인 실패: ", kakaoError);
+      modalMessage.value = `<b style='font-size: 18px; color: #000;'>카카오 로그인 중 문제가 발생했습니다.<br />다시 시도해주세요.</b>`;
       isModalOpen.value = true;
       return;
     }
 
     // OAuth 리디렉션 정상 작동
-    console.log("카카오 로그인 성공: ", data);
+    console.log("카카오 로그인 성공: ", kakaoData);
 
-    if (!data) {
+    if (!kakaoData) {
       isLoading.value = true;
       modalMessage.value = `<b style='font-size: 18px; color: #000;'>카카오 로그인 리디렉션 중...</b>`;
       return;
-    }
-
-    // 로그인 완료 된 후 리디렉션 페이지에서 session 처리
-    if (data.session) {
-      const { data: userData } = await supabase.from("userinfo").select().eq("id", data.user.id);
-
-      if (userData) {
-        console.log("userData", userData);
-        authStore.setUser(userData[0]);
-        console.log("authStore: ", authStore.loginUser);
-        router.push("/");
-      }
     }
   } catch (error) {
     console.log("카카오 로그인 중 에러 발생: ", error);

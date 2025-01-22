@@ -13,6 +13,10 @@ import { logout } from "@/utils/auth/logout";
 import { socialLike } from "@/utils/socialLike";
 import { joinSocialing } from "@/utils/joinSocialing";
 import { kakaoLogin } from "@/utils/auth/kakaoLogin";
+import { useAuthStore } from "@/stores/authStore";
+const authStore = useAuthStore();
+console.log(authStore.loginUser);
+
 const postStore = usePostStore();
 const { createSocialPost, loadSocialPosts, deleteSocialPost, createLoungePost } = postStore;
 const { socialingPosts } = storeToRefs(postStore);
@@ -35,7 +39,12 @@ const comment = ref("");
 
 const newComment = ref("");
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
+  const { data, error } = await supabase.auth.getUser();
+  console.log(data);
+  const { data: userInfo, error: userError } = await supabase.from("userinfo").select().eq("id", data.user.id);
+  console.log(userInfo);
+
   loadSocialPosts();
   loadSocialComments("97de5bfa-e485-4907-80ec-8ee5e3e04ab1");
   // loadLoungeComments("9c4ab856-c8fb-47b7-b14a-6b24bc526202");
@@ -132,9 +141,18 @@ const isCommentLike = (commentLike, userId) => {
   if (!commentLike) return false;
   return commentLike.includes(userId);
 };
+
+const kakao = async () => {
+  await kakaoLogin();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) console.error(error);
+
+  const { data: userInfo, error: userError } = await supabase.from("userinfo").select().eq("id", data.user.id);
+  authStore.setUser(userInfo[0]);
+};
 </script>
 <template>
-  <button class="bg-yellow-300" type="button" @click="kakaoLogin">kakao</button>
+  <button class="bg-yellow-300" type="button" @click="kakao">kakao</button>
   <h1>lounge post</h1>
   <!-- 임시 로그인 -->
   <form @submit.prevent="login(uemail, upassword)">
