@@ -68,7 +68,6 @@ export const usePostStore = defineStore("postStore", () => {
     };
     try {
       const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([post]).select();
-      console.log(clubPost);
       if (clubError) throw new Error("클럽 업로드 에러", clubError);
 
       const postId = clubPost[0].id;
@@ -170,7 +169,6 @@ export const usePostStore = defineStore("postStore", () => {
       max_people: postInfo.max_people,
       times_per_week: postInfo.times_per_week,
     };
-    console.log(post);
     try {
       const { data: challengePost, error: challengeError } = await supabase
         .from("challenge_posts")

@@ -150,7 +150,6 @@ const categoryList = ref([
 const handleCategoryClick = (subjectName, cate) => {
   category.value = cate;
   subject.value = subjectName;
-  console.log(category.value, subject.value);
 };
 
 const getCheckboxImage = (fee) => {
@@ -169,7 +168,6 @@ const getCheckboxImage = (fee) => {
 
 const getPlaceInfo = (placeInfo) => {
   place.value = placeInfo;
-  console.log(place.value);
 };
 
 //나이 슬라이더
@@ -346,9 +344,6 @@ const removeImage = (index) => {
   previewImages.value.splice(index, 1); // 해당 인덱스의 이미지를 배열에서 제거
   selectedImage.value.splice(index, 1);
   fileCount.value = selectedImage.value.length;
-  console.log("preview", previewImages.value);
-  console.log("selected", selectedImage.value);
-  console.log("count", fileCount);
 };
 
 // 완료 버튼 액션
@@ -390,7 +385,6 @@ const handlePostSubmit = async () => {
   //post 생성
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData?.session?.user?.id;
-  console.log(userId);
 
   if (selectedActivity.value === "소셜링") {
     createSocialPost(
