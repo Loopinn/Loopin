@@ -59,15 +59,15 @@ export const usePostStore = defineStore("postStore", () => {
       images: [...postInfo.images], // 이미지 URL
       title: postInfo.title,
       description: postInfo.description,
+      subject: postInfo.subject,
       category: postInfo.category,
       fee: postInfo.fee,
       gender: postInfo.gender,
       max_people: postInfo.max_people,
-      place: postInfo.place,
+      place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
     };
     try {
       const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([post]).select();
-      console.log(clubPost);
       if (clubError) throw new Error("클럽 업로드 에러", clubError);
 
       const postId = clubPost[0].id;
@@ -163,12 +163,12 @@ export const usePostStore = defineStore("postStore", () => {
       images: [...postInfo.images], // 이미지 URL
       title: postInfo.title,
       description: postInfo.description,
+      subject: postInfo.subject,
       category: postInfo.category,
       fee: postInfo.fee,
       max_people: postInfo.max_people,
       times_per_week: postInfo.times_per_week,
     };
-    console.log(post);
     try {
       const { data: challengePost, error: challengeError } = await supabase
         .from("challenge_posts")
@@ -292,6 +292,7 @@ export const usePostStore = defineStore("postStore", () => {
   };
 
   const createSocialPost = async (postInfo, userId) => {
+    console.log(postInfo.time);
     const post = {
       age_limit: Array.from(postInfo.age_limit) || [], // Proxy(Array) -> 일반 배열
       fee_info: Array.from(postInfo.fee_info) || [], // Proxy(Array) -> 일반 배열
@@ -300,11 +301,12 @@ export const usePostStore = defineStore("postStore", () => {
       images: [...postInfo.images], // 이미지 URL
       title: postInfo.title,
       description: postInfo.description,
+      subject: postInfo.subject,
       category: postInfo.category,
       fee: postInfo.fee,
       gender: postInfo.gender,
       max_people: postInfo.max_people,
-      place: postInfo.place,
+      place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
       type: postInfo.type,
     };
     console.log(post);
