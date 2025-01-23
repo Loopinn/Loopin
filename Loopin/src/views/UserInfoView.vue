@@ -4,19 +4,29 @@ import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
 import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
 import { useAuthStore } from "@/stores/authStore";
-import { usePostStore } from "@/stores/postStore";
 import { twMerge } from "tailwind-merge";
-import { computed, onBeforeMount, reactive, ref } from "vue";
+import { computed, onBeforeMount, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const isMyPage = ref(true);
-const currentUser = ref(null);
 
 const authStore = useAuthStore();
 const { loginUser } = authStore;
 
 const router = useRouter();
 const route = useRoute();
+
+watch(
+  () => route.path,
+  (newPath) => {
+    console.log(decodeURIComponent(newPath.split("/")[2]));
+    if (newPath === "/profile") {
+      isMyPage.value = true;
+    } else {
+      isMyPage.value = false;
+    }
+  },
+);
 
 const userNickName = route.params.id;
 
@@ -46,6 +56,11 @@ const feedNav = ref("피드");
 const isFollowing = ref(false);
 
 onBeforeMount(async () => {
+  console.log(route.fullPath);
+  if (loginUser && decodeURIComponent(route.path.split("/")[2]) === loginUser.nickname) {
+    router.replace("/profile");
+  }
+
   if (route.path.includes("user")) {
     isMyPage.value = false;
   }
@@ -66,7 +81,7 @@ onBeforeMount(async () => {
           const info = JSON.parse(meetingId);
           const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
           if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
-          return data[0];
+          return { data: data[0], type: info.type };
         });
 
         userMeetingPosts.value = await Promise.all(meeting);
@@ -109,14 +124,14 @@ onBeforeMount(async () => {
         const info = JSON.parse(postInfo);
         return info.type !== "lounge_posts";
       });
-      console.log(filterMeetingId);
 
       const meeting = filterMeetingId.map(async (meetingId) => {
         const info = JSON.parse(meetingId);
         const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
         if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
-        return data[0];
+        return { data: data[0], type: info.type };
       });
+      console.log("meeting", meeting);
 
       userMeetingPosts.value = await Promise.all(meeting);
       console.log("모임 게시글", userMeetingPosts.value);
@@ -258,8 +273,8 @@ const handleShare = () => {
     </div>
 
     <!-- 피드 정보 -->
-    <div class="mt-10">
-      <ul class="h-[45px] flex">
+    <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[750px]' : 'min-h-[700px]'}`">
+      <ul class="h-[45px] flex bg-white">
         <li
           :class="
             twMerge(
@@ -299,7 +314,7 @@ const handleShare = () => {
           <NoPosts text="피드가 없네요!" css="text-[20px]" />
         </div>
       </div>
-      <div v-else-if="feedNav === '모임'" class="px-4">
+      <div v-else-if="feedNav === '모임'" class="px-4 mt-4">
         <UserInfoMeeting :meeting-data="userMeetingPosts" />
       </div>
     </div>

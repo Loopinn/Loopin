@@ -39,8 +39,8 @@ const handleSubmit = async () => {
 <template>
   <div class="bg-[#f3f3f3] flex flex-col justify-center items-center" style="height: calc(100vh - 192px)">
     <form class="flex flex-col items-center gap-2" @submit.prevent="handleSubmit">
-      <label v-if="!isKakao" for="pw" class="text-[22px]">현재 비밀번호를 입력해주세요</label>
-      <label v-else for="pw" class="text-[22px]">카카오 이메일을 입력해주세요</label>
+      <label v-if="!isKakao" for="pw" class="text-[20px]">현재 비밀번호를 입력해주세요</label>
+      <label v-else for="pw" class="text-[20px]">카카오 이메일을 입력해주세요</label>
       <div>
         <input
           id="pw"
