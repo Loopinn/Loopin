@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, ref, defineEmits } from "vue";
+import { onMounted, ref } from "vue";
 
 const emits = defineEmits(["getPlace"]);
+const props = defineProps(["selectedPlace"]);
+console.log(props.selectedPlace);
 
 const isModalOpen = ref(false);
 
@@ -10,7 +12,7 @@ const places = ref([]); // 장소 검색 결과
 const pagination = ref({ last: 0, current: 0 }); // 페이지네이션 정보
 let ps = null; // 카카오 지도 검색 객체 (초기화 필요)
 
-const selectedPlace = ref({});
+// const selectedPlace = ref({});
 
 // 장소 검색 함수
 const searchPlaces = () => {
@@ -46,7 +48,6 @@ const goToPage = (page) => {
 
 const handlePlaceClick = (place) => {
   emits("getPlace", place);
-  selectedPlace.value = place;
   isModalOpen.value = false;
 };
 
@@ -64,14 +65,14 @@ onMounted(() => {
   <div class="mt-[15px]">
     <button class="flex items-center w-full border-b text-left py-3" @click="isModalOpen = true">
       <img src="@/assets/images/location.svg" alt="location" class="mr-2" />
-      <span v-if="Object.keys(selectedPlace).length === 0">장소를 입력해 주세요.</span>
+      <span v-if="Object.keys(props.selectedPlace).length === 0">장소를 입력해 주세요.</span>
       <span else>{{ selectedPlace.place_name }}</span>
       <img
-        v-if="Object.keys(selectedPlace).length !== 0"
+        v-if="Object.keys(props.selectedPlace).length !== 0"
         src="@/assets/images/delete.svg"
         class="opacity-40 absolute right-5"
         alt="delete"
-        @click.stop="selectedPlace = {}"
+        @click.stop="emits('getPlace', {})"
       />
     </button>
   </div>

@@ -3,7 +3,7 @@ import Funnel from "@/components/Funnel.vue";
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { useFunnel } from "@/utils/useFunnel";
-import { ref, computed, reactive } from "vue";
+import { ref, computed, reactive, watch } from "vue";
 
 import { VueScrollPicker } from "vue-scroll-picker";
 
@@ -27,8 +27,35 @@ const challengeSteps = ["활동선택", "참가비", "주제", "시작종료", "
 // 기본 첫 단계 정의
 const steps = ["활동선택"];
 
+const handleReset = () => {
+  selectedActivity.value = ""; // 선택 초기화
+  socialingType.value = "";
+  isFee.value = null;
+  fee.value = 0;
+  feeInfo.value = [];
+  subject.value = "";
+  category.value = "";
+  isOffline.value = null;
+  place.value = {};
+  maxPeople.value = "-";
+  gender.value = "all";
+  range.value = [20, 50];
+  meetDate.value = null;
+  meetTime.value = { hours: 0, minutes: 0, seconds: 0 };
+  startDate.value = null;
+  endDate.value = null;
+  tpw.value = "-";
+  selectedImage.value = [];
+  title.value = "";
+  description.value = "";
+
+  fileCount.value = 0;
+  previewImages.value = [];
+  activeIndex.value = null;
+};
+
 // Funnel 상태 관리
-const { currentStep, nextStep, prevStep, reset, setState, state, updateSteps } = useFunnel(steps);
+const { currentStep, nextStep, prevStep, reset, setState, state, updateSteps } = useFunnel(steps, handleReset);
 
 // 선택한 활동 상태 관리
 const selectedActivity = ref("");
@@ -41,14 +68,15 @@ const subject = ref("");
 const category = ref("");
 const isOffline = ref(null);
 const place = ref({});
-const maxPeople = ref(3);
+const maxPeople = ref("-");
 const gender = ref("all");
 // const age = ref(0); range로 대체
+const range = ref([20, 50]); // 슬라이더 기본 선택 범위
 const meetDate = ref(null);
 const meetTime = ref({ hours: 0, minutes: 0, seconds: 0 });
 const startDate = ref(null);
 const endDate = ref(null);
-const tpw = ref("주 1회");
+const tpw = ref("-");
 const selectedImage = ref([]);
 const title = ref("");
 const description = ref("");
@@ -147,9 +175,10 @@ const categoryList = ref([
   },
 ]);
 
-const handleCategoryClick = (subjectName, cate) => {
+const handleCategoryClick = (subjectName, cate, index) => {
   category.value = cate;
   subject.value = subjectName;
+  setState({ ...state.value, category: category.value, subject: subject.value, activeIndex: index });
 };
 
 const getCheckboxImage = (fee) => {
@@ -165,13 +194,48 @@ const getCheckboxImage = (fee) => {
     return "/src/assets/images/check.svg";
   }
 };
-
+//kakaomap emits
 const getPlaceInfo = (placeInfo) => {
   place.value = placeInfo;
+  setState({ ...state.value, place: place.value });
 };
 
+watch(socialingType, () => {
+  if (socialingType !== "") setState({ ...state.value, socialingType: socialingType.value });
+});
+
+watch(isFee, () => {
+  if (isFee !== null) setState({ ...state.value, isFee: isFee.value });
+});
+
+watch([maxPeople, gender, range], () => {
+  if (maxPeople.value !== "-")
+    setState({ ...state.value, maxPeople: maxPeople.value, gender: gender.value, range: range.value });
+});
+
+watch([meetDate, meetTime], () => {
+  if (meetDate.value !== null) setState({ ...state.value, meetDate: meetDate.value, meetTime: meetTime.value });
+});
+
+watch(startDate, () => {
+  if (startDate.value !== null) setState({ ...state.value, startDate: startDate.value });
+});
+
+watch(endDate, () => {
+  if (endDate.value !== null) setState({ ...state.value, endDate: endDate.value });
+});
+
+watch(tpw, () => {
+  if (tpw.value !== "-") setState({ ...state.value, tpw: tpw.value });
+});
+
+watch(title, () => {
+  if (title.value !== "") setState({ ...state.value, title: title.value });
+});
+watch(description, () => {
+  if (description.value !== "") setState({ ...state.value, description: description.value });
+});
 //나이 슬라이더
-const range = ref([20, 50]); // 기본 선택 범위
 const minValue = 20; // 최소값
 const maxValue = 50; // 최대값
 const interval = 5; // 간격
@@ -211,8 +275,8 @@ const handleStyle = computed(() => {
 });
 
 //인원 옵션
-const options = [3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-const tpwOptions = ["주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
+const options = ["-", 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const tpwOptions = ["-", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
 
 const filterRange = () => {
   const [start, end] = range.value;
@@ -271,13 +335,13 @@ const isNextEnabled = computed(() => {
     }
     return isOffline.value === false; // 온라인을 선택한 경우 활성화
   } else if (currentStep.value === "멤버") {
-    return maxPeople.value !== 0 && gender.value !== null;
+    return maxPeople.value !== "-" && gender.value !== null;
   } else if (currentStep.value === "시간") {
     return meetDate.value !== null && meetTime.value !== null;
   } else if (currentStep.value === "시작종료") {
     return startDate.value !== null && endDate.value !== null && startDate.value < endDate.value;
   } else if (currentStep.value === "주몇회") {
-    return tpw.value !== "";
+    return tpw.value !== "-";
   } else if (currentStep.value === "소개") {
     return selectedImage.value.length > 0 && title.value.length >= 5;
   }
@@ -288,15 +352,20 @@ const selectActivity = (activity) => {
   selectedActivity.value = activity;
 
   if (activity === "소셜링") {
-    setState({ ...state.value, activityType: "소셜링" });
+    setState({ ...state.value, selectedActivity: "소셜링" });
     updateSteps(socialSteps);
   } else if (activity === "클럽") {
-    setState({ ...state.value, activityType: "클럽" });
+    setState({ ...state.value, selectedActivity: "클럽" });
     updateSteps(clubSteps);
   } else if (activity === "챌린지") {
-    setState({ ...state.value, activityType: "챌린지" });
+    setState({ ...state.value, selectedActivity: "챌린지" });
     updateSteps(challengeSteps);
   }
+};
+
+//fee input change
+const handleFeeChange = () => {
+  setState({ ...state.value, fee: fee.value });
 };
 
 // 체크박스 상태 업데이트
@@ -306,15 +375,18 @@ const toggleFeeSelection = (feeType) => {
   } else {
     feeInfo.value.push(feeType);
   }
+  setState({ ...state.value, feeInfo: feeInfo.value });
 };
 
 const handleOnlineClick = () => {
   place.value = "온라인";
   isOffline.value = false;
+  setState({ ...state.value, place: place.value, isOffline: isOffline.value });
 };
 const handleOfflineClick = () => {
   if (isOffline.value === false) place.value = {};
   isOffline.value = true;
+  setState({ ...state.value, place: place.value, isOffline: isOffline.value });
 };
 
 //소개 이미지 선택
@@ -324,7 +396,6 @@ const handleFileChange = (event) => {
     fileCount.value += files.length;
     selectedImage.value = [...selectedImage.value, ...Array.from(files)];
 
-    //여러개로 수정필요
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const reader = new FileReader();
@@ -443,33 +514,6 @@ const handlePostSubmit = async () => {
   }
   window.alert("포스팅 완료!");
   router.push("/");
-};
-
-const handleReset = () => {
-  reset(); // 단계와 상태 초기화
-  selectedActivity.value = ""; // 선택 초기화
-  socialingType.value = "";
-  isFee.value = null;
-  fee.value = 0;
-  feeInfo.value = [];
-  subject.value = "";
-  category.value = "";
-  isOffline.value = null;
-  place.value = {};
-  maxPeople.value = 3;
-  gender.value = "all";
-  range.value = [20, 50];
-  meetDate = { hours: 0, minutes: 0, seconds: 0 };
-  startDate.value = null;
-  endDate.value = null;
-  tpw.value = "주 1회";
-  selectedImage.value = [];
-  title.value = "";
-  description.value = "";
-
-  fileCount.value = 0;
-  previewImages.value = [];
-  activeIndex.value = null;
 };
 </script>
 
@@ -609,7 +653,13 @@ const handleReset = () => {
 
           <div v-if="isFee" class="flex flex-col mt-[35px]">
             <label for="fee" class="mb-[15px]">참가비</label>
-            <input v-model="fee" type="number" id="fee" class="h-[50px] border border-[#999996] rounded-[16px] px-3" />
+            <input
+              v-model="fee"
+              type="number"
+              id="fee"
+              class="h-[50px] border border-[#999996] rounded-[16px] px-3"
+              @change="handleFeeChange"
+            />
 
             <div class="mt-[50px]">
               <p>참가비 정보</p>
@@ -738,7 +788,7 @@ const handleReset = () => {
             </div>
             <div v-if="activeIndex === index" class="grid grid-cols-5 gap-[15px]">
               <div
-                v-for="(cate, index) in subject.list"
+                v-for="(cate, subindex) in subject.list"
                 class="flex justify-center items-center w-[96px] h-[47px] rounded-[16px] text-[13px]"
                 :class="{
                   'bg-[#F43630] text-white': selectedActivity === '소셜링' && category === cate,
@@ -746,8 +796,8 @@ const handleReset = () => {
                   'bg-[#3498D0] text-white': selectedActivity === '챌린지' && category === cate,
                   'border border-[#999996] text-[#666666]': category !== cate,
                 }"
-                @click.stop="handleCategoryClick(subject.name, cate)"
-                :key="index"
+                @click.stop="handleCategoryClick(subject.name, cate, index)"
+                :key="subindex"
               >
                 {{ cate }}
               </div>
@@ -787,7 +837,7 @@ const handleReset = () => {
             </button>
           </div>
           <div v-if="isOffline">
-            <KakaoMap @get-place="getPlaceInfo" />
+            <KakaoMap @get-place="getPlaceInfo" :selected-place="place" />
           </div>
         </div>
       </template>

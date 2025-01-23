@@ -1,7 +1,7 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
-export function useFunnel(initialSteps) {
+export function useFunnel(initialSteps, handleReset) {
   const router = useRouter();
 
   const steps = ref(initialSteps); // 단계 배열
@@ -24,10 +24,31 @@ export function useFunnel(initialSteps) {
     if (currentStepIndex.value === 0) {
       router.go(-1);
     } else if (currentStepIndex.value === 1) {
-      const confirm = window.confirm("소셜링을 다음에 여시겠어요?");
-      if (confirm) {
-        //로컬스토리지에 저장
-        currentStepIndex.value--;
+      if (state.value.selectedActivity === "소셜링") {
+        console.log(state.value);
+        const confirm = window.confirm("소셜링을 다음에 여시겠어요?");
+        if (confirm) {
+          localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
+          handleReset();
+          console.log(state.value);
+          reset();
+        }
+      } else if (state.value.selectedActivity === "클럽") {
+        const confirm = window.confirm("클럽을 다음에 여시겠어요?");
+        if (confirm) {
+          localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
+          handleReset();
+          console.log(state.value);
+          reset();
+        }
+      } else if (state.value.selectedActivity === "챌린지") {
+        const confirm = window.confirm("챌린지를 다음에 여시겠어요?");
+        if (confirm) {
+          localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
+          handleReset();
+          console.log(state.value);
+          reset();
+        }
       }
     } else {
       currentStepIndex.value--;
