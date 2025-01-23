@@ -71,11 +71,7 @@ const formattedTime = computed(() => {
 </script>
 <template>
   <div class="mx-auto w-[600px] relative">
-    <img
-      class="w-full h-[260px]"
-      src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
-      alt="thumbnail"
-    />
+    <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
         src="https://i.pinimg.com/474x/7b/ba/01/7bba01bf74ea2597285004f06c7a7bd0.jpg"
