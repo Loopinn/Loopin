@@ -50,16 +50,14 @@ function handleSelection(item) {
         </div>
         <!-- 리스트 -->
         <ul class="divide-y">
-          <li v-for="(item, index) in items" :key="index" class="flex justify-between p-4 cursor-pointer">
-            <span @click="handleSelection(item)">{{ item }}</span>
-            <input
-              type="radio"
-              name="topic"
-              :id="`topic-${index}`"
-              :value="item"
-              v-model="selectedItem"
-              @change="handleSelection(item)"
-            />
+          <li
+            v-for="(item, index) in items"
+            :key="index"
+            @click="handleSelection(item)"
+            class="flex justify-between p-4 cursor-pointer"
+          >
+            <span>{{ item }}</span>
+            <input type="radio" name="topic" :id="`topic-${index}`" :value="item" v-model="selectedItem" />
           </li>
         </ul>
       </div>
