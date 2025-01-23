@@ -60,16 +60,22 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/lounge/:id",
+      name: "loungeDetail",
+      component: () => import("@/views/LoungeDetailView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/lounge/write",
       name: "loungeWriteView",
       component: () => import("@/views/LoungeWriteView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
-      path: "/lounge/:id",
-      name: "loungeDetail",
-      component: () => import("@/views/LoungeDetailView.vue"),
-      meta: { layout: "CenteredHeader" },
+      path: "/lounge/write/:id?",
+      name: "loungeWriteView",
+      component: () => import("@/views/LoungeWriteView.vue"),
+      meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
       path: "/signIn",
