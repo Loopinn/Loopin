@@ -114,12 +114,6 @@ onBeforeMount(async () => {
       userData.value = data[0];
       console.log("유저정보", userData.value);
 
-      // if (loginUser && loginUser.following?.includes(userData.value.id)) {
-      //   isFollowing.value = true;
-      // } else {
-      //   isFollowing.value = false;
-      // }
-
       // 모임 게시글 불러오기
       const filterMeetingId = userData.value.posts.filter((postInfo) => {
         const info = JSON.parse(postInfo);
@@ -263,20 +257,12 @@ const handleShare = () => {
       </button>
 
       <!-- 로그인한 유저만 보임 -->
-      <!-- <button
-        v-else-if="!isMyPage && loginUser"
-        type="button"
-        class="bg-[#F43630] text-white w-[65px] h-[30px] rounded-[25px]"
-        @click="toggleFollow(userData.id)"
-      >
-        {{ isFollowing ? "언팔로우" : "팔로잉" }}
-      </button> -->
       <Following v-else-if="!isMyPage && loginUser && userData" :userId="userData.id" />
     </div>
 
     <!-- 피드 정보 -->
     <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[750px]' : 'min-h-[700px]'}`">
-      <ul class="h-[45px] flex bg-white">
+      <ul class="h-[45px] flex bg-white sticky top-0">
         <li
           :class="
             twMerge(
