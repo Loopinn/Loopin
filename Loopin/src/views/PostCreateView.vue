@@ -14,6 +14,7 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 import { useRouter } from "vue-router";
 import KakaoMap from "@/components/KakaoMap.vue";
+import ChoiceModal from "@/components/modal/ChoiceModal.vue";
 
 const router = useRouter();
 const postStore = usePostStore();
@@ -55,7 +56,21 @@ const handleReset = () => {
 };
 
 // Funnel 상태 관리
-const { currentStep, nextStep, prevStep, reset, setState, state, updateSteps } = useFunnel(steps, handleReset);
+const {
+  currentStep,
+  nextStep,
+  prevStep,
+  reset,
+  setState,
+  state,
+  updateSteps,
+  isModalOpen,
+  openModal,
+  closeModal,
+  handleConfirm,
+  modalMessage,
+  buttonMessage,
+} = useFunnel(steps, handleReset);
 
 // 선택한 활동 상태 관리
 const stateFields = reactive({
@@ -503,64 +518,67 @@ const handlePostSubmit = async () => {
   //post 생성
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData?.session?.user?.id;
-
-  if (stateFields.selectedActivity === "소셜링") {
-    createSocialPost(
-      {
-        fee: stateFields.fee,
-        fee_info: stateFields.feeInfo,
-        subject: stateFields.subject,
-        category: stateFields.category,
-        title: stateFields.title,
-        description: stateFields.description,
-        images: imageUrls,
-        max_people: stateFields.maxPeople,
-        age_limit: stateFields.range,
-        gender: stateFields.gender,
-        place: stateFields.place,
-        type: stateFields.socialingType,
-        date: stateFields.meetDate,
-        time: stateFields.meetTime,
-      },
-      userId,
-    );
-  } else if (stateFields.selectedActivity === "클럽") {
-    createClubPost(
-      {
-        fee: stateFields.fee,
-        fee_info: stateFields.feeInfo,
-        subject: stateFields.subject,
-        category: stateFields.category,
-        title: stateFields.title,
-        description: stateFields.description,
-        images: imageUrls,
-        max_people: stateFields.maxPeople,
-        age_limit: stateFields.range,
-        gender: stateFields.gender,
-        place: stateFields.place,
-      },
-      userId,
-    );
-  } else if (stateFields.selectedActivity === "챌린지") {
-    createChallengePost(
-      {
-        fee: stateFields.fee,
-        fee_info: stateFields.feeInfo,
-        subject: stateFields.subject,
-        category: stateFields.category,
-        title: stateFields.title,
-        description: stateFields.description,
-        images: imageUrls,
-        max_people: stateFields.maxPeople,
-        start_date: stateFields.startDate,
-        end_date: stateFields.endDate,
-        times_per_week: stateFields.tpw,
-      },
-      userId,
-    );
+  try {
+    if (stateFields.selectedActivity === "소셜링") {
+      createSocialPost(
+        {
+          fee: stateFields.fee,
+          fee_info: stateFields.feeInfo,
+          subject: stateFields.subject,
+          category: stateFields.category,
+          title: stateFields.title,
+          description: stateFields.description,
+          images: imageUrls,
+          max_people: stateFields.maxPeople,
+          age_limit: stateFields.range,
+          gender: stateFields.gender,
+          place: stateFields.place,
+          type: stateFields.socialingType,
+          date: stateFields.meetDate,
+          time: stateFields.meetTime,
+        },
+        userId,
+      );
+    } else if (stateFields.selectedActivity === "클럽") {
+      createClubPost(
+        {
+          fee: stateFields.fee,
+          fee_info: stateFields.feeInfo,
+          subject: stateFields.subject,
+          category: stateFields.category,
+          title: stateFields.title,
+          description: stateFields.description,
+          images: imageUrls,
+          max_people: stateFields.maxPeople,
+          age_limit: stateFields.range,
+          gender: stateFields.gender,
+          place: stateFields.place,
+        },
+        userId,
+      );
+    } else if (stateFields.selectedActivity === "챌린지") {
+      createChallengePost(
+        {
+          fee: stateFields.fee,
+          fee_info: stateFields.feeInfo,
+          subject: stateFields.subject,
+          category: stateFields.category,
+          title: stateFields.title,
+          description: stateFields.description,
+          images: imageUrls,
+          max_people: stateFields.maxPeople,
+          start_date: stateFields.startDate,
+          end_date: stateFields.endDate,
+          times_per_week: stateFields.tpw,
+        },
+        userId,
+      );
+    }
+    window.alert("포스팅 완료!");
+    router.push("/");
+  } catch (e) {
+    console.log(e);
   }
-  window.alert("포스팅 완료!");
-  router.push("/");
 };
 </script>
 
@@ -569,6 +587,14 @@ const handlePostSubmit = async () => {
     <div class="h-[80px] flex">
       <button @click="prevStep"><img src="@/assets/images/arrow-left.svg" alt="" /></button>
     </div>
+    <ChoiceModal
+      :isOpen="isModalOpen"
+      :message="modalMessage"
+      :buttonMessage="buttonMessage"
+      @confirm="handleConfirm"
+      @close="closeModal"
+    />
+
     <Funnel :steps="state.steps || steps" :currentStep="currentStep">
       <!-- 활동 선택 단계 -->
       <template #활동선택>

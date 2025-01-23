@@ -14,15 +14,46 @@ export function useFunnel(initialSteps, handleReset) {
     state.value = typeof updater === "function" ? updater(state.value) : updater;
   };
 
+  //모달
+  const modalType = ref("");
+  const isModalOpen = ref(false);
+  const modalMessage = ref("");
+  const buttonMessage = ref("");
+  const openModal = (type) => {
+    modalType.value = type;
+    if (type === "save") {
+      buttonMessage.value = "다음에 열기";
+      modalMessage.value = `<b style='font-size: 22px; color: #000;'>${state.value.selectedActivity} 다음에 여시겠습니까?</b><br/><b style='font-size: 16px; color: #666;'>작성한 정보는 임시 저장돼요.</b>`;
+    } else if (type === "load") {
+      buttonMessage.value = "불러오기";
+      modalMessage.value = `<b style='font-size: 22px; color: #000;'>임시 저장된 ${state.value.selectedActivity} 정보를 불러올까요?</b>`;
+    }
+    isModalOpen.value = true;
+  };
+  const closeModal = () => {
+    isModalOpen.value = false;
+  };
+  const handleConfirm = () => {
+    if (modalType.value === "save") {
+      // 데이터 저장
+      localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
+      handleReset();
+      reset();
+    } else if (modalType.value === "load") {
+      // 데이터 불러오기
+      const savedData = localStorage.getItem(`${state.value.selectedActivity}`);
+      if (savedData) {
+        console.log("불러온 데이터:", JSON.parse(savedData));
+        setState(JSON.parse(savedData));
+      }
+    }
+    isModalOpen.value = false;
+  };
+
   const nextStep = () => {
     if (currentStepIndex.value === 0) {
       if (localStorage.getItem(`${state.value.selectedActivity}`)) {
-        const confirm = window.confirm(`임시 저장된 ${state.value.selectedActivity} 정보를 불러올까요?`);
-        if (confirm) {
-          const savedForm = localStorage.getItem(`${state.value.selectedActivity}`);
-          console.log(savedForm);
-          setState(JSON.parse(savedForm));
-        }
+        openModal("load");
       }
     }
     if (currentStepIndex.value < steps.value.length - 1) {
@@ -34,29 +65,7 @@ export function useFunnel(initialSteps, handleReset) {
     if (currentStepIndex.value === 0) {
       router.go(-1);
     } else if (currentStepIndex.value === 1) {
-      if (state.value.selectedActivity === "소셜링") {
-        console.log(state.value);
-        const confirm = window.confirm("소셜링을 다음에 여시겠어요?");
-        if (confirm) {
-          localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
-          handleReset();
-          reset();
-        }
-      } else if (state.value.selectedActivity === "클럽") {
-        const confirm = window.confirm("클럽을 다음에 여시겠어요?");
-        if (confirm) {
-          localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
-          handleReset();
-          reset();
-        }
-      } else if (state.value.selectedActivity === "챌린지") {
-        const confirm = window.confirm("챌린지를 다음에 여시겠어요?");
-        if (confirm) {
-          localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
-          handleReset();
-          reset();
-        }
-      }
+      openModal("save");
     } else {
       currentStepIndex.value--;
     }
@@ -81,5 +90,11 @@ export function useFunnel(initialSteps, handleReset) {
     prevStep,
     reset,
     updateSteps,
+    isModalOpen,
+    openModal,
+    closeModal,
+    handleConfirm,
+    modalMessage,
+    buttonMessage,
   };
 }
