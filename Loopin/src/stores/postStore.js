@@ -257,7 +257,7 @@ export const usePostStore = defineStore("postStore", () => {
 
   const loadLoungePosts = async () => {
     try {
-      const { data, error } = await supabase.from("lounge_posts").select("*");
+      const { data, error } = await supabase.from("lounge_posts").select("*").order("created_at", { ascending: false });
       if (error) {
         console.error(error);
       }
