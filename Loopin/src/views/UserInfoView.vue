@@ -1,4 +1,5 @@
 <script setup>
+import NoPosts from "@/components/common/NoPosts.vue";
 import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
 import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
@@ -36,7 +37,7 @@ const infos = computed(() => {
     },
     {
       name: "피드",
-      value: isMyPage.value ? loginUser.posts.length || 0 : userData.value?.posts.length || 0,
+      value: isMyPage.value ? loginUser.posts?.length || 0 : userData.value?.posts.length || 0,
     },
   ];
 });
@@ -53,37 +54,39 @@ onBeforeMount(async () => {
   if (isMyPage.value) {
     console.log(loginUser);
     try {
-      // 모임 게시글 불러오기
-      const filterMeetingId = loginUser.posts.filter((postInfo) => {
-        const info = JSON.parse(postInfo);
-        return info.type !== "lounge_posts";
-      });
-      console.log(filterMeetingId);
+      if (loginUser.posts) {
+        // 모임 게시글 불러오기
+        const filterMeetingId = loginUser.posts.filter((postInfo) => {
+          const info = JSON.parse(postInfo);
+          return info.type !== "lounge_posts";
+        });
+        console.log(filterMeetingId);
 
-      const meeting = filterMeetingId.map(async (meetingId) => {
-        const info = JSON.parse(meetingId);
-        const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
-        if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
-        return data[0];
-      });
+        const meeting = filterMeetingId.map(async (meetingId) => {
+          const info = JSON.parse(meetingId);
+          const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+          if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
+          return data[0];
+        });
 
-      userMeetingPosts.value = await Promise.all(meeting);
-      console.log("모임 게시글", userMeetingPosts.value);
-      // 피드 게시글 불러오기
-      const filterFeedId = loginUser.posts.filter((postInfo) => {
-        const info = JSON.parse(postInfo);
-        return info.type === "lounge_posts";
-      });
+        userMeetingPosts.value = await Promise.all(meeting);
+        console.log("모임 게시글", userMeetingPosts.value);
+        // 피드 게시글 불러오기
+        const filterFeedId = loginUser.posts.filter((postInfo) => {
+          const info = JSON.parse(postInfo);
+          return info.type === "lounge_posts";
+        });
 
-      const feed = filterFeedId.map(async (meetingId) => {
-        const info = JSON.parse(meetingId);
-        const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
-        if (error) throw new Error("피드 게시글 정보 불러오기 실패", error);
+        const feed = filterFeedId.map(async (meetingId) => {
+          const info = JSON.parse(meetingId);
+          const { data, error } = await supabase.from(`${info.type}`).select().eq("id", info.id);
+          if (error) throw new Error("피드 게시글 정보 불러오기 실패", error);
 
-        return data[0];
-      });
-      userFeedPosts.value = await Promise.all(feed);
-      console.log("피드 게시글", userFeedPosts.value);
+          return data[0];
+        });
+        userFeedPosts.value = await Promise.all(feed);
+        console.log("피드 게시글", userFeedPosts.value);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -95,7 +98,7 @@ onBeforeMount(async () => {
       userData.value = data[0];
       console.log("유저정보", userData.value);
 
-      if (loginUser.following?.includes(userData.value.id)) {
+      if (loginUser && loginUser.following?.includes(userData.value.id)) {
         isFollowing.value = true;
       } else {
         isFollowing.value = false;
@@ -288,8 +291,13 @@ const handleShare = () => {
           모임
         </li>
       </ul>
-      <div class="flex flex-wrap" v-if="feedNav === '피드'">
-        <UserInfoFeed v-if="userFeedPosts.length > 0" v-for="userFeedPost in userFeedPosts" :feed-data="userFeedPost" />
+      <div v-if="feedNav === '피드'">
+        <div v-if="userFeedPosts.length > 0" class="flex flex-wrap">
+          <UserInfoFeed v-for="userFeedPost in userFeedPosts" :feed-data="userFeedPost" />
+        </div>
+        <div v-else class="flex items-center justify-center h-[220px]">
+          <NoPosts text="피드가 없네요!" css="text-[20px]" />
+        </div>
       </div>
       <div v-else-if="feedNav === '모임'" class="px-4">
         <UserInfoMeeting :meeting-data="userMeetingPosts" />

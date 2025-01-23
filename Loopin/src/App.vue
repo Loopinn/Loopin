@@ -101,7 +101,7 @@ supabase.auth.onAuthStateChange((event, session) => {
       }
 
       console.log(userData);
-      authStore.setUser(userData);
+      authStore.setUser({ ...userData, provider: session.user.app_metadata.provider });
     } else if (event === "SIGNED_OUT") {
       authStore.clearUser();
     }
