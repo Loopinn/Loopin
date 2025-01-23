@@ -15,6 +15,7 @@ import noImage from "@/assets/images/noImage.svg";
 import userProfile from "@/assets/images/defaultprofile30.svg";
 import more from "@/assets/images/more-black.svg";
 import MoreModal from "@/components/lounge/MoreModal.vue";
+import Loading from "@/components/Loading.vue";
 
 const route = useRoute();
 const postStore = usePostStore();
@@ -22,8 +23,10 @@ const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
 
 const postId = route.params.id;
+const usserId = ref(null);
 const isMoreModalOpen = ref(false);
 const nickname = ref(null);
+const isLoading = ref(true);
 
 const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
@@ -33,20 +36,29 @@ function openMoreModal() {
   isMoreModalOpen.value = true;
 }
 
-async function fetchNickname() {
+async function fetchData() {
   const { data, error } = await supabase.from("userinfo").select().eq("id", loungePosts.value.find((post) => post.id === postId).creator);
   if (data && data.length > 0) {
     nickname.value = data[0].nickname;
+    usserId.value = data[0].id;
   }
+  
+  const { data: sessionData } = await supabase.auth.getSession();
+  usserId.value = sessionData?.session?.user?.id;
+
+  setTimeout(() => {
+    isLoading.value = false; // 3초 후 로딩 상태 변경
+  }, 500);
 }
 
 onBeforeMount( () => {
-   fetchNickname();
-   loadLoungePosts();
+  fetchData();
+  loadLoungePosts();
 });
 </script>
 
 <template>
+   <Loading v-if="isLoading" />
   <div class="px-5 py-6 min-h-screen w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
     <!-- 게시물 카드 -->
     <div class="">
@@ -59,8 +71,8 @@ onBeforeMount( () => {
           <span class="font-bold">{{ nickname }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <button class="text-red-500 font-bold">팔로우</button>
-          <button @click="openMoreModal"><img :src="more" alt="더보기" /></button>
+          <button v-if="usserId !== currentPost.creator" class="text-red-500 font-bold">팔로우</button>
+          <button v-else @click="openMoreModal"><img :src="more" alt="더보기" /></button>
         </div>
       </div>
 
