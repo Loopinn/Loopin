@@ -28,64 +28,65 @@ const challengeSteps = ["활동선택", "참가비", "주제", "시작종료", "
 const steps = ["활동선택"];
 
 const handleReset = () => {
-  selectedActivity.value = ""; // 선택 초기화
-  socialingType.value = "";
-  isFee.value = null;
-  fee.value = 0;
-  feeInfo.value = [];
-  subject.value = "";
-  category.value = "";
-  isOffline.value = null;
-  place.value = {};
-  maxPeople.value = "-";
-  gender.value = "all";
-  range.value = [20, 50];
-  meetDate.value = null;
-  meetTime.value = { hours: 0, minutes: 0, seconds: 0 };
-  startDate.value = null;
-  endDate.value = null;
-  tpw.value = "-";
-  selectedImage.value = [];
-  title.value = "";
-  description.value = "";
+  stateFields.selectedActivity = "";
+  stateFields.socialingType = "";
+  stateFields.isFee = null;
+  stateFields.fee = 0;
+  stateFields.feeInfo = [];
+  stateFields.subject = "";
+  stateFields.category = "";
+  stateFields.isOffline = null;
+  stateFields.place = {};
+  stateFields.maxPeople = "-";
+  stateFields.gender = "all";
+  stateFields.range = [20, 50];
+  stateFields.meetDate = null;
+  stateFields.meetTime = { hours: 0, minutes: 0, seconds: 0 };
+  stateFields.startDate = null;
+  stateFields.endDate = null;
+  stateFields.tpw = "-";
+  stateFields.title = "";
+  stateFields.description = "";
+  stateFields.activeIndex = null;
 
+  selectedImage.value = [];
   fileCount.value = 0;
   previewImages.value = [];
-  activeIndex.value = null;
 };
 
 // Funnel 상태 관리
 const { currentStep, nextStep, prevStep, reset, setState, state, updateSteps } = useFunnel(steps, handleReset);
 
 // 선택한 활동 상태 관리
-const selectedActivity = ref("");
-const socialingType = ref("");
+const stateFields = reactive({
+  selectedActivity: "",
+  socialingType: "",
+  isFee: null,
+  fee: 0,
+  feeInfo: [],
+  subject: "",
+  category: "",
+  isOffline: null,
+  place: {},
+  maxPeople: "-",
+  gender: "all",
+  range: [20, 50],
+  meetDate: null,
+  meetTime: { hours: 0, minutes: 0, seconds: 0 },
+  startDate: null,
+  endDate: null,
+  tpw: "-",
+  title: "",
+  description: "",
+  activeIndex: null,
+});
+
 // const private = ref(null);
-const isFee = ref(null);
-const fee = ref(0);
-const feeInfo = ref([]);
-const subject = ref("");
-const category = ref("");
-const isOffline = ref(null);
-const place = ref({});
-const maxPeople = ref("-");
-const gender = ref("all");
-// const age = ref(0); range로 대체
-const range = ref([20, 50]); // 슬라이더 기본 선택 범위
-const meetDate = ref(null);
-const meetTime = ref({ hours: 0, minutes: 0, seconds: 0 });
-const startDate = ref(null);
-const endDate = ref(null);
-const tpw = ref("-");
-const selectedImage = ref([]);
-const title = ref("");
-const description = ref("");
 
 const fileInput = ref(null);
+const selectedImage = ref([]);
 const fileCount = ref(0);
 const previewImages = ref([]);
-
-const activeIndex = ref(null);
 
 const categoryList = ref([
   {
@@ -175,17 +176,34 @@ const categoryList = ref([
   },
 ]);
 
+watch(
+  () => state.value,
+  () => {
+    for (const key in stateFields) {
+      if (key in state.value) {
+        stateFields[key] = state.value[key];
+      }
+    }
+  },
+);
+
 const handleCategoryClick = (subjectName, cate, index) => {
-  category.value = cate;
-  subject.value = subjectName;
-  setState({ ...state.value, category: category.value, subject: subject.value, activeIndex: index });
+  stateFields.category = cate;
+  stateFields.subject = subjectName;
+
+  setState({
+    ...state.value,
+    category: stateFields.category,
+    subject: stateFields.subject,
+    activeIndex: stateFields.activeIndex,
+  });
 };
 
 const getCheckboxImage = (fee) => {
-  if (feeInfo.value.includes(fee)) {
-    if (selectedActivity.value === "소셜링") {
+  if (stateFields.feeInfo.includes(fee)) {
+    if (stateFields.selectedActivity === "소셜링") {
       return "/src/assets/images/check-active-social.svg";
-    } else if (selectedActivity.value === "클럽") {
+    } else if (stateFields.selectedActivity === "클럽") {
       return "/src/assets/images/check-active-club.svg";
     } else {
       return "/src/assets/images/check-active-challenge.svg";
@@ -196,45 +214,72 @@ const getCheckboxImage = (fee) => {
 };
 //kakaomap emits
 const getPlaceInfo = (placeInfo) => {
-  place.value = placeInfo;
-  setState({ ...state.value, place: place.value });
+  stateFields.place = placeInfo;
+  setState({ ...state.value, place: stateFields.place });
 };
 
-watch(socialingType, () => {
-  if (socialingType !== "") setState({ ...state.value, socialingType: socialingType.value });
-});
+watch(
+  () => stateFields.socialingType,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, socialingType: newValue });
+  },
+);
 
-watch(isFee, () => {
-  if (isFee !== null) setState({ ...state.value, isFee: isFee.value });
-});
+watch(
+  () => stateFields.isFee,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, isFee: newValue });
+  },
+);
 
-watch([maxPeople, gender, range], () => {
-  if (maxPeople.value !== "-")
-    setState({ ...state.value, maxPeople: maxPeople.value, gender: gender.value, range: range.value });
-});
+watch(
+  () => [stateFields.maxPeople, stateFields.gender, stateFields.range],
+  ([newMaxPeople, newGender, newRange]) => {
+    if (newMaxPeople !== "-") setState({ ...state.value, maxPeople: newMaxPeople, gender: newGender, range: newRange });
+  },
+);
 
-watch([meetDate, meetTime], () => {
-  if (meetDate.value !== null) setState({ ...state.value, meetDate: meetDate.value, meetTime: meetTime.value });
-});
+watch(
+  () => [stateFields.meetDate, stateFields.meetTime],
+  ([newMeetDate, newMeetTime]) => {
+    if (newMeetDate !== null) setState({ ...state.value, meetDate: newMeetDate, meetTime: newMeetTime });
+  },
+);
 
-watch(startDate, () => {
-  if (startDate.value !== null) setState({ ...state.value, startDate: startDate.value });
-});
+watch(
+  () => stateFields.startDate,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, startDate: newValue });
+  },
+);
 
-watch(endDate, () => {
-  if (endDate.value !== null) setState({ ...state.value, endDate: endDate.value });
-});
+watch(
+  () => stateFields.endDate,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, endDate: newValue });
+  },
+);
 
-watch(tpw, () => {
-  if (tpw.value !== "-") setState({ ...state.value, tpw: tpw.value });
-});
+watch(
+  () => stateFields.tpw,
+  (newValue) => {
+    if (newValue !== "-") setState({ ...state.value, tpw: newValue });
+  },
+);
 
-watch(title, () => {
-  if (title.value !== "") setState({ ...state.value, title: title.value });
-});
-watch(description, () => {
-  if (description.value !== "") setState({ ...state.value, description: description.value });
-});
+watch(
+  () => stateFields.title,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, title: newValue });
+  },
+);
+
+watch(
+  () => stateFields.description,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, description: newValue });
+  },
+);
 //나이 슬라이더
 const minValue = 20; // 최소값
 const maxValue = 50; // 최대값
@@ -258,7 +303,7 @@ const processStyle = computed(() => {
     챌린지: "#3498D0",
   };
   return {
-    backgroundColor: colors[selectedActivity.value] || "#F43630",
+    backgroundColor: colors[stateFields.selectedActivity] || "#F43630",
   };
 });
 // 슬라이더 핸들 색상
@@ -269,8 +314,8 @@ const handleStyle = computed(() => {
     챌린지: "#3498D0",
   };
   return {
-    backgroundColor: colors[selectedActivity.value] || "#F43630", // 핸들 색상
-    borderColor: colors[selectedActivity.value] || "#F43630", // 핸들 테두리 색상
+    backgroundColor: colors[stateFields.selectedActivity] || "#F43630", // 핸들 색상
+    borderColor: colors[stateFields.selectedActivity] || "#F43630", // 핸들 테두리 색상
   };
 });
 
@@ -279,7 +324,7 @@ const options = ["-", 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 1
 const tpwOptions = ["-", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
 
 const filterRange = () => {
-  const [start, end] = range.value;
+  const [start, end] = stateFields.range;
 
   if (start === minValue && end === maxValue) {
     return "누구나"; // 전체 범위
@@ -293,11 +338,11 @@ const filterRange = () => {
 };
 
 const convertGender = () => {
-  if (gender.value === "all") {
+  if (stateFields.gender === "all") {
     return "아무나"; // 전체
-  } else if (gender.value === "male") {
+  } else if (stateFields.gender === "male") {
     return "남자만"; // 남자만
-  } else if (gender.value === "female") {
+  } else if (stateFields.gender === "female") {
     return "여자만"; // 여자만
   } else {
     return "잘못된 값"; // 잘못된 값 처리
@@ -319,37 +364,39 @@ const triggerFileInput = () => {
 // 다음 버튼 활성화 여부
 const isNextEnabled = computed(() => {
   if (currentStep.value === "활동선택") {
-    return selectedActivity.value !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
+    return stateFields.selectedActivity !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
   } else if (currentStep.value === "타입선택") {
-    return socialingType.value !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
+    return stateFields.socialingType !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
   } else if (currentStep.value === "참가비") {
-    if (isFee.value === true) {
-      return fee.value > 0 && feeInfo.value.length > 0; // 참가비 입력 및 최소 체크박스 1개 확인
+    if (stateFields.isFee === true) {
+      return stateFields.fee > 0 && stateFields.feeInfo.length > 0; // 참가비 입력 및 최소 체크박스 1개 확인
     }
-    return isFee.value === false; // 참가비 없음을 선택한 경우 활성화
+    return stateFields.isFee === false; // 참가비 없음을 선택한 경우 활성화
   } else if (currentStep.value === "주제") {
-    return category.value !== ""; // 주제 선택 단계에서는 category 비어있지 않은지 확인
+    return stateFields.category !== ""; // 주제 선택 단계에서는 category 비어있지 않은지 확인
   } else if (currentStep.value === "장소") {
-    if (isOffline.value === true) {
-      return Object.keys(place.value).length !== 0;
+    if (stateFields.isOffline === true) {
+      return Object.keys(stateFields.place).length !== 0;
     }
-    return isOffline.value === false; // 온라인을 선택한 경우 활성화
+    return stateFields.isOffline === false; // 온라인을 선택한 경우 활성화
   } else if (currentStep.value === "멤버") {
-    return maxPeople.value !== "-" && gender.value !== null;
+    return stateFields.maxPeople !== "-" && stateFields.gender !== null;
   } else if (currentStep.value === "시간") {
-    return meetDate.value !== null && meetTime.value !== null;
+    return stateFields.meetDate !== null && stateFields.meetTime !== null;
   } else if (currentStep.value === "시작종료") {
-    return startDate.value !== null && endDate.value !== null && startDate.value < endDate.value;
+    return (
+      stateFields.startDate !== null && stateFields.endDate !== null && stateFields.startDate < stateFields.endDate
+    );
   } else if (currentStep.value === "주몇회") {
-    return tpw.value !== "-";
+    return stateFields.tpw !== "-";
   } else if (currentStep.value === "소개") {
-    return selectedImage.value.length > 0 && title.value.length >= 5;
+    return selectedImage.value.length > 0 && stateFields.title.length >= 5;
   }
 });
 
 // 활동 선택 로직
 const selectActivity = (activity) => {
-  selectedActivity.value = activity;
+  stateFields.selectedActivity = activity;
 
   if (activity === "소셜링") {
     setState({ ...state.value, selectedActivity: "소셜링" });
@@ -365,28 +412,28 @@ const selectActivity = (activity) => {
 
 //fee input change
 const handleFeeChange = () => {
-  setState({ ...state.value, fee: fee.value });
+  setState({ ...state.value, fee: stateFields.fee });
 };
 
 // 체크박스 상태 업데이트
 const toggleFeeSelection = (feeType) => {
-  if (feeInfo.value.includes(feeType)) {
-    feeInfo.value = feeInfo.value.filter((type) => type !== feeType);
+  if (stateFields.feeInfo.includes(feeType)) {
+    stateFields.feeInfo = stateFields.feeInfo.filter((type) => type !== feeType);
   } else {
-    feeInfo.value.push(feeType);
+    stateFields.feeInfo.push(feeType);
   }
-  setState({ ...state.value, feeInfo: feeInfo.value });
+  setState({ ...state.value, feeInfo: stateFields.feeInfo });
 };
 
 const handleOnlineClick = () => {
-  place.value = "온라인";
-  isOffline.value = false;
-  setState({ ...state.value, place: place.value, isOffline: isOffline.value });
+  stateFields.place = "온라인";
+  stateFields.isOffline = false;
+  setState({ ...state.value, place: stateFields.place, isOffline: stateFields.isOffline });
 };
 const handleOfflineClick = () => {
-  if (isOffline.value === false) place.value = {};
-  isOffline.value = true;
-  setState({ ...state.value, place: place.value, isOffline: isOffline.value });
+  if (stateFields.isOffline === false) stateFields.place = {};
+  stateFields.isOffline = true;
+  setState({ ...state.value, place: stateFields.place, isOffline: stateFields.isOffline });
 };
 
 //소개 이미지 선택
@@ -457,57 +504,57 @@ const handlePostSubmit = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData?.session?.user?.id;
 
-  if (selectedActivity.value === "소셜링") {
+  if (stateFields.selectedActivity === "소셜링") {
     createSocialPost(
       {
-        fee: fee.value,
-        fee_info: feeInfo.value,
-        subject: subject.value,
-        category: category.value,
-        title: title.value,
-        description: description.value,
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
         images: imageUrls,
-        max_people: maxPeople.value,
-        age_limit: range.value,
-        gender: gender.value,
-        place: place.value,
-        type: socialingType.value,
-        date: meetDate.value,
-        time: meetTime.value,
+        max_people: stateFields.maxPeople,
+        age_limit: stateFields.range,
+        gender: stateFields.gender,
+        place: stateFields.place,
+        type: stateFields.socialingType,
+        date: stateFields.meetDate,
+        time: stateFields.meetTime,
       },
       userId,
     );
-  } else if (selectedActivity.value === "클럽") {
+  } else if (stateFields.selectedActivity === "클럽") {
     createClubPost(
       {
-        fee: fee.value,
-        fee_info: feeInfo.value,
-        subject: subject.value,
-        category: category.value,
-        title: title.value,
-        description: description.value,
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
         images: imageUrls,
-        max_people: maxPeople.value,
-        age_limit: range.value,
-        gender: gender.value,
-        place: place.value,
+        max_people: stateFields.maxPeople,
+        age_limit: stateFields.range,
+        gender: stateFields.gender,
+        place: stateFields.place,
       },
       userId,
     );
-  } else if (selectedActivity.value === "챌린지") {
+  } else if (stateFields.selectedActivity === "챌린지") {
     createChallengePost(
       {
-        fee: fee.value,
-        fee_info: feeInfo.value,
-        subject: subject.value,
-        category: category.value,
-        title: title.value,
-        description: description.value,
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
         images: imageUrls,
-        max_people: maxPeople.value,
-        start_date: startDate.value,
-        end_date: endDate.value,
-        times_per_week: tpw.value,
+        max_people: stateFields.maxPeople,
+        start_date: stateFields.startDate,
+        end_date: stateFields.endDate,
+        times_per_week: stateFields.tpw,
       },
       userId,
     );
@@ -530,16 +577,20 @@ const handlePostSubmit = async () => {
           <div class="flex flex-col gap-[15px]">
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
-              :class="{ 'bg-[#F43630] text-white': selectedActivity === '소셜링' }"
+              :class="{ 'bg-[#F43630] text-white': stateFields.selectedActivity === '소셜링' }"
               @click="selectActivity('소셜링')"
             >
               <div class="px-[27px]">
-                <img v-if="selectedActivity === '소셜링'" src="@/assets/images/socialing-active.svg" alt="" />
+                <img
+                  v-if="stateFields.selectedActivity === '소셜링'"
+                  src="@/assets/images/socialing-active.svg"
+                  alt=""
+                />
                 <img v-else src="@/assets/images/Socialing.svg" alt="" />
               </div>
               <div class="flex flex-col text-left">
                 <p>소셜링</p>
-                <p :class="{ 'text-[#999996]': selectedActivity !== '소셜링' }">
+                <p :class="{ 'text-[#999996]': stateFields.selectedActivity !== '소셜링' }">
                   일회성 모임으로 번개처럼 가볍게 만나요
                 </p>
               </div>
@@ -547,31 +598,37 @@ const handlePostSubmit = async () => {
 
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
-              :class="{ 'bg-[#1C8A6A] text-white': selectedActivity === '클럽' }"
+              :class="{ 'bg-[#1C8A6A] text-white': stateFields.selectedActivity === '클럽' }"
               @click="selectActivity('클럽')"
             >
               <div class="px-[27px]">
-                <img v-if="selectedActivity === '클럽'" src="@/assets/images/club-active.svg" alt="" />
+                <img v-if="stateFields.selectedActivity === '클럽'" src="@/assets/images/club-active.svg" alt="" />
                 <img v-else src="@/assets/images/club.svg" alt="" />
               </div>
               <div class="flex flex-col text-left">
                 <p>클럽</p>
-                <p :class="{ 'text-[#999996]': selectedActivity !== '클럽' }">지속형 모임으로 계속해서 친하게 지내요</p>
+                <p :class="{ 'text-[#999996]': stateFields.selectedActivity !== '클럽' }">
+                  지속형 모임으로 계속해서 친하게 지내요
+                </p>
               </div>
             </button>
 
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
-              :class="{ 'bg-[#3498D0] text-white': selectedActivity === '챌린지' }"
+              :class="{ 'bg-[#3498D0] text-white': stateFields.selectedActivity === '챌린지' }"
               @click="selectActivity('챌린지')"
             >
               <div class="px-[27px]">
-                <img v-if="selectedActivity === '챌린지'" src="@/assets/images/challenge-active.svg" alt="" />
+                <img
+                  v-if="stateFields.selectedActivity === '챌린지'"
+                  src="@/assets/images/challenge-active.svg"
+                  alt=""
+                />
                 <img v-else src="@/assets/images/challenge.svg" alt="" />
               </div>
               <div class="flex flex-col text-left">
                 <p>챌린지</p>
-                <p :class="{ 'text-[#999996]': selectedActivity !== '챌린지' }">
+                <p :class="{ 'text-[#999996]': stateFields.selectedActivity !== '챌린지' }">
                   같은 목표를 가진 멤버들과 함께 도전해요
                 </p>
               </div>
@@ -587,32 +644,36 @@ const handlePostSubmit = async () => {
           <div class="flex flex-col gap-[15px]">
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
-              :class="{ 'bg-[#F43630] text-white': socialingType === '일반' }"
-              @click="socialingType = '일반'"
+              :class="{ 'bg-[#F43630] text-white': stateFields.socialingType === '일반' }"
+              @click="stateFields.socialingType = '일반'"
             >
               <div class="px-[27px]">
-                <img v-if="socialingType === '일반'" src="@/assets/images/socialing-active.svg" alt="" />
+                <img v-if="stateFields.socialingType === '일반'" src="@/assets/images/socialing-active.svg" alt="" />
                 <img v-else src="@/assets/images/Socialing.svg" alt="" />
               </div>
               <div class="flex flex-col text-left">
                 <p>일반 소셜링</p>
-                <p :class="{ 'text-[#999996]': socialingType !== '일반' }">
+                <p :class="{ 'text-[#999996]': stateFields.socialingType !== '일반' }">
                   누구나 자유롭게 참여할 수 있는 소셜링을 열어요
                 </p>
               </div>
             </button>
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
-              :class="{ 'bg-[#F43630] text-white': socialingType === '클럽' }"
-              @click="socialingType = '클럽'"
+              :class="{ 'bg-[#F43630] text-white': stateFields.socialingType === '클럽' }"
+              @click="stateFields.socialingType = '클럽'"
             >
               <div class="px-[27px]">
-                <img v-if="socialingType === '클럽'" src="@/assets/images/club-socialing-active.svg" alt="" />
+                <img
+                  v-if="stateFields.socialingType === '클럽'"
+                  src="@/assets/images/club-socialing-active.svg"
+                  alt=""
+                />
                 <img v-else src="@/assets/images/club-socialing.svg" alt="" />
               </div>
               <div class="flex flex-col text-left">
                 <p>클럽 소셜링</p>
-                <p :class="{ 'text-[#999996]': socialingType !== '클럽' }">
+                <p :class="{ 'text-[#999996]': stateFields.socialingType !== '클럽' }">
                   가입하거나 운영하는 클럽에서 소셜링을 열어요
                 </p>
               </div>
@@ -629,11 +690,11 @@ const handlePostSubmit = async () => {
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
               :class="{
-                'bg-[#F43630] text-white': isFee === true && selectedActivity === '소셜링',
-                'bg-[#1C8A6A] text-white': isFee === true && selectedActivity === '클럽',
-                'bg-[#3498D0] text-white': isFee === true && selectedActivity === '챌린지',
+                'bg-[#F43630] text-white': stateFields.isFee === true && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isFee === true && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isFee === true && stateFields.selectedActivity === '챌린지',
               }"
-              @click="isFee = true"
+              @click="stateFields.isFee = true"
             >
               <p>있음</p>
             </button>
@@ -641,24 +702,24 @@ const handlePostSubmit = async () => {
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
               :class="{
-                'bg-[#F43630] text-white': isFee === false && selectedActivity === '소셜링',
-                'bg-[#1C8A6A] text-white': isFee === false && selectedActivity === '클럽',
-                'bg-[#3498D0] text-white': isFee === false && selectedActivity === '챌린지',
+                'bg-[#F43630] text-white': stateFields.isFee === false && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isFee === false && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isFee === false && stateFields.selectedActivity === '챌린지',
               }"
-              @click="isFee = false"
+              @click="stateFields.isFee = false"
             >
               <p>없음</p>
             </button>
           </div>
 
-          <div v-if="isFee" class="flex flex-col mt-[35px]">
+          <div v-if="stateFields.isFee" class="flex flex-col mt-[35px]">
             <label for="fee" class="mb-[15px]">참가비</label>
             <input
-              v-model="fee"
+              v-model="stateFields.fee"
               type="number"
               id="fee"
               class="h-[50px] border border-[#999996] rounded-[16px] px-3"
-              @change="handleFeeChange"
+              @input="handleFeeChange"
             />
 
             <div class="mt-[50px]">
@@ -671,7 +732,7 @@ const handlePostSubmit = async () => {
                       type="checkbox"
                       id="contentFee"
                       class="appearance-none"
-                      :checked="feeInfo.includes('contentFee')"
+                      :checked="stateFields.feeInfo.includes('contentFee')"
                       @change="toggleFeeSelection('contentFee')"
                     />
                     <label for="contentFee" class="flex">
@@ -684,7 +745,7 @@ const handlePostSubmit = async () => {
                       type="checkbox"
                       id="hostFee"
                       class="appearance-none"
-                      :checked="feeInfo.includes('hostFee')"
+                      :checked="stateFields.feeInfo.includes('hostFee')"
                       @change="toggleFeeSelection('hostFee')"
                     />
                     <label for="hostFee" class="flex">
@@ -703,7 +764,7 @@ const handlePostSubmit = async () => {
                       type="checkbox"
                       id="noshowFee"
                       class="appearance-none"
-                      :checked="feeInfo.includes('noshowFee')"
+                      :checked="stateFields.feeInfo.includes('noshowFee')"
                       @change="toggleFeeSelection('noshowFee')"
                     />
                     <label for="noshowFee" class="flex">
@@ -717,7 +778,7 @@ const handlePostSubmit = async () => {
                       type="checkbox"
                       id="rentalFee"
                       class="appearance-none"
-                      :checked="feeInfo.includes('rentalFee')"
+                      :checked="stateFields.feeInfo.includes('rentalFee')"
                       @change="toggleFeeSelection('rentalFee')"
                     />
                     <label for="rentalFee" class="flex">
@@ -731,7 +792,7 @@ const handlePostSubmit = async () => {
                       type="checkbox"
                       id="materialFee"
                       class="appearance-none"
-                      :checked="feeInfo.includes('materialFee')"
+                      :checked="stateFields.feeInfo.includes('materialFee')"
                       @change="toggleFeeSelection('materialFee')"
                     />
                     <label for="materialFee" class="flex">
@@ -745,7 +806,7 @@ const handlePostSubmit = async () => {
                       type="checkbox"
                       id="dessertFee"
                       class="appearance-none"
-                      :checked="feeInfo.includes('dessertFee')"
+                      :checked="stateFields.feeInfo.includes('dessertFee')"
                       @change="toggleFeeSelection('dessertFee')"
                     />
                     <label for="dessertFee" class="flex">
@@ -763,12 +824,14 @@ const handlePostSubmit = async () => {
       <!-- 주제 선택 단계 -->
       <template #주제>
         <div>
-          <h2 class="text-[30px] mb-[43px]">{{ selectedActivity }} 주제를 선택해볼까요?</h2>
+          <h2 class="text-[30px] mb-[43px]">{{ stateFields.selectedActivity }} 주제를 선택해볼까요?</h2>
           <div
             v-for="(subject, index) in categoryList"
             class="border p-[15px] rounded-[16px] mb-[15px]"
-            :class="activeIndex === index ? 'bg-[#f9f9f9]' : 'h-[80px]'"
-            @click="activeIndex === index ? (activeIndex = null) : (activeIndex = index)"
+            :class="stateFields.activeIndex === index ? 'bg-[#f9f9f9]' : 'h-[80px]'"
+            @click="
+              stateFields.activeIndex === index ? (stateFields.activeIndex = null) : (stateFields.activeIndex = index)
+            "
             :key="index"
           >
             <div class="flex justify-between items-center mb-[24px]">
@@ -782,19 +845,19 @@ const handlePostSubmit = async () => {
                 </div>
               </div>
               <div>
-                <img v-if="activeIndex === index" src="@/assets/images/arrow-up-circle.svg" alt="" />
+                <img v-if="stateFields.activeIndex === index" src="@/assets/images/arrow-up-circle.svg" alt="" />
                 <img v-else src="@/assets/images/arrow-down-circle.svg" alt="" />
               </div>
             </div>
-            <div v-if="activeIndex === index" class="grid grid-cols-5 gap-[15px]">
+            <div v-if="stateFields.activeIndex === index" class="grid grid-cols-5 gap-[15px]">
               <div
                 v-for="(cate, subindex) in subject.list"
                 class="flex justify-center items-center w-[96px] h-[47px] rounded-[16px] text-[13px]"
                 :class="{
-                  'bg-[#F43630] text-white': selectedActivity === '소셜링' && category === cate,
-                  'bg-[#1C8A6A] text-white': selectedActivity === '클럽' && category === cate,
-                  'bg-[#3498D0] text-white': selectedActivity === '챌린지' && category === cate,
-                  'border border-[#999996] text-[#666666]': category !== cate,
+                  'bg-[#F43630] text-white': stateFields.selectedActivity === '소셜링' && stateFields.category === cate,
+                  'bg-[#1C8A6A] text-white': stateFields.selectedActivity === '클럽' && stateFields.category === cate,
+                  'bg-[#3498D0] text-white': stateFields.selectedActivity === '챌린지' && stateFields.category === cate,
+                  'border border-[#999996] text-[#666666]': stateFields.category !== cate,
                 }"
                 @click.stop="handleCategoryClick(subject.name, cate, index)"
                 :key="subindex"
@@ -815,9 +878,9 @@ const handlePostSubmit = async () => {
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
               :class="{
-                'bg-[#F43630] text-white': isOffline === true && selectedActivity === '소셜링',
-                'bg-[#1C8A6A] text-white': isOffline === true && selectedActivity === '클럽',
-                'bg-[#3498D0] text-white': isOffline === true && selectedActivity === '챌린지',
+                'bg-[#F43630] text-white': stateFields.isOffline === true && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isOffline === true && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isOffline === true && stateFields.selectedActivity === '챌린지',
               }"
               @click="handleOfflineClick"
             >
@@ -827,17 +890,17 @@ const handlePostSubmit = async () => {
             <button
               class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
               :class="{
-                'bg-[#F43630] text-white': isOffline === false && selectedActivity === '소셜링',
-                'bg-[#1C8A6A] text-white': isOffline === false && selectedActivity === '클럽',
-                'bg-[#3498D0] text-white': isOffline === false && selectedActivity === '챌린지',
+                'bg-[#F43630] text-white': stateFields.isOffline === false && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isOffline === false && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isOffline === false && stateFields.selectedActivity === '챌린지',
               }"
               @click="handleOnlineClick"
             >
               <p>온라인</p>
             </button>
           </div>
-          <div v-if="isOffline">
-            <KakaoMap @get-place="getPlaceInfo" :selected-place="place" />
+          <div v-if="stateFields.isOffline">
+            <KakaoMap @get-place="getPlaceInfo" :selected-place="stateFields.place" />
           </div>
         </div>
       </template>
@@ -853,12 +916,12 @@ const handlePostSubmit = async () => {
           <div>
             <div class="flex justify-between">
               <p>참여 인원</p>
-              <p>최대 {{ maxPeople }}명</p>
+              <p>최대 {{ stateFields.maxPeople }}명</p>
             </div>
             <VueScrollPicker
-              v-model="maxPeople"
+              v-model="stateFields.maxPeople"
               :options="options"
-              :class="`number-picker number-picker-${selectedActivity}`"
+              :class="`number-picker number-picker-${stateFields.selectedActivity}`"
             />
           </div>
           <div class="mb-[40px]">
@@ -870,11 +933,11 @@ const handlePostSubmit = async () => {
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
                 :class="{
-                  'bg-[#F43630] text-white': gender === 'all' && selectedActivity === '소셜링',
-                  'bg-[#1C8A6A] text-white': gender === 'all' && selectedActivity === '클럽',
-                  'bg-[#3498D0] text-white': gender === 'all' && selectedActivity === '챌린지',
+                  'bg-[#F43630] text-white': stateFields.gender === 'all' && stateFields.selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': stateFields.gender === 'all' && stateFields.selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': stateFields.gender === 'all' && stateFields.selectedActivity === '챌린지',
                 }"
-                @click="gender = 'all'"
+                @click="stateFields.gender = 'all'"
               >
                 <p>아무나</p>
               </button>
@@ -882,22 +945,24 @@ const handlePostSubmit = async () => {
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
                 :class="{
-                  'bg-[#F43630] text-white': gender === 'male' && selectedActivity === '소셜링',
-                  'bg-[#1C8A6A] text-white': gender === 'male' && selectedActivity === '클럽',
-                  'bg-[#3498D0] text-white': gender === 'male' && selectedActivity === '챌린지',
+                  'bg-[#F43630] text-white': stateFields.gender === 'male' && stateFields.selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': stateFields.gender === 'male' && stateFields.selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': stateFields.gender === 'male' && stateFields.selectedActivity === '챌린지',
                 }"
-                @click="gender = 'male'"
+                @click="stateFields.gender = 'male'"
               >
                 <p>남자만</p>
               </button>
               <button
                 class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
                 :class="{
-                  'bg-[#F43630] text-white': gender === 'female' && selectedActivity === '소셜링',
-                  'bg-[#1C8A6A] text-white': gender === 'female' && selectedActivity === '클럽',
-                  'bg-[#3498D0] text-white': gender === 'female' && selectedActivity === '챌린지',
+                  'bg-[#F43630] text-white':
+                    stateFields.gender === 'female' && stateFields.selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': stateFields.gender === 'female' && stateFields.selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white':
+                    stateFields.gender === 'female' && stateFields.selectedActivity === '챌린지',
                 }"
-                @click="gender = 'female'"
+                @click="stateFields.gender = 'female'"
               >
                 <p>여자만</p>
               </button>
@@ -909,7 +974,7 @@ const handlePostSubmit = async () => {
               <p>{{ filterRange() }}</p>
             </div>
             <vue-slider
-              v-model="range"
+              v-model="stateFields.range"
               :min="minValue"
               :max="maxValue"
               :interval="interval"
@@ -930,7 +995,7 @@ const handlePostSubmit = async () => {
           <div class="flex justify-between">
             <div>
               <VueDatePicker
-                v-model="meetDate"
+                v-model="stateFields.meetDate"
                 :min-date="new Date().toLocaleDateString('ko-KR')"
                 :enable-time-picker="false"
                 :format="format"
@@ -938,18 +1003,18 @@ const handlePostSubmit = async () => {
                 :inline="{ input: true }"
                 auto-apply
                 class="datepicker-input"
-                :class="`datepicker-${selectedActivity}`"
+                :class="`datepicker-${stateFields.selectedActivity}`"
               />
             </div>
             <div>
               <VueDatePicker
-                v-model="meetTime"
+                v-model="stateFields.meetTime"
                 :enable-time-picker="true"
                 :enable-date-picker="false"
                 :time-picker="true"
                 :inline="{ input: true }"
                 auto-apply
-                :class="`timepicker-input timepicker-input-${selectedActivity}`"
+                :class="`timepicker-input timepicker-input-${stateFields.selectedActivity}`"
               />
             </div>
           </div>
@@ -965,7 +1030,7 @@ const handlePostSubmit = async () => {
               <div>
                 <h2>시작 날짜</h2>
                 <VueDatePicker
-                  v-model="startDate"
+                  v-model="stateFields.startDate"
                   :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
@@ -973,13 +1038,13 @@ const handlePostSubmit = async () => {
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
-                  :class="`datepicker-${selectedActivity}`"
+                  :class="`datepicker-${stateFields.selectedActivity}`"
                 />
               </div>
               <div>
                 <h2>종료 날짜</h2>
                 <VueDatePicker
-                  v-model="endDate"
+                  v-model="stateFields.endDate"
                   :min-date="new Date().toLocaleDateString('ko-KR')"
                   :enable-time-picker="false"
                   :format="format"
@@ -987,7 +1052,7 @@ const handlePostSubmit = async () => {
                   :inline="{ input: true }"
                   auto-apply
                   class="datepicker-input"
-                  :class="`datepicker-${selectedActivity}`"
+                  :class="`datepicker-${stateFields.selectedActivity}`"
                 />
               </div>
             </div>
@@ -999,17 +1064,17 @@ const handlePostSubmit = async () => {
       <template #주몇회>
         <div>
           <h2 class="text-[30px] mb-[43px]">인증은 일주일에 몇 회씩 할까요?</h2>
-          <VueScrollPicker v-model="tpw" :options="tpwOptions" />
+          <VueScrollPicker v-model="stateFields.tpw" :options="tpwOptions" />
         </div>
       </template>
 
       <!-- 소개 단계 -->
       <template #소개>
         <div>
-          <h2 v-if="['소셜링', '클럽'].includes(selectedActivity)" class="text-[30px] mb-[43px]">
-            {{ selectedActivity }}을 소개해볼까요?
+          <h2 v-if="['소셜링', '클럽'].includes(stateFields.selectedActivity)" class="text-[30px] mb-[43px]">
+            {{ stateFields.selectedActivity }}을 소개해볼까요?
           </h2>
-          <h2 v-else class="text-[30px] mb-[43px]">{{ selectedActivity }}를 소개해볼까요?</h2>
+          <h2 v-else class="text-[30px] mb-[43px]">{{ stateFields.selectedActivity }}를 소개해볼까요?</h2>
           <div class="flex flex-col gap-[15px]">
             <div class="flex gap-2">
               <div class="border rounded-lg flex flex-col items-center justify-center w-32 h-32">
@@ -1045,13 +1110,13 @@ const handlePostSubmit = async () => {
               </div>
             </div>
             <input
-              v-model="title"
+              v-model="stateFields.title"
               type="text"
               class="border border-[#999996] h-[50px] rounded-[16px] px-3"
               placeholder="제목을 입력해 주세요.(최소 5글자)"
             />
             <textarea
-              v-model="description"
+              v-model="stateFields.description"
               class="post-textarea border border-[#999996] h-[400px] rounded-[16px] p-3 resize-none"
               placeholder="소개글을 입력해 주세요.(선택)"
             ></textarea>
@@ -1063,9 +1128,9 @@ const handlePostSubmit = async () => {
       v-if="currentStep === '소개'"
       class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
       :class="{
-        'bg-[#F43630]': selectedActivity === '소셜링',
-        'bg-[#1C8A6A]': selectedActivity === '클럽',
-        'bg-[#3498D0]': selectedActivity === '챌린지',
+        'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
+        'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
+        'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
       }"
       :disabled="!isNextEnabled"
       @click="finish"
@@ -1076,9 +1141,9 @@ const handlePostSubmit = async () => {
       v-else
       class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
       :class="{
-        'bg-[#F43630]': selectedActivity === '소셜링',
-        'bg-[#1C8A6A]': selectedActivity === '클럽',
-        'bg-[#3498D0]': selectedActivity === '챌린지',
+        'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
+        'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
+        'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
       }"
       :disabled="!isNextEnabled"
       @click="nextStep"

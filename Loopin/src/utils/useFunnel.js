@@ -15,6 +15,16 @@ export function useFunnel(initialSteps, handleReset) {
   };
 
   const nextStep = () => {
+    if (currentStepIndex.value === 0) {
+      if (localStorage.getItem(`${state.value.selectedActivity}`)) {
+        const confirm = window.confirm(`임시 저장된 ${state.value.selectedActivity} 정보를 불러올까요?`);
+        if (confirm) {
+          const savedForm = localStorage.getItem(`${state.value.selectedActivity}`);
+          console.log(savedForm);
+          setState(JSON.parse(savedForm));
+        }
+      }
+    }
     if (currentStepIndex.value < steps.value.length - 1) {
       currentStepIndex.value++;
     }
@@ -30,7 +40,6 @@ export function useFunnel(initialSteps, handleReset) {
         if (confirm) {
           localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
           handleReset();
-          console.log(state.value);
           reset();
         }
       } else if (state.value.selectedActivity === "클럽") {
@@ -38,7 +47,6 @@ export function useFunnel(initialSteps, handleReset) {
         if (confirm) {
           localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
           handleReset();
-          console.log(state.value);
           reset();
         }
       } else if (state.value.selectedActivity === "챌린지") {
@@ -46,7 +54,6 @@ export function useFunnel(initialSteps, handleReset) {
         if (confirm) {
           localStorage.setItem(`${state.value.selectedActivity}`, JSON.stringify(state.value));
           handleReset();
-          console.log(state.value);
           reset();
         }
       }
