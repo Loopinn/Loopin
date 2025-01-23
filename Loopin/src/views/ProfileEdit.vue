@@ -6,9 +6,10 @@ import imgEditIcon from "../assets/images/profile_edit.svg";
 import CheckPw from "@/components/profileEdit/CheckPw.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
+import { passwordRegex } from "@/constants/validation";
 
 const authStore = useAuthStore();
-const { loginUser } = authStore;
+const { loginUser, updateUser } = authStore;
 
 const router = useRouter();
 
@@ -84,12 +85,19 @@ const newPassword = ref("");
 const checkNewPassword = ref("");
 const isCheckPw = ref(true);
 
+// 유효성 검사 함수
+const validatePassword = (password) => passwordRegex.test(password);
+
 const updateProfile = async () => {
   // 닉네임 중복확인
   if (newNickname.value !== loginUser.nickname && !isConfirm.value) {
     return alert("닉네임 중복확인을 해주세요!");
   } else {
     isConfirm.value = true;
+  }
+
+  if (!validatePassword(newPassword.value)) {
+    return alert("비밀번호는 8~16자의 길이이며, 소문자, 대문자, 숫자, 특수문자를 모두 포함해야 합니다.");
   }
 
   // 비밀번호 확인
@@ -142,7 +150,13 @@ const updateProfile = async () => {
     alert("변경 실패하였습니다");
     throw new Error("유저 업데이트 오류" + error);
   }
+  const userUpdate = data.user.user_metadata;
   console.log(data);
+  updateUser({
+    nickname: userUpdate.nickname,
+    description: userUpdate.description,
+    profile_img: userUpdate.profile_img,
+  });
   alert("변경이 완료되었습니다!");
   router.push("/profile");
 };
