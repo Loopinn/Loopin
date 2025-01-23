@@ -13,7 +13,11 @@ export const useAuthStore = defineStore(
       loginUser.value = null;
     };
 
-    return { loginUser, setUser, clearUser };
+    const updateUser = (updateValue) => {
+      loginUser.value = { ...loginUser.value, ...updateValue };
+    };
+
+    return { loginUser, setUser, clearUser, updateUser };
   },
   {
     persist: true,
