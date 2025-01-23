@@ -9,6 +9,9 @@ import CenteredHeader from "@/components/header/CenteredHeader.vue";
 import Footer from "@/components/footer/Footer.vue";
 import PostCreateView from "./views/PostCreateView.vue";
 import ChoiceModal from "./components/modal/ChoiceModal.vue";
+import { useAuthStore } from "./stores/authStore";
+
+const authStore = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -74,8 +77,36 @@ watch(
   () => route.meta.layout,
   () => {
     fetchSession();
+    if (window.location.hash.includes("access_token")) {
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
   },
 );
+
+supabase.auth.onAuthStateChange((event, session) => {
+  setTimeout(async () => {
+    if (event === "SIGNED_IN") {
+      console.log(session);
+
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select()
+        .eq("id", session.user.id)
+        .single();
+
+      if (userError) {
+        console.error(userError);
+        return;
+      }
+
+      console.log(userData);
+      authStore.setUser({ ...userData, provider: session.user.app_metadata.provider });
+    } else if (event === "SIGNED_OUT") {
+      authStore.clearUser();
+    }
+  }, 0);
+});
 </script>
 <template>
   <div v-if="route.path === '/write'">

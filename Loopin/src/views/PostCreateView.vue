@@ -9,6 +9,8 @@ import { VueScrollPicker } from "vue-scroll-picker";
 
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
+// vue-scroll-picker 기본 스타일 가져오기
+import "vue-scroll-picker/lib/style.css";
 
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
@@ -1178,4 +1180,44 @@ const handlePostSubmit = async () => {
     </button>
   </div>
 </template>
-<style src="vue-scroll-picker/lib/style.css"></style>
+
+<style scoped>
+/* 선택 윗 부분 */
+::v-deep(.vue-scroll-picker-layer-top) {
+  box-sizing: border-box;
+  border-bottom: 1px solid #c8c7cc;
+  background: linear-gradient(180deg, #fff 10%, rgba(255, 255, 255, 0.7));
+  top: 0;
+  height: calc(50% - 2em);
+  cursor: pointer;
+}
+
+/* 선택 부분 */
+::v-deep(.vue-scroll-picker-layer-selection) {
+  top: calc(50% - 2em);
+  bottom: calc(50% - 2em);
+}
+
+/* 선택 및 부분 */
+::v-deep(.vue-scroll-picker-layer-bottom) {
+  border-top: 1px solid #c8c7cc;
+  background: linear-gradient(0deg, #fff 10%, rgba(255, 255, 255, 0.7));
+  bottom: 0;
+  height: calc(50% - 2em);
+  cursor: pointer;
+}
+/* 아이템 간 간격 넓히기 */
+::v-deep(.vue-scroll-picker-item) {
+  margin: 10px 0;
+  font-size: 20px;
+  line-height: 50px;
+  height: 50px;
+  box-sizing: border-box;
+}
+
+/* 선택된 항목 스타일 변경 */
+::v-deep(.vue-scroll-picker-item-selected) {
+  color: #000;
+  font-weight: 600;
+}
+</style>

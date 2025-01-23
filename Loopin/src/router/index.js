@@ -14,19 +14,37 @@ const router = createRouter({
     {
       path: "/socialing",
       name: "socialing",
-      component: () => import("@/views/SocialView.vue"),
+      component: () => import("@/views/ChannelView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
+      path: "/socialing/:id",
+      name: "socialingPosts",
+      component: () => import("@/views/SocialPostView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
       path: "/club",
       name: "club",
-      component: () => import("@/views/ClubView.vue"),
+      component: () => import("@/views/ChannelView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
+      path: "/club/:id",
+      name: "clubPosts",
+      component: () => import("@/views/ClubPostView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
       path: "/challenge",
       name: "challenge",
-      component: () => import("@/views/ChallengeView.vue"),
+      component: () => import("@/views/ChannelView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
+      path: "/challenge/:id",
+      name: "challengePosts",
+      component: () => import("@/views/ChallengePostView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
@@ -42,16 +60,22 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/lounge/:id",
+      name: "loungeDetail",
+      component: () => import("@/views/LoungeDetailView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/lounge/write",
       name: "loungeWriteView",
       component: () => import("@/views/LoungeWriteView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {
-      path: "/lounge/:id",
-      name: "loungeDetail",
-      component: () => import("@/views/LoungeDetailView.vue"),
-      meta: { layout: "CenteredHeader" },
+      path: "/lounge/write/:id?",
+      name: "loungeWriteView",
+      component: () => import("@/views/LoungeWriteView.vue"),
+      meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
       path: "/signIn",

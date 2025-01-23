@@ -1,32 +1,54 @@
 <script setup>
 import supabase from "@/config/supabase";
-import { ref, watch } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { usePostStore } from "@/stores/postStore";
+import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
 
 import FeedModal from "@/components/lounge/FeedModal.vue";
 import arrow from "@/assets/images/arrow-right.svg";
 import addImage from "@/assets/images/addImages.svg";
 import paper from "@/assets/images/paper.svg";
-import { useRouter } from "vue-router";
 import Loading from "@/components/Loading.vue";
 
 const router = useRouter();
-const postStore = usePostStore();
-const { createLoungePost } = postStore;
+const route = useRoute();
 
-const fileInput = ref(null);
+const postStore = usePostStore();
+const { loungePosts } = storeToRefs(postStore);
+const { loadLoungePosts, createLoungePost } = postStore;
+
 const isModalOpen = ref(false);
+const isLoading = ref(false);
+
 const selectedItem = ref(null);
+const selectedImage = ref([]);
+const fileInput = ref(null);
 
 const category = ref("");
 const title = ref("test");
 const description = ref("");
-const creator = ref("91021736-14c0-4b73-a92f-89429ca7a65d");
+const creator = ref("");
 const images = ref([]);
-const selectedImage = ref([]);
 
-const isLoading = ref(false);
+// 수정화면 로직
+const postId = ref(route.params.id);
+console.log("postId", postId.value);
+const currentPost = computed(() => {
+    if (postId.value) {
+        const post = loungePosts.value.find((post) => post.id === postId.value);
+        if (post) {
+            description.value = post.description;
+            selectedImage.value = post.images;  
+            return post;
+        }
+    }
+    return null;
+});
 
+watch(selectedItem, (newValue) => {
+  category.value = newValue;
+});
 
 // 파일 선택 후 이미지 미리보기
 function handleFileChange(event) {
@@ -46,9 +68,6 @@ function handleFileChange(event) {
     reader.readAsDataURL(file);
   });
 }
-watch(selectedItem, (newValue) => {
-  category.value = newValue;
-});
 function triggerFileInput() {
   fileInput.value.click();
 }
@@ -62,8 +81,15 @@ function removeImage(index) {
   selectedImage.value.splice(index, 1);
   images.value.splice(index, 1);
 }
+
+// 피드 등록
 const handleSubmit = async () => {
+  if (postId.value) {
+    alert("공사중🚧");
+    return false;
+  }
   isLoading.value = true;
+
   if (!images.value) {
     return alert("이미지를 선택해야합니다.");
   }
@@ -91,22 +117,37 @@ const handleSubmit = async () => {
         images: imageUrls,
         category: category.value,
       },
-      "5af12b20-f676-4152-917e-f57300b9d703",
+      creator.value,
     );
-    
-    console.log("done", submitResponse);
-    alert("피드가 등록되었습니다.");
-    router.push(`/lounge/${submitResponse[0].id}`);
+
+    if (submitResponse && submitResponse.length > 0) {
+      alert("피드 등록에 성공했습니다.");
+        router.push(`/lounge/${submitResponse[0].id}`);
+    } else {
+        alert("피드 등록에 실패했습니다.");
+    }
+
   } else {
+    isLoading.value = false;
     if (!category.value) {
-        return alert("카테고리를 선택해 주세요.");
+      return alert("카테고리를 선택해 주세요.");
     }
 
     if (!description.value) {
-        return alert("설명을 채워주세요.");
+      return alert("설명을 채워주세요.");
     }
   }
 };
+
+onBeforeMount(async () => {
+  await loadLoungePosts();
+  const { data } = await supabase.auth.getSession();
+  const isLoggedIn = !!data.session;
+  const userId = data?.session?.user?.id;
+  creator.value = isLoggedIn ? userId : "";
+  console.log("creator", creator.value);
+});
+
 </script>
 
 <template>
@@ -115,13 +156,13 @@ const handleSubmit = async () => {
       <Loading v-if="isLoading" />
       <div class="relative flex items-center">
         <h1 class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold">피드 쓰기</h1>
-        <button type="submit" class="ml-auto text-red-500">올리기</button>
+        <button type="submit" class="ml-auto text-red-500">{{ postId ? "수정하기" : "올리기" }}</button>
       </div>
       <div class="border-t mt-4 pt-4 h-full">
         <div class="flex justify-between items-center space-x-2 cursor-pointer" @click="openModal">
           <div class="flex items-center space-x-2">
             <img :src="paper" alt="paper" class="w-6 h-6" />
-            <span class="text-gray-500">{{ selectedItem || "주제 선택" }}</span>
+            <span class="text-gray-500">{{ currentPost || selectedItem ? selectedItem || currentPost.category : "주제 선택" }}</span>
             <input type="hidden" v-model="category" />
           </div>
           <img :src="arrow" alt="arrow" class="w-4 h-4" />
@@ -169,8 +210,8 @@ const handleSubmit = async () => {
           <textarea
             v-model="description"
             class="mt-4 text-gray-500 w-full resize-none outline-none h-[200px]"
-            placeholder="오늘 어떤 것을 보고, 느끼고, 생각하셨나요?"
-          ></textarea>
+             :placeholder="currentPost?.description ? '' : '오늘 어떤 것을 보고, 느끼고, 생각하셨나요?'"
+          >{{ currentPost ? currentPost?.description : '' }}</textarea>
         </div>
       </div>
     </div>
@@ -195,11 +236,6 @@ textarea::-webkit-scrollbar-track {
 
 textarea::-webkit-scrollbar-thumb {
   background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.slide-container {
-  scrollbar-width: thin;
   border-radius: 10px;
 }
 </style>

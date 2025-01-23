@@ -1,16 +1,17 @@
 <script setup>
 import { onMounted } from "vue";
-import PageInfoSection from "@/components/common/PageInfoSection.vue";
-import loungeLogo from "../assets/images/loungLogo.svg";
-import noImage from "../assets/images/noImage.svg";
 import { RouterLink } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
+import PageInfoSection from "@/components/common/PageInfoSection.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
+import loungeLogo from "../assets/images/loungLogo.svg";
+import noImage from "../assets/images/noImage.svg";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
+
 onMounted(() => {
   loadLoungePosts();
 });
@@ -52,6 +53,6 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2; /* 최대 2줄 */
   overflow: hidden;
-  max-height: calc(2 * 1.4em); /* 2줄 높이 계산 (1.2em은 줄 높이) */
+  max-height: calc(2 * 1.6em); /* 2줄 높이 계산 (1.2em은 줄 높이) */
 }
 </style>

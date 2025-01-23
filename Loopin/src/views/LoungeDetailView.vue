@@ -2,32 +2,47 @@
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import supabase from "@/config/supabase";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
-import { computed, onBeforeMount } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import DetailComment from "@/components/lounge/DetailComment.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
-import noImage from "../assets/images/noImage.svg";
-import userProfile from "../assets/images/defaultprofile30.svg";
+import noImage from "@/assets/images/noImage.svg";
+import userProfile from "@/assets/images/defaultprofile30.svg";
+import more from "@/assets/images/more-black.svg";
+import MoreModal from "@/components/lounge/MoreModal.vue";
 
+const route = useRoute();
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
 
-const route = useRoute();
 const postId = route.params.id;
+const isMoreModalOpen = ref(false);
+const nickname = ref(null);
 
 const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
 });
 
-onBeforeMount(() => {
-  loadLoungePosts();
-  console.log("전체 데이터:", loungePosts);
-  console.log("이미지 URL:", loungePosts.images);
+function openMoreModal() {
+  isMoreModalOpen.value = true;
+}
+
+async function fetchNickname() {
+  const { data, error } = await supabase.from("userinfo").select().eq("id", loungePosts.value.find((post) => post.id === postId).creator);
+  if (data && data.length > 0) {
+    nickname.value = data[0].nickname;
+  }
+}
+
+onBeforeMount( () => {
+   fetchNickname();
+   loadLoungePosts();
 });
 </script>
 
@@ -36,18 +51,21 @@ onBeforeMount(() => {
     <!-- 게시물 카드 -->
     <div class="">
       <!-- 헤더 영역 -->
-      <div class="flex items-center justify-between p-4">
+      <div class="flex items-center justify-between py-4 px-2">
         <div class="flex items-center gap-2">
-          <img :src="userProfile" alt="프로필 이미지" class="w-8 h-8 rounded-full" />
-          <span class="font-medium">{{ currentPost.creator }}</span>
+          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+            <img :src="userProfile" alt="프로필 이미지" class="w-8 h-8" />
+          </div>
+          <span class="font-bold">{{ nickname }}</span>
         </div>
         <div class="flex items-center gap-2">
           <button class="text-red-500 font-bold">팔로우</button>
+          <button @click="openMoreModal"><img :src="more" alt="더보기" /></button>
         </div>
       </div>
 
       <!-- 이미지 영역 -->
-      <div class="aspect-square w-full relative z-0" v-if="currentPost?.images.length >= 1">
+      <div class="aspect-square w-full relative z-0 bg-white rounded-xl" v-if="currentPost?.images.length >= 1">
         <Swiper
           :modules="[Navigation, Pagination]"
           :slides-per-view="1"
@@ -87,20 +105,16 @@ onBeforeMount(() => {
       <DetailComment :post-id="currentPost.id" />
     </div>
     <WriteButton />
+    <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />
   </div>
 </template>
 
 <style>
 .swiper-button-next,
 .swiper-button-prev {
-  background-color: rgba(47, 47, 47, 0.5);
-  color: white;
+  color: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  --swiper-navigation-size: 15px;
+  width: 50px;
+  height: 50px;
 }
 </style>

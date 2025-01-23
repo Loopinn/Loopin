@@ -1,8 +1,18 @@
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 import CommentList from "./CommentList.vue";
 
 const text = ref("");
+
+const props = defineProps({
+  comments: {
+    type: Array,
+  },
+  likes: {
+    type: Number,
+    required: true,
+  },
+});
 
 // 댓글 등록 버튼
 const isButtonVisible = ref(false);
@@ -40,36 +50,19 @@ const commentModalClose = () => {
       <div class="flex gap-2">
         <button @click="isLiked">
           <img
-            :src="like ? './src/assets/images/likeblack_full.svg' : './src/assets/images/likeblack.svg'"
+            :src="like ? '../src/assets/images/likeblack_full.svg' : '../src/assets/images/likeblack.svg'"
             alt="like"
             class="w-[30px] h-[30px]"
           />
         </button>
-        <span>00</span>
+        <span>{{ likes }}</span>
       </div>
       <div class="flex gap-2">
         <button>
           <img src="@/assets/images/comment.svg" alt="comment" @click="commentModalOpen" />
           <CommentList :isOpen="commentModal" @close="commentModalClose" />
         </button>
-        <span>00</span>
-      </div>
-      <div class="flex -space-x-[6px]">
-        <img
-          src="https://i.pinimg.com/474x/80/62/05/8062059a91ba1da4fde46dc9117371e8.jpg"
-          alt="userProfile"
-          class="rounded-full w-7 h-7 mt-[6px] border-2 border-[#f1f1f1]"
-        />
-        <img
-          src="https://i.pinimg.com/474x/80/62/05/8062059a91ba1da4fde46dc9117371e8.jpg"
-          alt="userProfile"
-          class="rounded-full w-7 h-7 mt-[6px] border-2 border-[#f1f1f1]"
-        />
-        <img
-          src="https://i.pinimg.com/474x/80/62/05/8062059a91ba1da4fde46dc9117371e8.jpg"
-          alt="userProfile"
-          class="rounded-full w-7 h-7 mt-[6px] border-2 border-[#f1f1f1]"
-        />
+        <span>{{ comments ? "commments.length" : 0 }}</span>
       </div>
     </div>
     <div class="mt-3 flex gap-4">

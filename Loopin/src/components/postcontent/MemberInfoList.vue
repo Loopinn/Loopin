@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 
 // 팔로우 버튼
 const following = ref(false);
@@ -13,6 +13,9 @@ const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true,
+  },
+  participants: {
+    type: Array,
   },
 });
 
