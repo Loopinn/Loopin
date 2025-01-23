@@ -1,6 +1,12 @@
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 import MemberInfoList from "./MemberInfoList.vue";
+
+const props = defineProps({
+  participants: {
+    type: Array,
+  },
+});
 
 const memberInfoModal = ref(false);
 
@@ -41,13 +47,14 @@ const memberInfoModalClose = () => {
     </div>
 
     <button
+      v-if="participants?.length > 5"
       class="flex items-center justify-center mt-2 w-full h-[40px] rounded-[5px] bg-white font-semibold"
       @click="memberInfoModalOpen"
     >
       더보기 >
     </button>
     <!-- 멤버 리스트 모달 -->
-    <MemberInfoList :isOpen="memberInfoModal" @close="memberInfoModalClose" />
+    <MemberInfoList :isOpen="memberInfoModal" :participants="participants" @close="memberInfoModalClose" />
   </div>
 </template>
 <style scoped></style>

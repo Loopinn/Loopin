@@ -1,8 +1,18 @@
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 import CommentList from "./CommentList.vue";
 
 const text = ref("");
+
+const props = defineProps({
+  comments: {
+    type: Array,
+  },
+  likes: {
+    type: Number,
+    required: true,
+  },
+});
 
 // 댓글 등록 버튼
 const isButtonVisible = ref(false);
@@ -40,19 +50,19 @@ const commentModalClose = () => {
       <div class="flex gap-2">
         <button @click="isLiked">
           <img
-            :src="like ? './src/assets/images/likeblack_full.svg' : './src/assets/images/likeblack.svg'"
+            :src="like ? '../src/assets/images/likeblack_full.svg' : '../src/assets/images/likeblack.svg'"
             alt="like"
             class="w-[30px] h-[30px]"
           />
         </button>
-        <span>00</span>
+        <span>{{ likes }}</span>
       </div>
       <div class="flex gap-2">
         <button>
           <img src="@/assets/images/comment.svg" alt="comment" @click="commentModalOpen" />
           <CommentList :isOpen="commentModal" @close="commentModalClose" />
         </button>
-        <span>00</span>
+        <span>{{ comments ? "commments.length" : 0 }}</span>
       </div>
     </div>
     <div class="mt-3 flex gap-4">
