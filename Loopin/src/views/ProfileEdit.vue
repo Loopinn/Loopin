@@ -5,8 +5,12 @@ import { onBeforeMount, ref, watchEffect } from "vue";
 import imgEditIcon from "../assets/images/profile_edit.svg";
 import CheckPw from "@/components/profileEdit/CheckPw.vue";
 import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
+const { loginUser } = authStore;
+
+const router = useRouter();
 
 const checkPW = ref(false);
 
@@ -14,14 +18,21 @@ const currentUser = ref(null);
 const newNickname = ref(null);
 const newDesc = ref(null);
 
-onBeforeMount(async () => {
-  const { data, error } = await supabase.from("userinfo").select().eq("nickname", authStore.loginUser.nickname);
-  if (error) throw new Error("유저 에러" + error);
-  console.log(data[0]);
-  currentUser.value = data[0];
+const isKakao = ref(false);
 
-  newNickname.value = data[0].nickname;
-  newDesc.value = data[0].description;
+onBeforeMount(async () => {
+  if (authStore.loginUser.provider === "kakao") {
+    isKakao.value = true;
+  }
+  console.log(isKakao.value);
+
+  // const { data, error } = await supabase.from("userinfo").select().eq("nickname", authStore.loginUser.nickname);
+  // if (error) throw new Error("유저 에러" + error);
+  // console.log(data[0]);
+  // currentUser.value = data[0];
+
+  newNickname.value = loginUser.nickname;
+  newDesc.value = loginUser.description;
 });
 
 const image = ref(null);
@@ -43,7 +54,7 @@ const isVaild = ref(true);
 const isConfirm = ref(false);
 
 const checkNickname = async (newNickname) => {
-  if (newNickname === currentUser.value.nickname) {
+  if (newNickname === loginUser.nickname) {
     isConfirm.value = true;
     return alert("사용 가능합니다 !");
   }
@@ -75,7 +86,7 @@ const isCheckPw = ref(true);
 
 const updateProfile = async () => {
   // 닉네임 중복확인
-  if (newNickname.value !== currentUser.value.nickname && !isConfirm.value) {
+  if (newNickname.value !== loginUser.nickname && !isConfirm.value) {
     return alert("닉네임 중복확인을 해주세요!");
   } else {
     isConfirm.value = true;
@@ -122,7 +133,7 @@ const updateProfile = async () => {
     description: newDesc.value,
   };
 
-  if (imageUrl !== currentUser.value.profile_img) {
+  if (imageUrl !== loginUser.profile_img) {
     updateData.profile_img = imageUrl;
   }
 
@@ -133,22 +144,27 @@ const updateProfile = async () => {
   }
   console.log(data);
   alert("변경이 완료되었습니다!");
+  router.push("/profile");
+};
+
+const cancelUpdate = () => {
+  router.push("/profile");
 };
 </script>
 <template>
   <div v-if="checkPW">
-    <div v-if="currentUser && checkPW" class="px-5 flex flex-col gap-10 justify-center mt-[70px]">
+    <div v-if="loginUser && checkPW" class="px-5 flex flex-col gap-10 justify-center mt-[70px]">
       <div>
         <h2 class="font-extrabold text-[27px] mb-[50px]">프로필 변경</h2>
         <div class="relative w-[75px] h-[75px]">
           <img
-            v-if="currentUser.profile_img && !preImg"
-            :src="currentUser.profile_img"
+            v-if="loginUser.profile_img && !preImg"
+            :src="loginUser.profile_img"
             alt="프로필 사진"
             class="w-[75px] h-[75px] rounded-full border"
           />
           <img
-            v-else-if="currentUser.profile_img && preImg"
+            v-else-if="loginUser.profile_img && preImg"
             :src="preImg"
             alt=""
             class="w-full h-full rounded-full border"
@@ -166,7 +182,7 @@ const updateProfile = async () => {
       </div>
 
       <div class="flex flex-col">
-        <label for="nickname" class="text-[14px]">닉네임 변경</label>
+        <label for="nickname" class="text-[13px] ml-[10px]">닉네임 변경</label>
         <div class="">
           <input
             id="nickname"
@@ -177,11 +193,13 @@ const updateProfile = async () => {
                 `border border-[#d9d9d9] rounded-[10px] w-[255px] h-[50px] text-[18px] px-3 outline-none ${!isVaild && 'border-red-500 border-2'}`,
               )
             "
+            :disabled="isKakao"
           />
           <button
             type="button"
             @click="checkNickname(newNickname)"
             class="bg-[#9f9f9f] text-white w-[80px] h-[50px] ml-2 rounded-[10px]"
+            :disabled="isKakao"
           >
             중복 확인
           </button>
@@ -189,7 +207,7 @@ const updateProfile = async () => {
       </div>
 
       <div class="flex flex-col">
-        <label for="nickname" class="text-[14px]">소개 변경</label>
+        <label for="nickname" class="text-[13px] ml-[10px]">소개 변경</label>
         <textarea
           v-model="newDesc"
           class="border resize-none w-[400px] h-[140px] px-3 py-2 rounded-[10px] outline-none"
@@ -197,7 +215,7 @@ const updateProfile = async () => {
       </div>
 
       <!-- 비밀번호 변경 -->
-      <div>
+      <div v-if="!isKakao">
         <div class="flex flex-col">
           <label for="newPw" class="text-[14px]">새 비밀번호</label>
           <div class="">
@@ -228,7 +246,11 @@ const updateProfile = async () => {
         </div>
       </div>
       <div class="flex gap-32 justify-center mt-[40px]">
-        <button type="button" class="w-[130px] h-[50px] border border-black font-bold rounded-[15px] text-[18px]">
+        <button
+          type="button"
+          @click="cancelUpdate"
+          class="w-[130px] h-[50px] border border-black font-bold rounded-[15px] text-[18px]"
+        >
           취소
         </button>
         <button
@@ -243,7 +265,13 @@ const updateProfile = async () => {
     <div v-else>로딩중</div>
   </div>
   <div v-else>
-    <CheckPw v-if="currentUser" :uemail="currentUser.email" :checkPW="checkPW" @update:checkPW="checkPW = $event" />
+    <CheckPw
+      v-if="loginUser"
+      :uemail="loginUser.email"
+      :checkPW="checkPW"
+      @update:checkPW="checkPW = $event"
+      :isKakao="isKakao"
+    />
   </div>
 </template>
 <style scoped></style>
