@@ -1,5 +1,6 @@
 <script setup>
 import ChannelPostCard from "@/components/channel/ChannelPostCard.vue";
+import MoreBtn from "@/components/common/MoreBtn.vue";
 import PageInfoSection from "@/components/common/PageInfoSection.vue";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
@@ -68,9 +69,7 @@ onMounted(() => {
           </RouterLink>
         </div>
 
-        <RouterLink :to="channelview.route">
-          <button class="w-full h-[66px] rounded-2xl text-center text-[20px] bg-white">더보기</button>
-        </RouterLink>
+        <MoreBtn :link="channelview.route" />
       </div>
 
       <!-- 라운지 -->
@@ -94,10 +93,7 @@ onMounted(() => {
             </RouterLink>
           </div>
         </div>
-
-        <RouterLink to="/lounge">
-          <button class="w-full h-[66px] rounded-2xl text-center text-[20px] bg-white mt-6">더보기</button>
-        </RouterLink>
+        <MoreBtn link="/lounge" css="mt-6" />
       </div>
     </div>
   </div>

@@ -3,6 +3,8 @@ import { dayNames } from "@/constants/dayNames";
 import { ref, defineProps, computed, onMounted, onBeforeMount } from "vue";
 import calendar from "@/assets/images/calendar.svg";
 import checkIcon from "@/assets/images/check.svg";
+import likewhite_full from "@/assets/images/likewhite_full.svg";
+import likewhite from "@/assets/images/likewhite.svg";
 
 const props = defineProps({
   post: {
@@ -84,11 +86,7 @@ const isLiked = () => {
     <div class="relative">
       <img :src="post.images ? post.images[0] : ''" alt="thumbnail" class="w-40 h-40 rounded-2xl m-5" />
       <button @click="isLiked">
-        <img
-          :src="like ? './src/assets/images/likewhite_full.svg' : './src/assets/images/likewhite.svg'"
-          alt="like"
-          class="absolute left-7 bottom-7 w-10 h-10"
-        />
+        <img :src="like ? likewhite_full : likewhite" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
       </button>
     </div>
 

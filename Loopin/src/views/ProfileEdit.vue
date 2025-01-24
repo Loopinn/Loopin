@@ -169,7 +169,7 @@ const cancelUpdate = () => {
   <div v-if="checkPW">
     <div v-if="loginUser && checkPW" class="bg-gray-50">
       <div class="">
-        <div class="bg-white overflow-hidden" style="height: calc(100vh - 193px)">
+        <div class="bg-white">
           <!-- 헤더 섹션 -->
           <div class="px-8 py-6 bg-gradient-to-r from-[#F43630] to-[#FF6B66]">
             <h1 class="text-2xl font-bold text-white">프로필 설정</h1>

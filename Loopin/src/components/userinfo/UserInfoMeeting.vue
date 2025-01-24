@@ -3,15 +3,24 @@ import { onBeforeMount, ref } from "vue";
 import ChannelPostCard from "../channel/ChannelPostCard.vue";
 import NoPosts from "../common/NoPosts.vue";
 import UserMeetingClub from "./UserMeetingClub.vue";
+import MoreBtn from "../common/MoreBtn.vue";
 
 const props = defineProps(["meetingData"]);
 console.log("meetingData", props.meetingData);
 
 const clubPosts = ref(null);
+const socialingPosts = ref(null);
+const challengePosts = ref(null);
 
 onBeforeMount(() => {
+  // 클럽 게시글
   clubPosts.value = props.meetingData.filter((meetData) => meetData.type === "club_posts");
-  console.log(clubPosts.value);
+
+  // 소셜링 게시글
+  socialingPosts.value = props.meetingData.filter((meetData) => meetData.type === "socialing_posts");
+
+  // 챌린지 게시글
+  challengePosts.value = props.meetingData.filter((meetData) => meetData.type === "challenge_posts");
 });
 </script>
 <template>
@@ -25,17 +34,32 @@ onBeforeMount(() => {
     </div>
     <div>
       <p class="text-[18px] font-semibold mb-5">진행한 소셜링</p>
-      <div class="flex justify-center">
-        <!-- <ChannelPostCard /> -->
-        <NoPosts text="진행한 소셜링이 없어요" css="h-[50px]" />
-
-        <!-- <p class="text-[#898989]">진행한 소셜링이 없어요</p> -->
+      <div class="flex flex-col justify-center">
+        <RouterLink
+          v-if="socialingPosts.length"
+          v-for="{ data, type } in socialingPosts.slice(-3)"
+          :to="{ path: `/socialing/${data.id}` }"
+          :key="data.id"
+        >
+          <ChannelPostCard :post="data" channelName="소셜링" />
+        </RouterLink>
+        <NoPosts v-else text="진행한 소셜링이 없어요" css="h-[50px]" />
+        <MoreBtn v-if="socialingPosts.length > 3" link="/profile/posts/socialing" />
       </div>
     </div>
     <div class="">
       <p class="text-[18px] font-semibold mb-5">진행한 챌린지</p>
-      <div class="flex justify-center">
-        <NoPosts text="진행한 챌린지가 없어요" css="h-[50px]" />
+      <div class="flex flex-col justify-center">
+        <RouterLink
+          v-if="challengePosts.length"
+          v-for="{ data, type } in challengePosts.slice(-3)"
+          :to="{ path: `/challenge/${data.id}` }"
+          :key="data.id"
+        >
+          <ChannelPostCard :post="data" channelName="챌린지" />
+        </RouterLink>
+        <NoPosts v-else text="진행한 챌린지가 없어요" css="h-[50px]" />
+        <MoreBtn v-if="challengePosts.length > 3" link="/profile/posts/challenge" />
       </div>
     </div>
   </div>
