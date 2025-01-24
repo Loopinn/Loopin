@@ -26,7 +26,9 @@ onBeforeMount(() => {
     <div>
       <p class="text-[18px] font-semibold mb-5">진행한 소셜링</p>
       <div class="flex justify-center">
-        <ChannelPostCard />
+        <!-- <ChannelPostCard /> -->
+        <NoPosts text="진행한 소셜링이 없어요" css="h-[50px]" />
+
         <!-- <p class="text-[#898989]">진행한 소셜링이 없어요</p> -->
       </div>
     </div>

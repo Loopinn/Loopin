@@ -7,6 +7,7 @@ import InputField from "@/components/Input/InputField.vue";
 import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 
 import showPassword from "@/assets/images/show-password.svg";
+import { emailRegex, idRegex, passwordRegex } from "@/constants/validation";
 
 const email = ref("");
 const password = ref("");
@@ -20,11 +21,6 @@ const isModalOpen = ref(false);
 const modalMessage = ref("");
 
 const router = useRouter();
-
-// 유효성 검사
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/;
-const idRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{4,12}$/;
 
 // 유효성 검사 함수
 const validateEmail = (email) => emailRegex.test(email);
