@@ -193,6 +193,7 @@ const categoryList = ref([
   },
 ]);
 
+//useFunnel 의 state 가 변하면 stateField 값 갱신
 watch(
   () => state.value,
   () => {
@@ -204,7 +205,7 @@ watch(
   },
 );
 
-const handleCategoryClick = (subjectName, cate, index) => {
+const handleCategoryClick = (subjectName, cate) => {
   stateFields.category = cate;
   stateFields.subject = subjectName;
 
@@ -216,6 +217,7 @@ const handleCategoryClick = (subjectName, cate, index) => {
   });
 };
 
+//체크박스 이미지 렌더링
 const getCheckboxImage = (fee) => {
   if (stateFields.feeInfo.includes(fee)) {
     if (stateFields.selectedActivity === "소셜링") {
@@ -235,68 +237,62 @@ const getPlaceInfo = (placeInfo) => {
   setState({ ...state.value, place: stateFields.place });
 };
 
+//stateField 값 변경 시 useFunnel state 업데이트
 watch(
   () => stateFields.socialingType,
   (newValue) => {
     if (newValue !== "") setState({ ...state.value, socialingType: newValue });
   },
 );
-
 watch(
   () => stateFields.isFee,
   (newValue) => {
     if (newValue !== null) setState({ ...state.value, isFee: newValue });
   },
 );
-
 watch(
   () => [stateFields.maxPeople, stateFields.gender, stateFields.range],
   ([newMaxPeople, newGender, newRange]) => {
     if (newMaxPeople !== "-") setState({ ...state.value, maxPeople: newMaxPeople, gender: newGender, range: newRange });
   },
 );
-
 watch(
   () => [stateFields.meetDate, stateFields.meetTime],
   ([newMeetDate, newMeetTime]) => {
     if (newMeetDate !== null) setState({ ...state.value, meetDate: newMeetDate, meetTime: newMeetTime });
   },
 );
-
 watch(
   () => stateFields.startDate,
   (newValue) => {
     if (newValue !== null) setState({ ...state.value, startDate: newValue });
   },
 );
-
 watch(
   () => stateFields.endDate,
   (newValue) => {
     if (newValue !== null) setState({ ...state.value, endDate: newValue });
   },
 );
-
 watch(
   () => stateFields.tpw,
   (newValue) => {
     if (newValue !== "-") setState({ ...state.value, tpw: newValue });
   },
 );
-
 watch(
   () => stateFields.title,
   (newValue) => {
     if (newValue !== "") setState({ ...state.value, title: newValue });
   },
 );
-
 watch(
   () => stateFields.description,
   (newValue) => {
     if (newValue !== "") setState({ ...state.value, description: newValue });
   },
 );
+
 //나이 슬라이더
 const minValue = 20; // 최소값
 const maxValue = 50; // 최대값
@@ -339,7 +335,7 @@ const handleStyle = computed(() => {
 //인원 옵션
 const options = ["-", 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 const tpwOptions = ["-", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
-
+//나이 표시
 const filterRange = () => {
   const [start, end] = stateFields.range;
 
@@ -373,7 +369,7 @@ const format = (date) => {
 
   return `${year}/${month}/${day}`;
 };
-
+//이미지 추가
 const triggerFileInput = () => {
   fileInput.value.click();
 };
@@ -469,9 +465,6 @@ const handleFileChange = (event) => {
       reader.readAsDataURL(file);
     }
   }
-  // else {
-  //   selectedImage.value = [];
-  // }
   event.target.value = "";
 };
 //이미지 제거
@@ -484,7 +477,6 @@ const removeImage = (index) => {
 // 완료 버튼 액션
 const finish = async () => {
   await handlePostSubmit();
-  // handleReset();
 };
 
 const handlePostSubmit = async () => {
@@ -1216,8 +1208,16 @@ const handlePostSubmit = async () => {
 }
 
 /* 선택된 항목 스타일 변경 */
-::v-deep(.vue-scroll-picker-item-selected) {
-  color: #000;
+::v-deep(.number-picker-소셜링 .vue-scroll-picker-item-selected) {
+  color: #F43630;
+  font-weight: 600;
+}
+::v-deep(.number-picker-클럽 .vue-scroll-picker-item-selected) {
+  color: #1C8A6A;
+  font-weight: 600;
+}
+::v-deep(.number-picker-챌린지 .vue-scroll-picker-item-selected) {
+  color: #3498D0;
   font-weight: 600;
 }
 </style>
