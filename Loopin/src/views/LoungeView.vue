@@ -5,7 +5,7 @@ import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
 import PageInfoSection from "@/components/common/PageInfoSection.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
-import loungeLogo from "../assets/images/loungLogo.svg";
+import loungeLogo from "../assets/images/loungeLogo.svg";
 import noImage from "../assets/images/noImage.svg";
 
 const postStore = usePostStore();
