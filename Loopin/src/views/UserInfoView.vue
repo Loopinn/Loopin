@@ -1,12 +1,14 @@
 <script setup>
 import Following from "@/components/common/Following.vue";
 import NoPosts from "@/components/common/NoPosts.vue";
+import Loading from "@/components/Loading.vue";
+import NoUser from "@/components/userinfo/NoUser.vue";
 import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
 import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import { twMerge } from "tailwind-merge";
-import { computed, onBeforeMount, reactive, ref, watch } from "vue";
+import { computed, onBeforeMount, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
 
@@ -20,19 +22,22 @@ const route = useRoute();
 
 watch(
   () => route.path,
-  (newPath) => {
-    console.log(decodeURIComponent(newPath.split("/")[2]));
+  async (newPath) => {
     if (newPath === "/profile") {
       isMyPage.value = true;
     } else {
       isMyPage.value = false;
     }
+    isLoading.value = true;
+    await fetchData();
   },
 );
 
 const userNickName = route.params.id;
 
 const userData = ref(null); // 유저페이지/유저데이터
+
+const noUser = ref(false);
 
 const userMeetingPosts = ref([]);
 const userFeedPosts = ref([]);
@@ -55,16 +60,10 @@ const infos = computed(() => {
 });
 const feedNav = ref("피드");
 
-onBeforeMount(async () => {
-  console.log(route.fullPath);
-  if (loginUser && decodeURIComponent(route.path.split("/")[2]) === loginUser.nickname) {
-    router.replace("/profile");
-  }
+const isLoading = ref(true);
 
-  if (route.path.includes("user")) {
-    isMyPage.value = false;
-  }
-  console.log("마이페이지 입니까?", isMyPage.value);
+const fetchData = async () => {
+  console.log(route.fullPath);
 
   if (isMyPage.value) {
     console.log(loginUser);
@@ -104,11 +103,18 @@ onBeforeMount(async () => {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      isLoading.value = false;
     }
   } else {
     try {
       const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName);
-      if (error) throw new Error("유저 정보 불러오기 실패" + error);
+      if (!data.length) {
+        noUser.value = true;
+        console.log(noUser.value);
+        return;
+      }
+      console.log(data, error);
 
       userData.value = data[0];
       console.log("유저정보", userData.value);
@@ -146,9 +152,23 @@ onBeforeMount(async () => {
       console.log("피드 게시글", userFeedPosts.value);
     } catch (error) {
       console.error(error);
+    } finally {
+      isLoading.value = false;
     }
   }
+};
+
+onBeforeMount(() => {
+  if (loginUser && decodeURIComponent(route.path.split("/")[2]) === loginUser.nickname) {
+    router.replace("/profile");
+  }
+
+  if (route.path.includes("user")) {
+    isMyPage.value = false;
+  }
 });
+
+onMounted(fetchData);
 
 const shortDesc = computed(() => {
   const desc = isMyPage.value ? loginUser?.description || "" : userData.value?.description || "";
@@ -168,116 +188,123 @@ const handleShare = () => {
 };
 </script>
 <template>
-  <div>
-    <div class="py-5 px-3">
-      <img
-        v-if="isMyPage ? loginUser.profile_img : userData?.profile_img"
-        :src="isMyPage ? loginUser.profile_img : userData.profile_img"
-        alt="프로필 사진"
-        class="w-[75px] h-[75px] rounded-full shadow-md"
-      />
-      <div v-else class="w-[75px] h-[75px] rounded-full bg-white border"></div>
-      <h1 class="font-extrabold text-[18px] my-3">{{ isMyPage ? loginUser.nickname : userData?.nickname }}</h1>
-      <p class="w-[350px] text-[#383535] break-words">
-        {{ shortDesc }}
-      </p>
-      <p
-        class="text-[#b9b6b6] hover:underline cursor-pointer"
-        v-if="
-          isMyPage
-            ? loginUser?.description?.length >= 41 && !moreDesc
-            : userData?.description?.length >= 41 && !moreDesc
-        "
-        @click="moreDesc = true"
-      >
-        ...더보기
-      </p>
-    </div>
+  <div v-if="noUser">
+    <NoUser />
+  </div>
+  <div v-else>
+    <Loading :is-loading="isLoading" />
 
-    <!-- 마이페이지 (로그인한 유저) -->
-    <div v-if="isMyPage" class="flex justify-center gap-8 my-10">
-      <button
-        type="button"
-        class="text-[14px] border w-[170px] h-[40px] rounded-[10px] hover:bg-[#f4f4f4] transition-colors duration-150"
-        @click="router.push('/profile/edit')"
-      >
-        프로필 변경
-      </button>
-      <button
-        type="button"
-        class="text-[14px] border w-[170px] h-[40px] rounded-[10px] hover:bg-[#f4f4f4] transition-colors duration-150"
-        @click="handleShare"
-      >
-        프로필 공유
-      </button>
-    </div>
-
-    <!-- 팔로워 피드 -->
-    <div class="flex justify-between items-center mt-[20px] px-3">
-      <div class="flex gap-5">
-        <div v-for="(info, index) in infos" :key="index" class="flex flex-col items-center text-[14px]">
-          <p class="">{{ info.name }}</p>
-          <p class="font-bold">{{ info.value }}</p>
-        </div>
+    <div v-if="!isLoading">
+      <div class="py-5 px-3">
+        <img
+          v-if="isMyPage ? loginUser.profile_img : userData?.profile_img"
+          :src="isMyPage ? loginUser.profile_img : userData.profile_img"
+          alt="프로필 사진"
+          class="w-[75px] h-[75px] rounded-full shadow-md"
+        />
+        <div v-else class="w-[75px] h-[75px] rounded-full bg-white border"></div>
+        <h1 class="font-extrabold text-[18px] my-3">{{ isMyPage ? loginUser.nickname : userData?.nickname }}</h1>
+        <p class="w-[350px] text-[#383535] break-words">
+          {{ shortDesc }}
+        </p>
+        <p
+          class="text-[#b9b6b6] hover:underline cursor-pointer"
+          v-if="
+            isMyPage
+              ? loginUser?.description?.length >= 41 && !moreDesc
+              : userData?.description?.length >= 41 && !moreDesc
+          "
+          @click="moreDesc = true"
+        >
+          ...더보기
+        </p>
       </div>
-      <!-- 마이페이지 -->
-      <button
-        v-if="isMyPage"
-        type="button"
-        class="bg-white w-[65px] h-[30px] rounded-[25px] border"
-        @click="router.push('/lounge/write')"
-      >
-        글쓰기
-      </button>
 
-      <!-- 로그인한 유저만 보임 -->
-      <Following v-else-if="!isMyPage && loginUser && userData" :userId="userData.id" />
-    </div>
-
-    <!-- 피드 정보 -->
-    <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[750px]' : 'min-h-[700px]'}`">
-      <ul class="h-[45px] flex bg-white sticky top-0">
-        <li
-          :class="
-            twMerge(
-              `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '피드' ? 'border-black' : ''}`,
-            )
-          "
-          @click="feedNav = '피드'"
+      <!-- 마이페이지 (로그인한 유저) -->
+      <div v-if="isMyPage" class="flex justify-center gap-8 my-10">
+        <button
+          type="button"
+          class="text-[14px] border w-[170px] h-[40px] rounded-[10px] hover:bg-[#f4f4f4] transition-colors duration-150"
+          @click="router.push('/profile/edit')"
         >
-          피드
-        </li>
-        <li
-          :class="
-            twMerge(
-              `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '태그' ? 'border-black' : ''}`,
-            )
-          "
-          @click="feedNav = '태그'"
+          프로필 변경
+        </button>
+        <button
+          type="button"
+          class="text-[14px] border w-[170px] h-[40px] rounded-[10px] hover:bg-[#f4f4f4] transition-colors duration-150"
+          @click="handleShare"
         >
-          태그
-        </li>
-        <li
-          :class="
-            twMerge(
-              `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '모임' ? 'border-black' : ''}`,
-            )
-          "
-          @click="feedNav = '모임'"
-        >
-          모임
-        </li>
-      </ul>
-      <div v-if="feedNav === '피드'">
-        <div v-if="userFeedPosts.length > 0" class="flex flex-wrap">
-          <UserInfoFeed v-for="userFeedPost in userFeedPosts" :feed-data="userFeedPost" />
-        </div>
-        <div v-else class="flex items-center justify-center h-[220px]">
-          <NoPosts text="피드가 없네요!" css="text-[20px]" />
-        </div>
+          프로필 공유
+        </button>
       </div>
-      <div v-else-if="feedNav === '모임'" class="px-4 mt-4">
-        <UserInfoMeeting :meeting-data="userMeetingPosts" />
+
+      <!-- 팔로워 피드 -->
+      <div class="flex justify-between items-center mt-[20px] px-3">
+        <div class="flex gap-5">
+          <div v-for="(info, index) in infos" :key="index" class="flex flex-col items-center text-[14px]">
+            <p class="">{{ info.name }}</p>
+            <p class="font-bold">{{ info.value }}</p>
+          </div>
+        </div>
+        <!-- 마이페이지 -->
+        <button
+          v-if="isMyPage"
+          type="button"
+          class="bg-white w-[65px] h-[30px] rounded-[25px] border"
+          @click="router.push('/lounge/write')"
+        >
+          글쓰기
+        </button>
+
+        <!-- 로그인한 유저만 보임 -->
+        <Following v-else-if="!isMyPage && loginUser && userData" :userId="userData.id" />
+      </div>
+
+      <!-- 피드 정보 -->
+      <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[750px]' : 'min-h-[700px]'}`">
+        <ul class="h-[45px] flex bg-white sticky top-0">
+          <li
+            :class="
+              twMerge(
+                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '피드' ? 'border-black' : ''}`,
+              )
+            "
+            @click="feedNav = '피드'"
+          >
+            피드
+          </li>
+          <li
+            :class="
+              twMerge(
+                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '태그' ? 'border-black' : ''}`,
+              )
+            "
+            @click="feedNav = '태그'"
+          >
+            태그
+          </li>
+          <li
+            :class="
+              twMerge(
+                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '모임' ? 'border-black' : ''}`,
+              )
+            "
+            @click="feedNav = '모임'"
+          >
+            모임
+          </li>
+        </ul>
+        <div v-if="feedNav === '피드'">
+          <div v-if="userFeedPosts.length > 0" class="flex flex-wrap">
+            <UserInfoFeed v-for="userFeedPost in userFeedPosts" :feed-data="userFeedPost" />
+          </div>
+          <div v-else class="flex items-center justify-center h-[220px]">
+            <NoPosts text="피드가 없네요!" css="text-[20px]" />
+          </div>
+        </div>
+        <div v-else-if="feedNav === '모임'" class="px-4 mt-4">
+          <UserInfoMeeting :meeting-data="userMeetingPosts" />
+        </div>
       </div>
     </div>
   </div>
