@@ -99,3 +99,9 @@ input[type="number"]::-webkit-inner-spin-button {
 .location-list-wrap::-webkit-scrollbar {
   display: none;
 }
+
+/* vue-toastify */
+.Toastify__toast-container--top-center {
+  top: 50px !important;
+  transform: translateX(-50%);
+}

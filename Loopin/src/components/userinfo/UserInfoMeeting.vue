@@ -18,7 +18,7 @@ onBeforeMount(() => {
   <div class="flex flex-col gap-[50px]">
     <div>
       <p class="text-[18px] font-semibold mb-5">참여 중인 클럽</p>
-      <div :class="`flex gap-3 flex-wrap items-center ${!clubPosts.length && 'justify-center'}`">
+      <div :class="`flex gap-3 flex-wrap items-start ${!clubPosts.length && 'justify-center'}`">
         <UserMeetingClub v-if="clubPosts.length" v-for="{ data, type } in clubPosts" :key="data.id" :postData="data" />
         <NoPosts v-else text="참여중인 클럽이 없어요!" />
       </div>

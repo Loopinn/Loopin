@@ -161,41 +161,6 @@ const shortDesc = computed(() => {
   }
 });
 const moreDesc = ref(false);
-
-const toggleFollow = async (userId) => {
-  if (!loginUser) {
-    alert("로그인이 필요합니다.");
-    return;
-  }
-
-  // const isFollowing = loginUser.following?.includes(userId);
-  let updatedFollowing = loginUser.following || [];
-
-  if (isFollowing.value) {
-    updatedFollowing = updatedFollowing.filter((id) => id !== userId);
-  } else {
-    updatedFollowing.push(userId);
-  }
-
-  const { data, error } = await supabase
-    .from("userinfo")
-    .update({ following: updatedFollowing })
-    .eq("id", loginUser.id)
-    .select();
-  console.log(data);
-  if (error) {
-    console.error("Failed to update following list:", error.message);
-    return;
-  }
-
-  loginUser.following = updatedFollowing;
-};
-
-const handleShare = () => {
-  navigator.clipboard
-    .writeText(`http://localhost:5173/user/${route.params.id}`)
-    .then(() => alert("프로필 주소가 복사되었습니다!"));
-};
 </script>
 <template>
   <div>
@@ -204,7 +169,7 @@ const handleShare = () => {
         v-if="isMyPage ? loginUser.profile_img : userData?.profile_img"
         :src="isMyPage ? loginUser.profile_img : userData.profile_img"
         alt="프로필 사진"
-        class="w-[75px] h-[75px] rounded-full"
+        class="w-[75px] h-[75px] rounded-full shadow-md"
       />
       <div v-else class="w-[75px] h-[75px] rounded-full bg-white border"></div>
       <h1 class="font-extrabold text-[18px] my-3">{{ isMyPage ? loginUser.nickname : userData?.nickname }}</h1>
