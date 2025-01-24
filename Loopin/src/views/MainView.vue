@@ -6,8 +6,8 @@ import { storeToRefs } from "pinia";
 import { onMounted, ref } from "vue";
 
 const postStore = usePostStore();
-const { socialingPosts, clubPosts, challengePosts } = storeToRefs(postStore);
-const { loadSocialPosts, loadClubPosts, loadChallengePosts } = postStore;
+const { socialingPosts, clubPosts, challengePosts, loungePosts } = storeToRefs(postStore);
+const { loadSocialPosts, loadClubPosts, loadChallengePosts, loadLoungePosts } = postStore;
 
 const channelviews = ref([
   {
@@ -43,33 +43,62 @@ onMounted(() => {
   channelviews.value.forEach((channel) => {
     channel.load();
     console.log(channel.posts);
+    loadLoungePosts();
   });
 });
 </script>
 <template>
   <div class="w-[600px] mx-auto">
-    <div class="h-[290px] pl-[15px] bg-[#d9d9d9]">
+    <div class="h-[290px] pl-7 bg-[#d9d9d9]">
       <p class="text-[30px] pt-[53px] mb-[6px]">취향과 관심이<br />만나는 커뮤니티</p>
       <p class="text-[20px]">우리의 이야기가 시작되는 곳, 루핀</p>
     </div>
+    <div class="bg-[#F4F4F4] px-7 py-[72px]">
+      <div v-for="(channelview, index) in channelviews" :key="index" class="mb-[144px]">
+        <PageInfoSection
+          :icon="channelview.icon"
+          :title="channelview.title"
+          :subtitle="channelview.subtitle"
+          :alt="channelview.alt"
+          class="mb-7"
+        />
+        <div v-for="post in channelview.posts.slice(-3)" :key="post.id">
+          <RouterLink :to="{ path: `${channelview.route}/${post.id}` }">
+            <ChannelPostCard :post="post" :channelName="channelview.title" />
+          </RouterLink>
+        </div>
 
-    <div v-for="(channelview, index) in channelviews" :key="index" class="bg-[#F4F4F4] px-[15px] py-[72px]">
-      <PageInfoSection
-        :icon="channelview.icon"
-        :title="channelview.title"
-        :subtitle="channelview.subtitle"
-        :alt="channelview.alt"
-        class="mb-7"
-      />
-      <div v-for="post in channelview.posts.slice(-3)" :key="post.id">
-        <RouterLink :to="{ path: `${channelview.route}/${post.id}` }">
-          <ChannelPostCard :post="post" />
+        <RouterLink :to="channelview.route">
+          <button class="w-full h-[66px] rounded-2xl text-center text-[20px] bg-white">더보기</button>
         </RouterLink>
       </div>
 
-      <RouterLink :to="channelview.route">
-        <button class="w-[570px] h-[66px] rounded-2xl text-center text-[20px] bg-white">더보기</button>
-      </RouterLink>
+      <!-- 라운지 -->
+      <div class="">
+        <PageInfoSection
+          icon="./src/assets/images/loungeLogo.svg"
+          title="라운지"
+          subtitle="비슷한 관심사를 가진
+        멤버들의 취향 피드 구독하기"
+          alt="라운지 로고"
+          class="mb-7"
+        />
+        <div class="grid grid-cols-2 gap-4">
+          <div v-for="feed in loungePosts.slice(-4)" :key="feed.id">
+            <RouterLink :to="{ path: `/lounge/${feed.id}` }">
+              <img
+                :src="feed.images[0] || noImage"
+                :alt="feed.description"
+                class="w-full aspect-square object-cover rounded-xl"
+              />
+            </RouterLink>
+          </div>
+        </div>
+
+        <RouterLink to="/lounge">
+          <button class="w-full h-[66px] rounded-2xl text-center text-[20px] bg-white mt-6">더보기</button>
+        </RouterLink>
+      </div>
     </div>
   </div>
 </template>

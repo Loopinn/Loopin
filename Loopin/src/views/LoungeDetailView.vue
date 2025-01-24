@@ -3,12 +3,14 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import supabase from "@/config/supabase";
+import { debounce } from "lodash";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
 import { computed, onBeforeMount, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
+import { feedLike } from "@/utils/feedLike";
 import DetailComment from "@/components/lounge/DetailComment.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
 import noImage from "@/assets/images/noImage.svg";
@@ -16,6 +18,8 @@ import userProfile from "@/assets/images/defaultprofile30.svg";
 import more from "@/assets/images/more-black.svg";
 import MoreModal from "@/components/lounge/MoreModal.vue";
 import Loading from "@/components/Loading.vue";
+import like from "../assets/images/likeblack_full.svg";
+import unlike from "../assets/images/likeblack.svg";
 
 const route = useRoute();
 const postStore = usePostStore();
@@ -23,61 +27,86 @@ const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
 
 const postId = route.params.id;
-const usserId = ref(null);
+const userId = ref(null);
 const isMoreModalOpen = ref(false);
 const nickname = ref(null);
+const profileImage = ref(null);
+const isLike = ref(null);
 const isLoading = ref(true);
 
 const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
 });
 
+const fetchUserId = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  return sessionData?.session?.user?.id;
+};
+
+const handleLike = debounce(async () => {
+  const userIdValue = await fetchUserId();
+  const post = loungePosts.value.find((post) => post.id === postId);
+  await feedLike(post, userIdValue);
+  await loadLoungePosts();
+  likeCheck();
+}, 300);
+
+const likeCheck = async () => {
+  const userIdValue = await fetchUserId();
+  isLike.value = currentPost.value.likes.includes(userIdValue);
+};
+
+const creatorArray = loungePosts.value.find((post) => post.id === postId).creator;
+
+async function fetchData() {
+  const { data, error } = await supabase
+  .from("userinfo")
+    .select()
+    .eq("id", creatorArray);
+
+  if (data && data.length > 0) {
+    nickname.value = data[0].nickname;
+    userId.value = data[0].id;
+    profileImage.value = data[0].profile_img;
+  }
+  userId.value = await fetchUserId();
+  setTimeout(() => {
+    isLoading.value = false;
+  }, 500);
+}
+
 function openMoreModal() {
   isMoreModalOpen.value = true;
 }
 
-async function fetchData() {
-  const { data, error } = await supabase.from("userinfo").select().eq("id", loungePosts.value.find((post) => post.id === postId).creator);
-  if (data && data.length > 0) {
-    nickname.value = data[0].nickname;
-    usserId.value = data[0].id;
-  }
-  
-  const { data: sessionData } = await supabase.auth.getSession();
-  usserId.value = sessionData?.session?.user?.id;
-
-  setTimeout(() => {
-    isLoading.value = false; // 3초 후 로딩 상태 변경
-  }, 500);
-}
-
-onBeforeMount( () => {
-  fetchData();
-  loadLoungePosts();
+onBeforeMount(async () => {
+  await fetchData();
+  await loadLoungePosts();
+  await likeCheck();
 });
 </script>
 
 <template>
-   <Loading v-if="isLoading" />
-  <div class="px-5 py-6 min-h-screen w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
+  <Loading v-if="isLoading" />
+  <div class="py-0 min-h-screen w-full pb-[1px] relative space-y-8 bg-[#f4f4f4]">
     <!-- 게시물 카드 -->
     <div class="">
       <!-- 헤더 영역 -->
-      <div class="flex items-center justify-between py-4 px-2">
+      <div class="flex items-center justify-between py-4 px-4">
         <div class="flex items-center gap-2">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-            <img :src="userProfile" alt="프로필 이미지" class="w-8 h-8" />
+            <img :src="profileImage || userProfile" alt="프로필 이미지" class="w-12 h-12 rounded-full" />
           </div>
           <span class="font-bold">{{ nickname }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <button v-if="usserId !== currentPost.creator" class="text-red-500 font-bold">팔로우</button>
+          <button v-if="userId !== currentPost.creator" class="text-[#f43630] font-semibold text-sm">팔로우</button>
           <button v-else @click="openMoreModal"><img :src="more" alt="더보기" /></button>
         </div>
       </div>
 
       <!-- 이미지 영역 -->
-      <div class="aspect-square w-full relative z-0 bg-white rounded-xl" v-if="currentPost?.images.length >= 1">
+      <div class="aspect-square w-full relative z-0 bg-gray-300 rounded-xl" v-if="currentPost?.images.length >= 1">
         <Swiper
           :modules="[Navigation, Pagination]"
           :slides-per-view="1"
@@ -86,7 +115,7 @@ onBeforeMount( () => {
           class="h-full w-full"
         >
           <SwiperSlide v-for="(image, index) in currentPost?.images" :key="index" class="aspect-square">
-            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover rounded-xl" />
+            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover " />
           </SwiperSlide>
         </Swiper>
       </div>
@@ -100,9 +129,12 @@ onBeforeMount( () => {
           {{ currentPost.category }}
         </div>
         <!-- 하단 액션 버튼 영역 -->
+        <p class="leading-relaxed text-gray-800 font-medium text-lg">
+          {{ currentPost.description }}
+        </p>
         <div class="flex items-center gap-4 my-3">
-          <button class="flex items-center gap-1">
-            <img src="../assets/images/likeblack.svg" alt="좋아요" />
+          <button class="flex items-center gap-1" @click="handleLike">
+            <img :src="isLike ? like : unlike" alt="좋아요" />
             <span>{{ currentPost?.likes?.length || "0" }}</span>
           </button>
           <button class="flex items-center gap-1">
@@ -110,11 +142,8 @@ onBeforeMount( () => {
             <span>{{ (currentPost.comments && currentPost.comments.length) || "0" }}</span>
           </button>
         </div>
-        <p class="leading-relaxed text-gray-800 font-medium text-lg">
-          {{ currentPost.description }}
-        </p>
       </div>
-      <DetailComment :post-id="currentPost.id" />
+      <!-- <DetailComment :post-id="currentPost.id" /> -->
     </div>
     <WriteButton />
     <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />
