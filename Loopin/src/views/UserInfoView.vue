@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { twMerge } from "tailwind-merge";
 import { computed, onBeforeMount, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { toast } from "vue3-toastify";
 
 const isMyPage = ref(true);
 
@@ -53,8 +54,6 @@ const infos = computed(() => {
   ];
 });
 const feedNav = ref("피드");
-
-const isFollowing = ref(false);
 
 onBeforeMount(async () => {
   console.log(route.fullPath);
@@ -161,6 +160,12 @@ const shortDesc = computed(() => {
   }
 });
 const moreDesc = ref(false);
+
+const handleShare = () => {
+  navigator.clipboard
+    .writeText(`http://localhost:5173/user/${loginUser.nickname}`)
+    .then(() => toast("프로필 주소가 복사되었습니다!"));
+};
 </script>
 <template>
   <div>
@@ -193,12 +198,16 @@ const moreDesc = ref(false);
     <div v-if="isMyPage" class="flex justify-center gap-8 my-10">
       <button
         type="button"
-        class="text-[14px] border w-[170px] h-[40px] rounded-[10px]"
+        class="text-[14px] border w-[170px] h-[40px] rounded-[10px] hover:bg-[#f4f4f4] transition-colors duration-150"
         @click="router.push('/profile/edit')"
       >
         프로필 변경
       </button>
-      <button type="button" class="text-[14px] border w-[170px] h-[40px] rounded-[10px]" @click="handleShare">
+      <button
+        type="button"
+        class="text-[14px] border w-[170px] h-[40px] rounded-[10px] hover:bg-[#f4f4f4] transition-colors duration-150"
+        @click="handleShare"
+      >
         프로필 공유
       </button>
     </div>
