@@ -23,6 +23,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
+import { nextTick } from "vue";
 
 const userInfo = ref(null);
 
@@ -445,7 +446,7 @@ const toggleFeeSelection = (feeType) => {
   }
   setState({ ...state.value, feeInfo: stateFields.feeInfo });
 };
-
+//장소
 const handleOnlineClick = () => {
   stateFields.place = "온라인";
   stateFields.isOffline = false;
@@ -456,6 +457,26 @@ const handleOfflineClick = () => {
   stateFields.isOffline = true;
   setState({ ...state.value, place: stateFields.place, isOffline: stateFields.isOffline });
 };
+
+//시작/종료 날짜
+const disableNonSundays = (date) => {
+  const day = new Date(date).getDay();
+  return day !== 0; // 일요일이 아니면 비활성화
+};
+const disableNonSaturdays = (date) => {
+  const day = new Date(date).getDay();
+  return day !== 6; // 토요일이 아니면 비활성화
+};
+//startDate 변경 시 endDate 초기화
+watch(
+  () => stateFields.startDate,
+  () => {
+    stateFields.endDate = null;
+    nextTick(() => {
+      stateFields.endDate = null; // VueDatePicker에 상태 강제 반영
+    });
+  },
+);
 
 //소개 이미지 선택
 const handleFileChange = (event) => {
@@ -583,6 +604,7 @@ const handlePostSubmit = async () => {
   }
 };
 
+//
 //미리보기용 format
 const formatDate = (date) => {
   // date가 문자열인 경우 Date 객체로 변환
@@ -1086,6 +1108,7 @@ onMounted(async () => {
                 auto-apply
                 class="datepicker-input"
                 :class="`datepicker-${stateFields.selectedActivity}`"
+                week-start="0"
               />
             </div>
             <div>
@@ -1106,7 +1129,10 @@ onMounted(async () => {
       <!-- 시작/종료 시간 선택 단계 -->
       <template #시작종료>
         <div class="px-[15px]">
-          <h2 class="text-[30px] mb-[43px]">시작/종료 시간을 선택하세요</h2>
+          <div class="mb-[43px]">
+            <h2 class="text-[30px]">얼마나 챌린지를 진행할까요?</h2>
+            <p class="text-[#666666]">일요일부터 시작해서 일주일 단위로 기간을 설정할 수 있어요</p>
+          </div>
           <div>
             <div class="flex justify-between">
               <div>
@@ -1121,13 +1147,15 @@ onMounted(async () => {
                   auto-apply
                   class="datepicker-input"
                   :class="`datepicker-${stateFields.selectedActivity}`"
+                  :disabled-dates="disableNonSundays"
+                  week-start="0"
                 />
               </div>
               <div>
                 <h2>종료 날짜</h2>
                 <VueDatePicker
                   v-model="stateFields.endDate"
-                  :min-date="new Date().toLocaleDateString('ko-KR')"
+                  :min-date="stateFields.startDate"
                   :enable-time-picker="false"
                   :format="format"
                   locale="ko"
@@ -1135,6 +1163,8 @@ onMounted(async () => {
                   auto-apply
                   class="datepicker-input"
                   :class="`datepicker-${stateFields.selectedActivity}`"
+                  :disabled-dates="disableNonSaturdays"
+                  week-start="0"
                 />
               </div>
             </div>
