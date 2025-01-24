@@ -52,11 +52,44 @@ const handlePlaceClick = (place) => {
 };
 
 // 컴포넌트가 마운트되었을 때 카카오 API 초기화
-onMounted(() => {
-  if (window.kakao && window.kakao.maps) {
-    ps = new window.kakao.maps.services.Places();
-  } else {
-    alert("카카오 지도 API가 로드되지 않았습니다.");
+const loadKakaoMapsScript = () => {
+  return new Promise((resolve, reject) => {
+    if (window.kakao && window.kakao.maps) {
+      resolve("Kakao Maps script is already loaded.");
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY}&libraries=services&autoload=false`;
+    script.onload = () => {
+      // kakao.maps.load 콜백을 사용하여 카카오 API 객체 접근
+      kakao.maps.load(() => {
+        if (window.kakao?.maps) {
+          console.log("Kakao Maps and services loaded.");
+          resolve("Kakao Maps script loaded successfully.");
+        } else {
+          reject(new Error("Failed to load Kakao Maps API and services."));
+        }
+      });
+    };
+    script.onerror = () => reject(new Error("Failed to load Kakao Maps script."));
+    document.head.appendChild(script);
+  });
+};
+
+onMounted(async () => {
+  try {
+    await loadKakaoMapsScript();
+    console.log(window);
+
+    if (window.kakao?.maps?.services) {
+      ps = new window.kakao.maps.services.Places();
+    } else {
+      alert("카카오 지도 API가 로드되지 않았습니다.");
+    }
+  } catch (error) {
+    console.error(error.message);
   }
 });
 </script>
@@ -108,7 +141,9 @@ onMounted(() => {
           <li v-for="(place, index) in places" :key="index">
             <div class="info py-2" @click="handlePlaceClick(place)">
               <p class="font-bold">{{ place.place_name }}</p>
-              <span class="text-[#999996]" v-if="place.road_address_name">{{ place.road_address_name }}</span>
+              <span class="text-[#999996]" v-if="place.road_address_name">{{
+                place.road_address_name || place.address_name
+              }}</span>
               <span class="text-[#999996]" v-else>{{ place.address_name }}</span>
             </div>
           </li>

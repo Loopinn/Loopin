@@ -3,7 +3,7 @@ import Funnel from "@/components/Funnel.vue";
 import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { useFunnel } from "@/utils/useFunnel";
-import { ref, computed, reactive, watch } from "vue";
+import { ref, computed, reactive, watch, onMounted } from "vue";
 
 import { VueScrollPicker } from "vue-scroll-picker";
 
@@ -18,14 +18,22 @@ import { useRouter } from "vue-router";
 import KakaoMap from "@/components/KakaoMap.vue";
 import ChoiceModal from "@/components/modal/ChoiceModal.vue";
 
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
+
+const userInfo = ref(null);
+
 const router = useRouter();
 const postStore = usePostStore();
 const { createSocialPost, createClubPost, createChallengePost } = postStore;
 
 // 활동 선택에 따른 단계 배열
-const socialSteps = ["활동선택", "타입선택", "참가비", "주제", "장소", "멤버", "시간", "소개"]; // 소셜링
-const clubSteps = ["활동선택", "참가비", "주제", "장소", "멤버", "소개"]; // 클럽
-const challengeSteps = ["활동선택", "참가비", "주제", "시작종료", "주몇회", "멤버", "소개"]; // 챌린지
+const socialSteps = ["활동선택", "타입선택", "참가비", "주제", "장소", "멤버", "시간", "소개", "미리보기"]; // 소셜링
+const clubSteps = ["활동선택", "참가비", "주제", "장소", "멤버", "소개", "미리보기"]; // 클럽
+const challengeSteps = ["활동선택", "참가비", "주제", "시작종료", "주몇회", "멤버", "소개", "미리보기"]; // 챌린지
 
 // 기본 첫 단계 정의
 const steps = ["활동선택"];
@@ -193,6 +201,7 @@ const categoryList = ref([
   },
 ]);
 
+//useFunnel 의 state 가 변하면 stateField 값 갱신
 watch(
   () => state.value,
   () => {
@@ -204,7 +213,7 @@ watch(
   },
 );
 
-const handleCategoryClick = (subjectName, cate, index) => {
+const handleCategoryClick = (subjectName, cate) => {
   stateFields.category = cate;
   stateFields.subject = subjectName;
 
@@ -216,6 +225,7 @@ const handleCategoryClick = (subjectName, cate, index) => {
   });
 };
 
+//체크박스 이미지 렌더링
 const getCheckboxImage = (fee) => {
   if (stateFields.feeInfo.includes(fee)) {
     if (stateFields.selectedActivity === "소셜링") {
@@ -235,68 +245,62 @@ const getPlaceInfo = (placeInfo) => {
   setState({ ...state.value, place: stateFields.place });
 };
 
+//stateField 값 변경 시 useFunnel state 업데이트
 watch(
   () => stateFields.socialingType,
   (newValue) => {
     if (newValue !== "") setState({ ...state.value, socialingType: newValue });
   },
 );
-
 watch(
   () => stateFields.isFee,
   (newValue) => {
     if (newValue !== null) setState({ ...state.value, isFee: newValue });
   },
 );
-
 watch(
   () => [stateFields.maxPeople, stateFields.gender, stateFields.range],
   ([newMaxPeople, newGender, newRange]) => {
     if (newMaxPeople !== "-") setState({ ...state.value, maxPeople: newMaxPeople, gender: newGender, range: newRange });
   },
 );
-
 watch(
   () => [stateFields.meetDate, stateFields.meetTime],
   ([newMeetDate, newMeetTime]) => {
     if (newMeetDate !== null) setState({ ...state.value, meetDate: newMeetDate, meetTime: newMeetTime });
   },
 );
-
 watch(
   () => stateFields.startDate,
   (newValue) => {
     if (newValue !== null) setState({ ...state.value, startDate: newValue });
   },
 );
-
 watch(
   () => stateFields.endDate,
   (newValue) => {
     if (newValue !== null) setState({ ...state.value, endDate: newValue });
   },
 );
-
 watch(
   () => stateFields.tpw,
   (newValue) => {
     if (newValue !== "-") setState({ ...state.value, tpw: newValue });
   },
 );
-
 watch(
   () => stateFields.title,
   (newValue) => {
     if (newValue !== "") setState({ ...state.value, title: newValue });
   },
 );
-
 watch(
   () => stateFields.description,
   (newValue) => {
     if (newValue !== "") setState({ ...state.value, description: newValue });
   },
 );
+
 //나이 슬라이더
 const minValue = 20; // 최소값
 const maxValue = 50; // 최대값
@@ -339,7 +343,7 @@ const handleStyle = computed(() => {
 //인원 옵션
 const options = ["-", 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 const tpwOptions = ["-", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
-
+//나이 표시
 const filterRange = () => {
   const [start, end] = stateFields.range;
 
@@ -356,7 +360,7 @@ const filterRange = () => {
 
 const convertGender = () => {
   if (stateFields.gender === "all") {
-    return "아무나"; // 전체
+    return "누구나"; // 전체
   } else if (stateFields.gender === "male") {
     return "남자만"; // 남자만
   } else if (stateFields.gender === "female") {
@@ -373,7 +377,7 @@ const format = (date) => {
 
   return `${year}/${month}/${day}`;
 };
-
+//이미지 추가
 const triggerFileInput = () => {
   fileInput.value.click();
 };
@@ -408,7 +412,7 @@ const isNextEnabled = computed(() => {
     return stateFields.tpw !== "-";
   } else if (currentStep.value === "소개") {
     return selectedImage.value.length > 0 && stateFields.title.length >= 5;
-  }
+  } else return true;
 });
 
 // 활동 선택 로직
@@ -469,9 +473,6 @@ const handleFileChange = (event) => {
       reader.readAsDataURL(file);
     }
   }
-  // else {
-  //   selectedImage.value = [];
-  // }
   event.target.value = "";
 };
 //이미지 제거
@@ -484,7 +485,6 @@ const removeImage = (index) => {
 // 완료 버튼 액션
 const finish = async () => {
   await handlePostSubmit();
-  // handleReset();
 };
 
 const handlePostSubmit = async () => {
@@ -582,11 +582,65 @@ const handlePostSubmit = async () => {
     console.log(e);
   }
 };
+
+//미리보기용 format
+const formatDate = (date) => {
+  // date가 문자열인 경우 Date 객체로 변환
+  const parsedDate = new Date(date);
+
+  // Date 객체인지 확인 (유효하지 않은 날짜 방지)
+  if (isNaN(parsedDate)) {
+    throw new Error("Invalid date format");
+  }
+
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const year = parsedDate.getFullYear().toString().slice(2); // 연도 마지막 두 자리
+  const month = parsedDate.getMonth() + 1; // 월
+  const day = parsedDate.getDate(); // 일
+  const dayOfWeek = days[parsedDate.getDay()]; // 요일
+  return `${year}.${month}.${day}(${dayOfWeek})`;
+};
+const formatTime = (time) => {
+  const { hours, minutes } = time;
+  // 오전/오후 계산
+  const ampm = hours < 12 ? "오전" : "오후";
+  // 12시간제로 변환 (0시 -> 12시, 13시~23시 -> 1시~11시)
+  const formattedHours = hours % 12 || 12;
+  // 분을 두 자리로 표시
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+
+  return `${ampm} ${formattedHours}:${formattedMinutes}`;
+};
+const formatPlace = (place) => {
+  const placeName = place.road_address_name || place.address_name;
+  return placeName.split(" ")[1];
+};
+const formatFeeInfo = (fee) => {
+  switch (fee) {
+    case "contentFee":
+      return "콘텐츠 제작비";
+    case "hostFee":
+      return "호스트 수고비";
+    case "noshowFee":
+      return "노쇼 방지비";
+    case "rentalFee":
+      return "대관료";
+    case "materialFee":
+      return "재료비";
+    case "dessertFee":
+      return "다과비";
+  }
+};
+
+onMounted(async () => {
+  const auth = JSON.parse(localStorage.getItem("authStore"));
+  if (auth.loginUser) userInfo.value = auth.loginUser;
+});
 </script>
 
 <template>
-  <div class="relative px-[15px]">
-    <div class="h-[80px] flex">
+  <div class="relative">
+    <div class="h-[80px] flex px-[15px]">
       <button @click="prevStep"><img src="@/assets/images/arrow-left.svg" alt="" /></button>
     </div>
     <ChoiceModal
@@ -600,7 +654,7 @@ const handlePostSubmit = async () => {
     <Funnel :steps="state.steps || steps" :currentStep="currentStep">
       <!-- 활동 선택 단계 -->
       <template #활동선택>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">멤버들과 함께 어떤 활동을 하고싶나요?</h2>
           <div class="flex flex-col gap-[15px]">
             <button
@@ -667,7 +721,7 @@ const handlePostSubmit = async () => {
 
       <!-- 타입 선택 단계 (소셜링에서만 사용) -->
       <template #타입선택>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">어떤 소셜링을 열어볼까요?</h2>
           <div class="flex flex-col gap-[15px]">
             <button
@@ -712,7 +766,7 @@ const handlePostSubmit = async () => {
 
       <!-- 참가비 단계 -->
       <template #참가비>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">참가비를 활용해 보시겠어요?</h2>
           <div class="flex gap-[20px]">
             <button
@@ -851,7 +905,7 @@ const handlePostSubmit = async () => {
 
       <!-- 주제 선택 단계 -->
       <template #주제>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">{{ stateFields.selectedActivity }} 주제를 선택해볼까요?</h2>
           <div
             v-for="(subject, index) in categoryList"
@@ -900,7 +954,7 @@ const handlePostSubmit = async () => {
 
       <!-- 장소 선택 단계 -->
       <template #장소>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">어디서 만날까요?</h2>
           <div class="flex gap-[20px]">
             <button
@@ -935,7 +989,7 @@ const handlePostSubmit = async () => {
 
       <!-- 멤버 선택 단계 -->
       <template #멤버>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">어떻게 멤버를 모을까요?</h2>
           <div class="flex justify-between mb-[15px]">
             <p>신청 방식</p>
@@ -967,7 +1021,7 @@ const handlePostSubmit = async () => {
                 }"
                 @click="stateFields.gender = 'all'"
               >
-                <p>아무나</p>
+                <p>누구나</p>
               </button>
 
               <button
@@ -1018,7 +1072,7 @@ const handlePostSubmit = async () => {
 
       <!-- 시간/주차 선택 단계 -->
       <template #시간>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">언제 만날까요?</h2>
           <div class="flex justify-between">
             <div>
@@ -1051,7 +1105,7 @@ const handlePostSubmit = async () => {
 
       <!-- 시작/종료 시간 선택 단계 -->
       <template #시작종료>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">시작/종료 시간을 선택하세요</h2>
           <div>
             <div class="flex justify-between">
@@ -1090,7 +1144,7 @@ const handlePostSubmit = async () => {
 
       <!-- 주몇회 선택 단계 -->
       <template #주몇회>
-        <div>
+        <div class="px-[15px]">
           <h2 class="text-[30px] mb-[43px]">인증은 일주일에 몇 회씩 할까요?</h2>
           <VueScrollPicker v-model="stateFields.tpw" :options="tpwOptions" />
         </div>
@@ -1098,7 +1152,7 @@ const handlePostSubmit = async () => {
 
       <!-- 소개 단계 -->
       <template #소개>
-        <div>
+        <div class="px-[15px]">
           <h2 v-if="['소셜링', '클럽'].includes(stateFields.selectedActivity)" class="text-[30px] mb-[43px]">
             {{ stateFields.selectedActivity }}을 소개해볼까요?
           </h2>
@@ -1151,33 +1205,269 @@ const handlePostSubmit = async () => {
           </div>
         </div>
       </template>
+
+      <!-- 미리보기 단계 -->
+      <template #미리보기>
+        <div v-if="stateFields.selectedActivity === '클럽'" class="relative">
+          <div class="w-full relative z-0 bg-white rounded-xl">
+            <Swiper
+              :modules="[Navigation, Pagination]"
+              :slides-per-view="1"
+              :navigation="true"
+              :pagination="{ clickable: true }"
+              class="w-full h-[260px]"
+            >
+              <SwiperSlide v-for="(image, index) in previewImages" :key="index">
+                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+              </SwiperSlide>
+            </Swiper>
+          </div>
+          <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
+            <div class="ml-[40px] w-[520px]">
+              <div class="h-[80px] flex gap-4">
+                <div class="flex items-center">
+                  <img :src="userInfo.profile_img" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
+                </div>
+                <div class="mt-1 flex flex-col justify-center">
+                  <p class="text-[20px] font-bold mb-1">{{ stateFields.title }}</p>
+                  <p class="text-[12px]">호스트 {{ userInfo.nickname }}</p>
+                </div>
+              </div>
+
+              <div class="mt-[30px]">
+                <pre>{{ stateFields.description }}</pre>
+                <!-- 안내사항 -->
+                <div class="mt-5">
+                  <div class="text-[#1C8A6A]">안내사항</div>
+                  <div class="font-bold">자세한 정보를 알려드릴게요</div>
+                  <div class="mt-2">
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/category.svg" alt="category" />
+
+                      <span>{{ stateFields.subject }}</span>
+                      <span> > </span>
+                      <span>{{ stateFields.category }}</span>
+                    </div>
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/members.svg" alt="members" />
+                      <p>최대 {{ stateFields.maxPeople }}명</p>
+                    </div>
+                    <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/won.svg" alt="fee" />
+                      <p>{{ stateFields.fee }}원</p>
+                    </div>
+                    <div v-if="stateFields.feeInfo.length > 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                      <span v-for="(info, index) in stateFields.feeInfo" :key="index">{{ formatFeeInfo(info) }}</span>
+                    </div>
+                    <div
+                      v-if="
+                        stateFields.gender !== 'all' || JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])
+                      "
+                      class="flex gap-1 mb-1"
+                    >
+                      <img src="@/assets/images/address-card.svg" alt="stamp" />
+                      <span v-if="JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])">{{
+                        filterRange(stateFields.range)
+                      }}</span>
+                      <span v-if="stateFields.gender !== 'all'">{{ convertGender(stateFields.gender) }}</span>
+                    </div>
+                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/location.svg" alt="location" />
+                      <div>
+                        <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                        <span v-else
+                          >{{ stateFields.place.place_name }} ({{
+                            stateFields.place.road_address_name || stateFields.place.address_name
+                          }})</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="relative">
+          <div class="w-full relative z-0 bg-white rounded-xl">
+            <Swiper
+              :modules="[Navigation, Pagination]"
+              :slides-per-view="1"
+              :navigation="true"
+              :pagination="{ clickable: true }"
+              class="w-full h-[260px]"
+            >
+              <SwiperSlide v-for="(image, index) in previewImages" :key="index">
+                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+              </SwiperSlide>
+            </Swiper>
+          </div>
+          <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
+            <img
+              :src="userInfo.profile_img"
+              alt="hostprofile"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+            />
+            <div class="text-center mt-[30px]">
+              <p class="text-[12px] mb-1">{{ userInfo.nickname }}</p>
+              <p class="text-[20px] font-bold">{{ stateFields.title }}</p>
+            </div>
+          </div>
+          <!-- 한줄 요약 -->
+          <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
+            <div class="pt-[50px]">
+              <div class="flex justify-center items-center text-center text-[#403F3F] mt-2 px-[40px]">
+                <img
+                  src="@/assets/images/calendar.svg"
+                  alt="calendar"
+                  class="mb-[2px]"
+                  style="filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%)"
+                />
+                <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
+                  <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                  <span v-else>{{ formatPlace(stateFields.place) }}</span>
+                  <span class="mx-1">·</span>
+                </div>
+                <span v-if="stateFields.meetDate && stateFields.meetTime">
+                  {{ formatDate(stateFields.meetDate) }}
+                  {{ formatTime(stateFields.meetTime) }}
+                </span>
+
+                <span v-if="stateFields.startDate && stateFields.endDate">
+                  {{ formatDate(stateFields.startDate) }} ~ {{ formatDate(stateFields.endDate) }}
+                </span>
+
+                <div v-if="stateFields.tpw !== '-'" class="flex">
+                  <img
+                    src="@/assets/images/check-circle.svg"
+                    alt="check"
+                    class="ml-2 mr-1"
+                    style="
+                      filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%);
+                    "
+                  />
+                  <span>{{ stateFields.tpw }} 인증</span>
+                </div>
+
+                <div v-if="stateFields.selectedActivity === '챌린지' && stateFields.maxPeople !== '-'" class="flex">
+                  <img
+                    src="@/assets/images/members.svg"
+                    alt="members"
+                    class="ml-2 mr-1"
+                    style="
+                      filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%);
+                    "
+                  />
+                  <span>1/{{ stateFields.maxPeople }}</span>
+                </div>
+              </div>
+              <div class="ml-[40px] mt-[70px] w-[520px]">
+                <pre>{{ stateFields.description }}</pre>
+                <!-- 안내사항 -->
+                <div class="mt-5">
+                  <div
+                    :class="{
+                      'text-[#F43630]': stateFields.selectedActivity === '소셜링',
+                      'text-[#3498D0]': stateFields.selectedActivity === '챌린지',
+                    }"
+                  >
+                    안내사항
+                  </div>
+                  <div class="font-bold">자세한 정보를 알려드릴게요</div>
+                  <div class="mt-2">
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/category.svg" alt="category" />
+
+                      <span>{{ stateFields.subject }}</span>
+                      <span> > </span>
+                      <span>{{ stateFields.category }}</span>
+                    </div>
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/members.svg" alt="members" />
+                      <p>최대 {{ stateFields.maxPeople }}명</p>
+                    </div>
+                    <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/won.svg" alt="fee" />
+                      <p>{{ stateFields.fee }}원</p>
+                    </div>
+                    <div v-if="stateFields.feeInfo.length > 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                      <span v-for="(info, index) in stateFields.feeInfo" :key="index">{{ formatFeeInfo(info) }}</span>
+                    </div>
+                    <div
+                      v-if="
+                        stateFields.gender !== 'all' || JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])
+                      "
+                      class="flex gap-1 mb-1"
+                    >
+                      <img src="@/assets/images/address-card.svg" alt="stamp" />
+                      <span v-if="JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])">{{
+                        filterRange(stateFields.range)
+                      }}</span>
+                      <span v-if="stateFields.gender !== 'all'">{{ convertGender(stateFields.gender) }}</span>
+                    </div>
+                    <div v-if="stateFields.tpw !== '-'" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/stamp.svg" alt="stamp" />
+                      <p>{{ stateFields.tpw }} 인증</p>
+                    </div>
+                    <div v-if="stateFields.meetDate" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/calendar.svg" alt="calendar" />
+                      <p>모임날짜 · {{ formatDate(stateFields.meetDate) }} {{ formatTime(stateFields.meetTime) }}</p>
+                    </div>
+                    <div v-if="stateFields.startDate && stateFields.endDate" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/calendar.svg" alt="calendar" />
+                      <p>{{ formatDate(stateFields.startDate) }} ~ {{ formatDate(stateFields.endDate) }}</p>
+                    </div>
+                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/location.svg" alt="location" />
+                      <div>
+                        <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                        <span v-else
+                          >{{ stateFields.place.place_name }} ({{
+                            stateFields.place.road_address_name || stateFields.place.address_name
+                          }})</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
     </Funnel>
-    <button
-      v-if="currentStep === '소개'"
-      class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
-      :class="{
-        'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
-        'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
-        'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
-      }"
-      :disabled="!isNextEnabled"
-      @click="finish"
-    >
-      완료
-    </button>
-    <button
-      v-else
-      class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
-      :class="{
-        'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
-        'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
-        'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
-      }"
-      :disabled="!isNextEnabled"
-      @click="nextStep"
-    >
-      다음
-    </button>
+    <div class="px-[15px]">
+      <button
+        v-if="currentStep === '미리보기'"
+        class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
+        :class="{
+          'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
+          'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
+          'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
+        }"
+        :disabled="!isNextEnabled"
+        @click="finish"
+      >
+        {{ stateFields.selectedActivity }} 열기
+      </button>
+      <button
+        v-else
+        class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
+        :class="{
+          'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
+          'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
+          'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
+        }"
+        :disabled="!isNextEnabled"
+        @click="nextStep"
+      >
+        <span v-if="currentStep === '소개'">미리보기</span>
+        <span v-else>다음</span>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -1216,8 +1506,16 @@ const handlePostSubmit = async () => {
 }
 
 /* 선택된 항목 스타일 변경 */
-::v-deep(.vue-scroll-picker-item-selected) {
-  color: #000;
+::v-deep(.number-picker-소셜링 .vue-scroll-picker-item-selected) {
+  color: #f43630;
+  font-weight: 600;
+}
+::v-deep(.number-picker-클럽 .vue-scroll-picker-item-selected) {
+  color: #1c8a6a;
+  font-weight: 600;
+}
+::v-deep(.number-picker-챌린지 .vue-scroll-picker-item-selected) {
+  color: #3498d0;
   font-weight: 600;
 }
 </style>

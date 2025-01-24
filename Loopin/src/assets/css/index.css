@@ -84,17 +84,6 @@ input[type="number"]::-webkit-inner-spin-button {
   display: none;
 }
 
-/* scroll-picker */
-.number-picker-소셜링 .vue-scroll-picker-item-selected {
-  color: #f43630;
-}
-.number-picker-클럽 .vue-scroll-picker-item-selected {
-  color: #1c8a6a;
-}
-.number-picker-챌린지 .vue-scroll-picker-item-selected {
-  color: #3498d0;
-}
-
 /* 장소 검색 리스트 */
 .location-list-wrap::-webkit-scrollbar {
   display: none;
