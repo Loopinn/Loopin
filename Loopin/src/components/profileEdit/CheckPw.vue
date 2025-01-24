@@ -1,6 +1,7 @@
 <script setup>
 import { login } from "@/utils/auth/login";
 import { ref } from "vue";
+import { toast } from "vue3-toastify";
 
 const ucheck = ref(""); // 카카오면 이메일, 아니면 비밀번호
 
@@ -16,17 +17,17 @@ const handleSubmit = async () => {
     if (ucheck.value.trim() === props.uemail) {
       emit("update:checkPW", true);
     } else {
-      alert("이메일이 일치하지 않습니다!");
+      toast.error("이메일이 일치하지 않습니다!");
     }
   } else {
     if (ucheck.value.trim().length === 0) return alert("비밀번호를 입력하세요");
     try {
       const { data, error } = await login(props.uemail, ucheck.value);
       if (!error && data) {
-        alert("인증되었습니다");
+        toast("인증되었습니다");
         emit("update:checkPW", true);
       } else {
-        alert("비밀번호가 일치하지 않습니다!");
+        toast.error("비밀번호가 일치하지 않습니다!");
         throw new Error("비밀번호 에러" + error);
       }
       console.log(data);
