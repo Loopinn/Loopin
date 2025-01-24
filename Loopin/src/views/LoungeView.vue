@@ -1,19 +1,46 @@
 <script setup>
-import { onMounted } from "vue";
+import supabase from "@/config/supabase";
+import { ref, onBeforeMount } from "vue";
 import { RouterLink } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
+import { debounce } from "lodash";
+import { feedLike } from "@/utils/feedLike";
 import PageInfoSection from "@/components/common/PageInfoSection.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
 import loungeLogo from "../assets/images/loungeLogo.svg";
 import noImage from "../assets/images/noImage.svg";
+import like from "../assets/images/likewhite_full.svg";
+import unlike from "../assets/images/likewhite.svg";
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
 
-onMounted(() => {
-  loadLoungePosts();
+const likes = ref([]);
+
+const getUserId = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  return sessionData?.session?.user?.id;
+};
+
+const likeCheck = async () => {
+  const userId = await getUserId();
+  likes.value = loungePosts.value.map((post) => ({ id: post.id, isLiked: post.likes.includes(userId) }));
+};
+
+const handleLike = debounce(async (postId) => {
+  const userId = await getUserId();
+  const post = loungePosts.value.find((post) => post.id === postId);
+  await feedLike(post, userId);
+  likes.value = likes.value.map((like) => (like.id === postId ? { ...like, isLiked: !like.isLiked } : like));
+  await loadLoungePosts();
+}, 300);
+
+
+onBeforeMount(async () => {
+  await loadLoungePosts();
+  await likeCheck();
 });
 </script>
 
@@ -27,9 +54,9 @@ onMounted(() => {
       alt="라운지 로고"
     />
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2">
+      <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2 relative">
         <RouterLink :to="{ path: `/lounge/${feed.id}` }">
-          <div class="bg-white rounded-xl">
+          <div class="bg-gray-300 rounded-xl">
             <img
               :src="feed.images[0] || noImage"
               :alt="feed.description"
@@ -37,6 +64,9 @@ onMounted(() => {
             />
           </div>
         </RouterLink>
+        <button class="absolute bottom-14 left-2 flex items-center" @click="handleLike(feed.id)">
+          <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" />
+        </button>
         <p class="text-xs leading-relaxed text-gray-800 line-clamp">
           {{ feed.description }}
         </p>
@@ -48,11 +78,11 @@ onMounted(() => {
 
 <style scoped>
 .line-clamp {
-  display: block; /* 기본 블록 요소로 설정 */
+  display: block;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2; /* 최대 2줄 */
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  max-height: calc(2 * 1.6em); /* 2줄 높이 계산 (1.2em은 줄 높이) */
+  max-height: calc(2 * 1.6em);
 }
 </style>

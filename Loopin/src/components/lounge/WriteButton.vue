@@ -6,7 +6,7 @@ import { RouterLink } from "vue-router";
     <div class="relative w-[390px] h-full mx-auto">
       <RouterLink
         to="/lounge/write"
-        class="absolute bottom-[80px] right-[-90px] w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors z-50 pointer-events-auto"
+        class="absolute bottom-[80px] right-[-90px] w-12 h-12 bg-[#f43630] text-white rounded-full flex items-center justify-center shadow-lg hover:[#871e1a] transition-colors z-50 pointer-events-auto"
       >
         <div class="flex items-center justify-center w-full h-full">
           <svg width="26" height="26" viewBox="-2 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg">
