@@ -20,7 +20,6 @@ import MoreModal from "@/components/lounge/MoreModal.vue";
 import Loading from "@/components/Loading.vue";
 import like from "../assets/images/likeblack_full.svg";
 import unlike from "../assets/images/likeblack.svg";
-import CommentList from "@/components/postcontent/CommentList.vue";
 
 const route = useRoute();
 const postStore = usePostStore();
@@ -30,7 +29,6 @@ const { loadLoungePosts } = postStore;
 const postId = route.params.id;
 const userId = ref(null);
 const isMoreModalOpen = ref(false);
-const commentModal = ref(false);
 const nickname = ref(null);
 const profileImage = ref(null);
 const isLike = ref(null);
@@ -80,15 +78,6 @@ async function fetchData() {
 function openMoreModal() {
   isMoreModalOpen.value = true;
 }
-
-const opencommentModal = () => {
-  commentModal.value = true;
-};
-
-
-const commentModalClose = () => {
-  commentModal.value = false;
-};
 
 onBeforeMount(async () => {
   await fetchData();
@@ -144,18 +133,17 @@ onBeforeMount(async () => {
           {{ currentPost.description }}
         </p>
         <div class="flex items-center gap-4 my-3">
-          <button class="flex items-center gap-1" @click="commentModalClose">
+          <button class="flex items-center gap-1" @click="handleLike">
             <img :src="isLike ? like : unlike" alt="좋아요" />
             <span>{{ currentPost?.likes?.length || "0" }}</span>
           </button>
-          <button class="flex items-center gap-1" @click="opencommentModal">
+          <button class="flex items-center gap-1">
             <img src="../assets/images/comment.svg" alt="댓글" />
             <span>{{ (currentPost.comments && currentPost.comments.length) || "0" }}</span>
           </button>
         </div>
       </div>
-      <DetailComment :post-id="currentPost.id" />
-      <!-- <CommentList :isOpen="commentModal" @close="commentModalClose" /> -->
+      <!-- <DetailComment :post-id="currentPost.id" /> -->
     </div>
     <WriteButton />
     <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />
