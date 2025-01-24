@@ -1,12 +1,60 @@
 <script setup>
-import { ref, defineProps, computed } from "vue";
+import { dayNames } from "@/constants/dayNames";
+import { ref, defineProps, computed, onMounted, onBeforeMount } from "vue";
+import calendar from "@/assets/images/calendar.svg";
+import checkIcon from "@/assets/images/check.svg";
 
 const props = defineProps({
   post: {
     type: Object,
     required: true,
   },
+  channelName: {
+    type: String,
+  },
 });
+
+const socialingDate = ref(null);
+const challengeDate = ref(null);
+
+onBeforeMount(() => {
+  if (props.channelName === "소셜링") {
+    console.log("postCard", props.post);
+
+    socialingDate.value = formatDate(props.post.date);
+  } else if (props.channelName === "챌린지") {
+    console.log("challenge", props.post);
+
+    challengeDate.value = formatDate(props.post.start_date);
+
+    diffDay("2025-1-24", "2025-2-1");
+  }
+
+  console.log(socialingDate.value);
+});
+
+// 날짜 포맷팅
+const formatDate = (date) => {
+  const newDate = new Date(date);
+
+  const month = newDate.getMonth() + 1;
+  const day = newDate.getDate();
+
+  const dayName = dayNames[newDate.getDay()];
+  console.log(`${month}.${day}(${dayName})`);
+  return `${month}.${day}(${dayName})`;
+};
+
+// 챌린지 시작, 종료날짜 차이 계산
+const diffDay = (startDate, endDate) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const diff = (end - start) / (1000 * 60 * 60 * 24 * 7);
+  console.log(diff.toFixed(0));
+
+  return `${diff.toFixed(0)}주 간`;
+};
 
 const place_name = computed(() => {
   const placeString = props.post.place;
@@ -51,10 +99,21 @@ const isLiked = () => {
       </div>
 
       <p class="text-[24px] truncate ...">{{ post.title }}</p>
-      <p class="text-[#999999]">
-        {{ post.type }} <img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-2" />
-        {{ place_name }}
-      </p>
+      <div v-if="props.channelName === '소셜링'" class="flex gap-1 text-[#999999]">
+        <p>
+          {{ post.type }}
+        </p>
+        <p><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-2" /> {{ place_name }}</p>
+        <p>· {{ socialingDate }}</p>
+      </div>
+      <div v-else-if="props.channelName === '클럽'" class="text-[#999999]">
+        <p><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-2" /> {{ place_name }}</p>
+      </div>
+      <div v-else class="text-[#999999] flex gap-1">
+        <p><img :src="calendar" alt="calendar" class="inline" />{{ challengeDate }} ·</p>
+        <p>4주 간</p>
+        <p class="flex gap-1"><img :src="checkIcon" alt="" class="w-[15px]" /> {{ post.times_per_week }}</p>
+      </div>
       <div class="flex items-center gap-1">
         <div class="flex -space-x-2">
           <img

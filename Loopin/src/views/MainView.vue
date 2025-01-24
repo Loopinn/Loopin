@@ -64,7 +64,7 @@ onMounted(() => {
         />
         <div v-for="post in channelview.posts.slice(-3)" :key="post.id">
           <RouterLink :to="{ path: `${channelview.route}/${post.id}` }">
-            <ChannelPostCard :post="post" />
+            <ChannelPostCard :post="post" :channelName="channelview.title" />
           </RouterLink>
         </div>
 
