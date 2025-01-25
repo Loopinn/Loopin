@@ -17,7 +17,9 @@ const props = defineProps({
 });
 
 const socialingDate = ref(null);
+
 const challengeDate = ref(null);
+const challengeDiffDay = ref(null);
 
 onBeforeMount(() => {
   if (props.channelName === "소셜링") {
@@ -29,10 +31,8 @@ onBeforeMount(() => {
 
     challengeDate.value = formatDate(props.post.start_date);
 
-    diffDay("2025-1-24", "2025-2-1");
+    challengeDiffDay.value = diffDay(props.post.start_date, props.post.end_date);
   }
-
-  console.log(socialingDate.value);
 });
 
 // 날짜 포맷팅
@@ -109,7 +109,7 @@ const isLiked = () => {
       </div>
       <div v-else class="text-[#999999] flex gap-1">
         <p><img :src="calendar" alt="calendar" class="inline" />{{ challengeDate }} ·</p>
-        <p>4주 간</p>
+        <p>{{ challengeDiffDay }}</p>
         <p class="flex gap-1"><img :src="checkIcon" alt="" class="w-[15px]" /> {{ post.times_per_week }}</p>
       </div>
       <div class="flex items-center gap-1">
@@ -150,7 +150,7 @@ const isLiked = () => {
           </div>
         </div>
         <img src="@/assets/images/members_gray.svg" alt="participants" />
-        <p class="text-[#999999]">{{ post.participants ? "post.participants.length" : 0 }}/{{ post.max_people }}</p>
+        <p class="text-[#999999]">{{ post.participants ? post.participants.length : 0 }}/{{ post.max_people }}</p>
       </div>
     </div>
   </div>
