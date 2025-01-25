@@ -4,7 +4,7 @@ import Comment from "@/components/postcontent/Comment.vue";
 import Register from "@/components/postcontent/Register.vue";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
+import { computed, onBeforeMount, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
 const postStore = usePostStore();
@@ -18,7 +18,7 @@ const currentPost = computed(() => {
   return challengePosts.value.find((post) => post.id === postId);
 });
 
-onMounted(() => {
+onBeforeMount(() => {
   loadChallengePosts();
 });
 

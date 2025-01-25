@@ -4,7 +4,7 @@ import Comment from "@/components/postcontent/Comment.vue";
 import Register from "@/components/postcontent/Register.vue";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
+import { computed, onBeforeMount, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
 const postStore = usePostStore();
@@ -18,7 +18,7 @@ const currentPost = computed(() => {
   return socialingPosts.value.find((post) => post.id === postId);
 });
 
-onMounted(() => {
+onBeforeMount(() => {
   loadSocialPosts();
   console.log(currentPost.value); // 현재 게시물 출력
 });

@@ -5,7 +5,7 @@ import Register from "@/components/postcontent/Register.vue";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
-import { computed, onMounted } from "vue";
+import { computed, onBeforeMount, onMounted } from "vue";
 
 const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
@@ -18,7 +18,7 @@ const currentPost = computed(() => {
   return clubPosts.value.find((post) => post.id === postId);
 });
 
-onMounted(() => {
+onBeforeMount(() => {
   loadClubPosts();
 });
 </script>
