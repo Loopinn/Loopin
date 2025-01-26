@@ -16,7 +16,7 @@ const route = useRoute();
 
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
-const { loadLoungePosts, createLoungePost } = postStore;
+const { loadLoungePosts, createLoungePost, updateLoungePosts } = postStore;
 
 const isModalOpen = ref(false);
 const isLoading = ref(false);
@@ -33,13 +33,14 @@ const images = ref([]);
 
 // 수정화면 로직
 const postId = ref(route.params.id);
-console.log("postId", postId.value);
+
 const currentPost = computed(() => {
     if (postId.value) {
         const post = loungePosts.value.find((post) => post.id === postId.value);
         if (post) {
             description.value = post.description;
-            selectedImage.value = post.images;  
+            selectedImage.value = post.images;
+            category.value = post.category;
             return post;
         }
     }
@@ -84,58 +85,73 @@ function removeImage(index) {
 
 // 피드 등록
 const handleSubmit = async () => {
-  if (postId.value) {
-    alert("공사중🚧");
-    return false;
-  }
   isLoading.value = true;
 
-  if (!images.value) {
-    return alert("이미지를 선택해야합니다.");
-  }
-  if (category.value && description.value && creator.value) {
-    // 다중 이미지
-    const imageUrls = await Promise.all(
-      images.value.map(async (image) => {
-        const fileName = `${Date.now()}-${image.name}`;
-        const { data: imageData, error: imageError } = await supabase.storage
-          .from("post-images")
-          .upload(`images/feed/${fileName}`, image);
+  try {
 
-        if (imageError) throw imageError;
-        console.log("imageData", imageData);
-        const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
+    if (!selectedImage.value || selectedImage.value.length === 0) {
+      alert("이미지를 선택해야 합니다.");
+      return;
+    }
 
-        const imageUrl = imagePath.publicUrl;
-        return imageUrl;
-      }),
-    );
-    const submitResponse = await createLoungePost(
-      {
-        title: title.value,
-        description: description.value,
-        images: imageUrls,
-        category: category.value,
-      },
-      creator.value,
-    );
+    if (category.value && description.value && creator.value) {
+      // 이미지 업로드 및 URL 생성
+      const imageUrls = await Promise.all(
+        images.value.map(async (image) => {
+          const fileName = `${Date.now()}-${image.name}`;
+          const { data: imageData, error: imageError } = await supabase.storage
+            .from("post-images")
+            .upload(`images/feed/${fileName}`, image);
 
-    if (submitResponse && submitResponse.length > 0) {
-      alert("피드 등록에 성공했습니다.");
-        router.push(`/lounge/${submitResponse[0].id}`);
+          if (imageError) throw imageError;
+
+          const { data: imagePath } = supabase.storage
+            .from("post-images")
+            .getPublicUrl(`images/feed/${fileName}`);
+
+          return imagePath.publicUrl;
+        })
+      );
+
+      if (postId.value) {
+        updateLoungePosts(postId.value, {
+          category: category.value,
+          description: description.value,
+          images: images ? selectedImage.value : imageUrls,
+        });
+        alert("피드 등록에 성공했습니다.");
+        router.push(`/lounge/${postId.value}`);
+      } else {
+        // 새로운 포스트 생성
+        const submitResponse = await createLoungePost(
+          {
+            title: title.value,
+            description: description.value,
+            images: imageUrls,
+            category: category.value,
+          },
+          creator.value
+        );
+        if (submitResponse && submitResponse.length > 0) {
+          alert("피드 등록에 성공했습니다.");
+          router.push(`/lounge/${submitResponse[0].id}`);
+        } else {
+          alert("피드 등록에 실패했습니다.");
+        }
+      }
     } else {
-        alert("피드 등록에 실패했습니다.");
+      if (!category.value) {
+        alert("카테고리를 선택해 주세요.");
+      }
+      if (!description.value) {
+        alert("설명을 채워주세요.");
+      }
     }
-
-  } else {
+  } catch (error) {
+    console.error("게시물 제출 중 오류 발생:", error);
+    alert("작업 중 오류가 발생했습니다. 다시 시도해 주세요.");
+  } finally {
     isLoading.value = false;
-    if (!category.value) {
-      return alert("카테고리를 선택해 주세요.");
-    }
-
-    if (!description.value) {
-      return alert("설명을 채워주세요.");
-    }
   }
 };
 
@@ -145,7 +161,6 @@ onBeforeMount(async () => {
   const isLoggedIn = !!data.session;
   const userId = data?.session?.user?.id;
   creator.value = isLoggedIn ? userId : "";
-  console.log("creator", creator.value);
 });
 
 </script>

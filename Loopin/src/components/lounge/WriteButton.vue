@@ -6,18 +6,11 @@ import { RouterLink } from "vue-router";
     <div class="relative w-[390px] h-full mx-auto">
       <RouterLink
         to="/lounge/write"
-        class="absolute bottom-[80px] right-[-90px] w-12 h-12 bg-[#f43630] text-white rounded-full flex items-center justify-center shadow-lg hover:[#871e1a] transition-colors z-50 pointer-events-auto"
+        class="absolute bottom-[80px] right-[-90px] w-12 h-12 bg-[#f43630]
+         text-white rounded-full flex items-center justify-center hover:bg-[#ff8884] transition-colors z-50 pointer-events-auto"
       >
-        <div class="flex items-center justify-center w-full h-full">
-          <svg width="26" height="26" viewBox="-2 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+        <div class="flex items-center justify-center w-full h-full pl-1">
+          <img src="@/assets/images/pen.svg" alt="pen" class="w-6 h-6">
         </div>
       </RouterLink>
     </div>

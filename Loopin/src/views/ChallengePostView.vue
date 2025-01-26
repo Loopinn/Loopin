@@ -2,10 +2,13 @@
 import MemberInfo from "@/components/postcontent/MemberInfo.vue";
 import Comment from "@/components/postcontent/Comment.vue";
 import Register from "@/components/postcontent/Register.vue";
+import { joinChallenge } from "@/utils/joinChallenge";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
-import { computed, onBeforeMount, onMounted } from "vue";
+import supabase from "@/config/supabase";
+import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
+import Loading from "@/components/Loading.vue";
 
 const postStore = usePostStore();
 const { challengePosts } = storeToRefs(postStore);
@@ -14,8 +17,63 @@ const { loadChallengePosts } = postStore;
 const route = useRoute();
 const postId = route.params.id;
 
+const userData = ref(null);
+const userId = ref("");
+const isLoading = ref(false);
+
+const getUserId = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log("내 아이디: ", sessionData?.session?.user?.id);
+  userId.value = sessionData?.session?.user?.id || "";
+};
+
 const currentPost = computed(() => {
   return challengePosts.value.find((post) => post.id === postId);
+});
+
+const fetchData = async () => {
+  isLoading.value = true;
+  if (currentPost.value && currentPost.value.creator) {
+    try {
+      // Supabase에서 작성자 정보 가져오기
+      const { data: userDataFromDB, error: userError } = await supabase
+        .from("userinfo")
+        .select()
+        .eq("id", currentPost.value.creator)
+        .single();
+
+      if (userError) {
+        console.log("유저 데이터를 가져오는 중 에러 발생", userError);
+        return;
+      }
+
+      if (userDataFromDB) {
+        userData.value = userDataFromDB;
+      }
+    } catch (error) {
+      console.log("알 수 없는 오류 발생: ", error);
+    } finally {
+      isLoading.value = false;
+    }
+  } else {
+    console.log("작성자 ID가 없습니다.");
+  }
+};
+
+const handleUpdateParticipants = (updatedParticipants) => {
+  currentPost.value.participants = updatedParticipants;
+};
+
+onMounted(async () => {
+  console.log("현재 게시글", currentPost.value);
+  await getUserId();
+});
+
+// currentPost가 변경될 때마다 자동으로 실행
+watchEffect(() => {
+  if (currentPost.value && currentPost.value?.creator) {
+    fetchData();
+  }
 });
 
 onBeforeMount(() => {
@@ -50,6 +108,7 @@ const period = computed(() => {
 });
 </script>
 <template>
+  <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ' '" alt="thumbnail" />
     <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
@@ -75,19 +134,19 @@ const period = computed(() => {
           <span>12/14</span>
         </div>
         <div class="ml-[40px] mt-[70px] w-[520px]">
-          <div>게시글 내용</div>
+          <div>{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
-          <MemberInfo :participants="currentPost.participants" />
+          <MemberInfo :participants="currentPost.participants || []" />
           <!-- 안내사항 -->
           <div class="mt-5">
-            <div class="text-[#FF0000]">안내사항</div>
+            <div class="text-[#46A7CD]">안내사항</div>
             <div class="font-bold">자세한 정보를 알려드릴게요</div>
             <div class="mt-2">
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/category.svg" alt="category" />
 
                 <router-link to="#" class="underline">{{ currentPost.subject }}</router-link>
-                <span> > </span>
+                <span v-if="currentPost.subject"> > </span>
                 <router-link to="#" class="underline">{{ currentPost.category }}</router-link>
               </div>
               <div class="flex gap-1 mb-1">
@@ -99,11 +158,11 @@ const period = computed(() => {
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/calendar.svg" alt="calendar" />
-                <p>{{ currentPost.times_per_week }}</p>
+                <p>{{ period }}일간 진행 - {{ startDate }} ~ {{ endDate }}</p>
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/location.svg" alt="location" />
-                <p>{{ period }}일간 진행 - {{ startDate }}~ {{ endDate }}</p>
+                <p>{{ currentPost.times_per_week }} 인증</p>
               </div>
             </div>
           </div>
@@ -112,7 +171,14 @@ const period = computed(() => {
         </div>
       </div>
       <!-- 참여하기 -->
-      <Register />
+      <Register
+        :title="currentPost.title"
+        :currentPost="currentPost"
+        :pageType="'challenge'"
+        :userId="userId"
+        :action="joinChallenge"
+        @updateParticipants="handleUpdateParticipants"
+      />
     </div>
   </div>
 </template>
