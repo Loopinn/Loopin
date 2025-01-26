@@ -9,7 +9,6 @@ import { VueScrollPicker } from "vue-scroll-picker";
 
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
-// vue-scroll-picker 기본 스타일 가져오기
 import "vue-scroll-picker/lib/style.css";
 
 import VueDatePicker from "@vuepic/vue-datepicker";
@@ -130,7 +129,6 @@ const categoryList = ref([
       "위스키",
       "맥주",
       "파인다이닝",
-      "페어링",
       "커피",
       "비건",
       "티룸",
@@ -202,18 +200,6 @@ const categoryList = ref([
   },
 ]);
 
-//useFunnel 의 state 가 변하면 stateField 값 갱신
-watch(
-  () => state.value,
-  () => {
-    for (const key in stateFields) {
-      if (key in state.value) {
-        stateFields[key] = state.value[key];
-      }
-    }
-  },
-);
-
 const handleCategoryClick = (subjectName, cate) => {
   stateFields.category = cate;
   stateFields.subject = subjectName;
@@ -246,59 +232,15 @@ const getPlaceInfo = (placeInfo) => {
   setState({ ...state.value, place: stateFields.place });
 };
 
-//stateField 값 변경 시 useFunnel state 업데이트
+//useFunnel 의 state 가 변하면 stateField 값 갱신
 watch(
-  () => stateFields.socialingType,
-  (newValue) => {
-    if (newValue !== "") setState({ ...state.value, socialingType: newValue });
-  },
-);
-watch(
-  () => stateFields.isFee,
-  (newValue) => {
-    if (newValue !== null) setState({ ...state.value, isFee: newValue });
-  },
-);
-watch(
-  () => [stateFields.maxPeople, stateFields.gender, stateFields.range],
-  ([newMaxPeople, newGender, newRange]) => {
-    if (newMaxPeople !== "-") setState({ ...state.value, maxPeople: newMaxPeople, gender: newGender, range: newRange });
-  },
-);
-watch(
-  () => [stateFields.meetDate, stateFields.meetTime],
-  ([newMeetDate, newMeetTime]) => {
-    if (newMeetDate !== null) setState({ ...state.value, meetDate: newMeetDate, meetTime: newMeetTime });
-  },
-);
-watch(
-  () => stateFields.startDate,
-  (newValue) => {
-    if (newValue !== null) setState({ ...state.value, startDate: newValue });
-  },
-);
-watch(
-  () => stateFields.endDate,
-  (newValue) => {
-    if (newValue !== null) setState({ ...state.value, endDate: newValue });
-  },
-);
-watch(
-  () => stateFields.tpw,
-  (newValue) => {
-    if (newValue !== "-") setState({ ...state.value, tpw: newValue });
-  },
-);
-watch(
-  () => stateFields.title,
-  (newValue) => {
-    if (newValue !== "") setState({ ...state.value, title: newValue });
-  },
-);
-watch(
-  () => stateFields.description,
-  (newValue) => {
-    if (newValue !== "") setState({ ...state.value, description: newValue });
+  () => state.value,
+  () => {
+    for (const key in stateFields) {
+      if (key in state.value) {
+        stateFields[key] = state.value[key];
+      }
+    }
   },
 );
 
@@ -541,9 +483,10 @@ const handlePostSubmit = async () => {
   //post 생성
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData?.session?.user?.id;
+  const postId = ref(null);
   try {
     if (stateFields.selectedActivity === "소셜링") {
-      createSocialPost(
+      const createdPost = await createSocialPost(
         {
           fee: stateFields.fee,
           fee_info: stateFields.feeInfo,
@@ -562,8 +505,11 @@ const handlePostSubmit = async () => {
         },
         userId,
       );
+      console.log(createdPost);
+      postId.value = createdPost[0].id;
+      router.push(`/socialing/${postId.value}`);
     } else if (stateFields.selectedActivity === "클럽") {
-      createClubPost(
+      const createdPost = await createClubPost(
         {
           fee: stateFields.fee,
           fee_info: stateFields.feeInfo,
@@ -579,8 +525,10 @@ const handlePostSubmit = async () => {
         },
         userId,
       );
+      postId.value = createdPost[0].id;
+      router.push(`/club/${postId.value}`);
     } else if (stateFields.selectedActivity === "챌린지") {
-      createChallengePost(
+      const createdPost = await createChallengePost(
         {
           fee: stateFields.fee,
           fee_info: stateFields.feeInfo,
@@ -596,11 +544,11 @@ const handlePostSubmit = async () => {
         },
         userId,
       );
+      postId.value = createdPost[0].id;
+      router.push(`/challenge/${postId.value}`);
     }
-    window.alert("포스팅 완료!");
-    router.push("/");
   } catch (e) {
-    console.log(e);
+    console.log("포스팅 실패", e);
   }
 };
 
@@ -658,6 +606,62 @@ onMounted(async () => {
   const auth = JSON.parse(localStorage.getItem("authStore"));
   if (auth.loginUser) userInfo.value = auth.loginUser;
 });
+
+//stateField 값 변경 시 useFunnel state 업데이트
+watch(
+  () => stateFields.socialingType,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, socialingType: newValue });
+  },
+);
+watch(
+  () => stateFields.isFee,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, isFee: newValue });
+  },
+);
+watch(
+  () => [stateFields.maxPeople, stateFields.gender, stateFields.range],
+  ([newMaxPeople, newGender, newRange]) => {
+    if (newMaxPeople !== "-") setState({ ...state.value, maxPeople: newMaxPeople, gender: newGender, range: newRange });
+  },
+);
+watch(
+  () => [stateFields.meetDate, stateFields.meetTime],
+  ([newMeetDate, newMeetTime]) => {
+    if (newMeetDate !== null) setState({ ...state.value, meetDate: newMeetDate, meetTime: newMeetTime });
+  },
+);
+watch(
+  () => stateFields.startDate,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, startDate: newValue });
+  },
+);
+watch(
+  () => stateFields.endDate,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, endDate: newValue });
+  },
+);
+watch(
+  () => stateFields.tpw,
+  (newValue) => {
+    if (newValue !== "-") setState({ ...state.value, tpw: newValue });
+  },
+);
+watch(
+  () => stateFields.title,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, title: newValue });
+  },
+);
+watch(
+  () => stateFields.description,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, description: newValue });
+  },
+);
 </script>
 
 <template>
@@ -1256,7 +1260,11 @@ onMounted(async () => {
             <div class="ml-[40px] w-[520px]">
               <div class="h-[80px] flex gap-4">
                 <div class="flex items-center">
-                  <img :src="userInfo.profile_img" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
+                  <img
+                    :src="userInfo.profile_img"
+                    alt="hostprofile"
+                    class="w-[60px] h-[60px] rounded-full object-cover"
+                  />
                 </div>
                 <div class="mt-1 flex flex-col justify-center">
                   <p class="text-[20px] font-bold mb-1">{{ stateFields.title }}</p>
@@ -1338,7 +1346,7 @@ onMounted(async () => {
             <img
               :src="userInfo.profile_img"
               alt="hostprofile"
-              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover"
             />
             <div class="text-center mt-[30px]">
               <p class="text-[12px] mb-1">{{ userInfo.nickname }}</p>

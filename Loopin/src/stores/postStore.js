@@ -65,7 +65,9 @@ export const usePostStore = defineStore("postStore", () => {
       gender: postInfo.gender,
       max_people: postInfo.max_people,
       place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
+      participants: [userId],
     };
+
     try {
       const { data: clubPost, error: clubError } = await supabase.from("club_posts").insert([post]).select();
       if (clubError) throw new Error("클럽 업로드 에러", clubError);
@@ -168,13 +170,14 @@ export const usePostStore = defineStore("postStore", () => {
       fee: postInfo.fee,
       max_people: postInfo.max_people,
       times_per_week: postInfo.times_per_week,
+      participants: [userId],
     };
+
     try {
       const { data: challengePost, error: challengeError } = await supabase
         .from("challenge_posts")
         .insert([post])
         .select();
-      console.log(challengePost);
       if (challengeError) throw new Error("챌린지 업로드 에러", challengeError);
 
       const postId = challengePost[0].id;
@@ -308,8 +311,8 @@ export const usePostStore = defineStore("postStore", () => {
       max_people: postInfo.max_people,
       place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
       type: postInfo.type,
+      participants: [userId],
     };
-    console.log(post);
 
     try {
       const { data: socialPost, error: socialError } = await supabase.from("socialing_posts").insert([post]).select();

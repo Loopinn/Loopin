@@ -50,7 +50,7 @@ const period = computed(() => {
 });
 </script>
 <template>
-  <div class="mx-auto w-[600px] relative">
+  <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ' '" alt="thumbnail" />
     <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
