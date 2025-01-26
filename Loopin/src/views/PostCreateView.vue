@@ -24,6 +24,7 @@ import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
 import { nextTick } from "vue";
+import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 
 const userInfo = ref(null);
 
@@ -130,7 +131,6 @@ const categoryList = ref([
       "위스키",
       "맥주",
       "파인다이닝",
-      "페어링",
       "커피",
       "비건",
       "티룸",
@@ -597,8 +597,7 @@ const handlePostSubmit = async () => {
         userId,
       );
     }
-    window.alert("포스팅 완료!");
-    router.push("/");
+    isModalOpen2.value = true;
   } catch (e) {
     console.log(e);
   }
@@ -658,6 +657,13 @@ onMounted(async () => {
   const auth = JSON.parse(localStorage.getItem("authStore"));
   if (auth.loginUser) userInfo.value = auth.loginUser;
 });
+
+const isModalOpen2 = ref(false);
+const modalMessage2 = "포스팅 성공!";
+const closeModal2 = () => {
+  isModalOpen2.value = false;
+  router.push("/");
+};
 </script>
 
 <template>
@@ -672,6 +678,7 @@ onMounted(async () => {
       @confirm="handleConfirm"
       @close="closeModal"
     />
+    <ConfirmModal :isOpen="isModalOpen2" :message="modalMessage2" :buttonMessage="'확인'" @close="closeModal2" />
 
     <Funnel :steps="state.steps || steps" :currentStep="currentStep">
       <!-- 활동 선택 단계 -->
@@ -1256,7 +1263,11 @@ onMounted(async () => {
             <div class="ml-[40px] w-[520px]">
               <div class="h-[80px] flex gap-4">
                 <div class="flex items-center">
-                  <img :src="userInfo.profile_img" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
+                  <img
+                    :src="userInfo.profile_img"
+                    alt="hostprofile"
+                    class="w-[60px] h-[60px] rounded-full object-cover"
+                  />
                 </div>
                 <div class="mt-1 flex flex-col justify-center">
                   <p class="text-[20px] font-bold mb-1">{{ stateFields.title }}</p>
@@ -1338,7 +1349,7 @@ onMounted(async () => {
             <img
               :src="userInfo.profile_img"
               alt="hostprofile"
-              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover"
             />
             <div class="text-center mt-[30px]">
               <p class="text-[12px] mb-1">{{ userInfo.nickname }}</p>
