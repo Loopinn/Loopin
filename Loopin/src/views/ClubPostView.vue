@@ -2,10 +2,12 @@
 import MemberInfo from "@/components/postcontent/MemberInfo.vue";
 import Comment from "@/components/postcontent/Comment.vue";
 import Register from "@/components/postcontent/Register.vue";
+import { joinClub } from "@/utils/joinClub";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
+import supabase from "@/config/supabase";
 import { useRoute } from "vue-router";
-import { computed, onBeforeMount, onMounted } from "vue";
+import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 
 const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
@@ -14,8 +16,71 @@ const { loadClubPosts } = postStore;
 const route = useRoute();
 const postId = route.params.id;
 
+const userData = ref(null);
+const userId = ref("");
+const isLoading = ref(false);
+
+const getUserId = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log("내 아이디: ", sessionData?.session?.user?.id);
+  userId.value = sessionData?.session?.user?.id || "";
+};
+
 const currentPost = computed(() => {
   return clubPosts.value.find((post) => post.id === postId);
+});
+
+const addressName = computed(() => {
+  if (currentPost.value?.place === "온라인") {
+    return "온라인";
+  }
+  const placeObj = currentPost.value?.place ? JSON.parse(currentPost.value.place) : null;
+  return placeObj.address_name;
+});
+
+const fetchData = async () => {
+  isLoading.value = true;
+  if (currentPost.value && currentPost.value.creator) {
+    try {
+      // Supabase에서 작성자 정보 가져오기
+      const { data: userDataFromDB, error: userError } = await supabase
+        .from("userinfo")
+        .select()
+        .eq("id", currentPost.value.creator)
+        .single();
+
+      if (userError) {
+        console.log("유저 데이터를 가져오는 중 에러 발생", userError);
+        return;
+      }
+
+      if (userDataFromDB) {
+        userData.value = userDataFromDB;
+      }
+    } catch (error) {
+      console.log("알 수 없는 오류 발생: ", error);
+    } finally {
+      isLoading.value = false;
+    }
+  } else {
+    console.log("작성자 ID가 없습니다.");
+  }
+};
+
+const handleUpdateParticipants = (updatedParticipants) => {
+  currentPost.value.participants = updatedParticipants;
+};
+
+onMounted(async () => {
+  console.log("현재 게시글", currentPost.value);
+  await getUserId();
+});
+
+// currentPost가 변경될 때마다 자동으로 실행
+watchEffect(() => {
+  if (currentPost.value && currentPost.value?.creator) {
+    fetchData();
+  }
 });
 
 onBeforeMount(() => {
@@ -30,14 +95,14 @@ onBeforeMount(() => {
         <div class="h-[80px] flex gap-4">
           <div class="flex-shrink-0">
             <img
-              src="https://i.pinimg.com/474x/7b/ba/01/7bba01bf74ea2597285004f06c7a7bd0.jpg"
+              :src="userData.profile_img || 'https://i.pinimg.com/474x/7b/ba/01/7bba01bf74ea2597285004f06c7a7bd0.jpg'"
               alt="hostprofile"
               class="w-[60px] h-[60px] rounded-full"
             />
             <div>
               <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
               <span class="ml-1 text-[12px] text-[#403F3F]"
-                >{{ currentPost.participants ? "currentPost.participants.length" : 0 }}/{{
+                >{{ currentPost.participants ? currentPost.participants.length : 0 }}/{{
                   currentPost.max_people
                 }}명</span
               >
@@ -45,14 +110,16 @@ onBeforeMount(() => {
           </div>
           <div class="mt-1 flex flex-col justify-center">
             <p class="text-[20px] font-bold mb-1">{{ currentPost.title }}</p>
-            <p class="text-[12px]">호스트 햄</p>
+            <p class="text-[12px]">
+              호스트 <b>{{ userData.nickname }}</b>
+            </p>
           </div>
         </div>
 
         <div class="mt-[30px]">
           <div>{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
-          <MemberInfo :participants="currentPost.participants" />
+          <MemberInfo :participants="currentPost.participants || []" />
           <!-- 안내사항 -->
           <div class="mt-5">
             <div class="text-[#FF0000]">안내사항</div>
@@ -62,7 +129,7 @@ onBeforeMount(() => {
                 <img src="@/assets/images/category.svg" alt="category" />
 
                 <router-link to="#" class="underline">{{ currentPost.subject }}</router-link>
-                <span> > </span>
+                <span v-if="currentPost.subject"> > </span>
                 <router-link to="#" class="underline">{{ currentPost.category }}</router-link>
               </div>
               <div class="flex gap-1 mb-1">
@@ -71,7 +138,7 @@ onBeforeMount(() => {
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/location.svg" alt="location" />
-                <p>{{ currentPost.place }}</p>
+                <p>{{ addressName }}</p>
               </div>
             </div>
           </div>
@@ -82,7 +149,14 @@ onBeforeMount(() => {
     </div>
 
     <!-- 참여하기 -->
-    <Register />
+    <Register
+      :title="currentPost.title"
+      :currentPost="currentPost"
+      :pageType="'club'"
+      :userId="userId"
+      :action="joinClub"
+      @updateParticipants="handleUpdateParticipants"
+    />
   </div>
 </template>
 <style scoped></style>

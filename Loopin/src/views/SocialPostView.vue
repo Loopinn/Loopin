@@ -2,10 +2,13 @@
 import MemberInfo from "@/components/postcontent/MemberInfo.vue";
 import Comment from "@/components/postcontent/Comment.vue";
 import Register from "@/components/postcontent/Register.vue";
+import { joinSocialing } from "@/utils/joinSocialing";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
-import { computed, onBeforeMount, onMounted } from "vue";
+import supabase from "@/config/supabase";
+import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
+import Loading from "@/components/Loading.vue";
 
 const postStore = usePostStore();
 const { socialingPosts } = storeToRefs(postStore);
@@ -14,8 +17,59 @@ const { loadSocialPosts } = postStore;
 const route = useRoute();
 const postId = route.params.id;
 
+const userData = ref(null);
+const userId = ref("");
+const isLoading = ref(false);
+
+const getUserId = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log("내 아이디: ", sessionData?.session?.user?.id);
+  userId.value = sessionData?.session?.user?.id || "";
+};
+
 const currentPost = computed(() => {
   return socialingPosts.value.find((post) => post.id === postId);
+});
+
+const fetchData = async () => {
+  isLoading.value = true;
+  if (currentPost.value && currentPost.value.creator) {
+    try {
+      // Supabase에서 작성자 정보 가져오기
+      const { data: userDataFromDB, error: userError } = await supabase
+        .from("userinfo")
+        .select()
+        .eq("id", currentPost.value.creator)
+        .single();
+
+      if (userError) {
+        console.log("유저 데이터를 가져오는 중 에러 발생", userError);
+        return;
+      }
+
+      if (userDataFromDB) {
+        userData.value = userDataFromDB;
+      }
+    } catch (error) {
+      console.log("알 수 없는 오류 발생: ", error);
+    } finally {
+      isLoading.value = false;
+    }
+  } else {
+    console.log("작성자 ID가 없습니다.");
+  }
+};
+
+onMounted(async () => {
+  console.log("현재 게시글", currentPost.value);
+  await getUserId();
+});
+
+// currentPost가 변경될 때마다 자동으로 실행
+watchEffect(() => {
+  if (currentPost.value && currentPost.value?.creator) {
+    fetchData();
+  }
 });
 
 onBeforeMount(() => {
@@ -68,18 +122,25 @@ const formattedTime = computed(() => {
 
   return `${ampm} ${formattedHours}:${formattedMinutes}`;
 });
+
+const handleUpdateParticipants = (updatedParticipants) => {
+  currentPost.value.participants = updatedParticipants;
+};
 </script>
 <template>
+  <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
-        src="https://i.pinimg.com/474x/7b/ba/01/7bba01bf74ea2597285004f06c7a7bd0.jpg"
+        v-if="userData.profile_img"
+        :src="userData.profile_img"
         alt="hostprofile"
         class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
       />
+      <div v-else class="w-[60px] h-[60px] rounded-full bg-[#F1F1F1] absolute left-[190px] top-[-30px]" />
       <div class="text-center mt-[30px]">
-        <p class="text-[12px] mb-1">호스트명</p>
+        <p class="text-[12px] mb-1">{{ userData.nickname }}</p>
         <p class="text-[20px] font-bold">{{ currentPost.title }}</p>
       </div>
     </div>
@@ -96,7 +157,7 @@ const formattedTime = computed(() => {
         <div class="ml-[40px] mt-[70px] w-[520px]">
           <div>{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
-          <MemberInfo :participants="currentPost.participants" />
+          <MemberInfo :participants="currentPost.participants || []" />
           <!-- 안내사항 -->
           <div class="mt-5">
             <div class="text-[#FF0000]">안내사항</div>
@@ -128,7 +189,14 @@ const formattedTime = computed(() => {
         </div>
       </div>
       <!-- 참여하기 -->
-      <Register />
+      <Register
+        :title="currentPost.title"
+        :currentPost="currentPost"
+        :pageType="'socialing'"
+        :userId="userId"
+        :action="joinSocialing"
+        @updateParticipants="handleUpdateParticipants"
+      />
     </div>
   </div>
 </template>
