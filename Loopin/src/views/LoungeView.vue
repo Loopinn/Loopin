@@ -50,9 +50,8 @@ const toggleModal = () => {
   router.push("/signIn");
 };
 
-onBeforeMount(async () => {
-  await loadLoungePosts();
-  await likeCheck();
+onBeforeMount( () => {
+   Promise.all([loadLoungePosts(), getUserId(), likeCheck()]);
 });
 </script>
 
@@ -71,12 +70,11 @@ onBeforeMount(async () => {
             <div class="bg-gray-300 rounded-xl">
             <img
               :src="feed.images[0] || noImage"
-              :alt="feed.description"
-              class="w-full aspect-square object-cover rounded-xl"
+              class="w-full aspect-square object-cover rounded-md"
               />
             </div>
           </RouterLink>
-          <button class="absolute bottom-14 left-2 flex items-center" @click="handleLike(feed.id)">
+          <button class="absolute left-2 top-32 flex items-center" @click="handleLike(feed.id)">
             <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" />
         </button>
         <p class="text-xs leading-relaxed text-gray-800 line-clamp">
