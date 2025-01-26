@@ -178,7 +178,6 @@ export const usePostStore = defineStore("postStore", () => {
         .from("challenge_posts")
         .insert([post])
         .select();
-      console.log(challengePost);
       if (challengeError) throw new Error("챌린지 업로드 에러", challengeError);
 
       const postId = challengePost[0].id;
@@ -314,7 +313,6 @@ export const usePostStore = defineStore("postStore", () => {
       type: postInfo.type,
       participants: [userId],
     };
-    console.log(post);
 
     try {
       const { data: socialPost, error: socialError } = await supabase.from("socialing_posts").insert([post]).select();

@@ -23,7 +23,7 @@ onBeforeMount(() => {
 });
 </script>
 <template>
-  <div class="mx-auto w-[600px] relative">
+  <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="ml-[40px] w-[520px]">
