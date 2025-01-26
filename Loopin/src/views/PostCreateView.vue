@@ -325,6 +325,11 @@ const triggerFileInput = () => {
   fileInput.value.click();
 };
 
+//title input change
+const handleTitleInputChange = (e) => {
+  stateFields.title = e.target.value;
+};
+
 // 다음 버튼 활성화 여부
 const isNextEnabled = computed(() => {
   if (currentStep.value === "활동선택") {
@@ -1226,10 +1231,11 @@ watch(
               </div>
             </div>
             <input
-              v-model="stateFields.title"
+              :value="stateFields.title"
               type="text"
               class="border border-[#999996] h-[50px] rounded-[16px] px-3"
               placeholder="제목을 입력해 주세요.(최소 5글자)"
+              @input="handleTitleInputChange"
             />
             <textarea
               v-model="stateFields.description"
