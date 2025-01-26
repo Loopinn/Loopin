@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["BMJUA", "sans-serif"],
+        sans: ["GongGothicMedium", "sans-serif"],
       },
     },
   },
