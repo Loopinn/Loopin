@@ -8,7 +8,7 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
 import { computed, onBeforeMount, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import { feedLike } from "@/utils/feedLike";
 import DetailComment from "@/components/lounge/DetailComment.vue";
@@ -20,12 +20,15 @@ import MoreModal from "@/components/lounge/MoreModal.vue";
 import Loading from "@/components/Loading.vue";
 import like from "../assets/images/likeblack_full.svg";
 import unlike from "../assets/images/likeblack.svg";
+import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 
 const route = useRoute();
+const router = useRouter();
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
 
+const isModalOpen = ref(false);
 const postId = route.params.id;
 const userId = ref(null);
 const isMoreModalOpen = ref(false);
@@ -45,10 +48,14 @@ const fetchUserId = async () => {
 
 const handleLike = debounce(async () => {
   const userIdValue = await fetchUserId();
-  const post = loungePosts.value.find((post) => post.id === postId);
-  await feedLike(post, userIdValue);
-  await loadLoungePosts();
-  likeCheck();
+  if(userIdValue){
+    const post = loungePosts.value.find((post) => post.id === postId);
+    await feedLike(post, userIdValue);
+    await loadLoungePosts();
+    likeCheck();
+  }else{
+    isModalOpen.value = true;
+  }
 }, 300);
 
 const likeCheck = async () => {
@@ -56,39 +63,42 @@ const likeCheck = async () => {
   isLike.value = currentPost.value.likes.includes(userIdValue);
 };
 
-const creatorArray = loungePosts.value.find((post) => post.id === postId).creator;
-
 async function fetchData() {
+  await loadLoungePosts();
+  console.log("currentPost",loungePosts.value.find((post) => post.id === postId))
   const { data, error } = await supabase
   .from("userinfo")
-    .select()
-    .eq("id", creatorArray);
-
+  .select()
+  .eq("id", loungePosts.value.find((post) => post.id === postId).creator);
+  
   if (data && data.length > 0) {
     nickname.value = data[0].nickname;
     userId.value = data[0].id;
     profileImage.value = data[0].profile_img;
   }
   userId.value = await fetchUserId();
-  setTimeout(() => {
-    isLoading.value = false;
-  }, 500);
+  isLoading.value = false;
 }
 
 function openMoreModal() {
   isMoreModalOpen.value = true;
 }
 
+const toggleModal = () => {
+  isModalOpen.value = false;
+  router.push("/signIn");
+};
+
 onBeforeMount(async () => {
-  await fetchData();
   await loadLoungePosts();
+  await fetchData();
   await likeCheck();
 });
 </script>
 
 <template>
   <Loading v-if="isLoading" />
-  <div class="py-0 min-h-screen w-full pb-[1px] relative space-y-8 bg-[#f4f4f4]">
+  <div v-if="!isLoading" class="py-0 min-h-screen w-full pb-[1px] relative space-y-8 bg-[#f4f4f4]">
     <!-- 게시물 카드 -->
     <div class="">
       <!-- 헤더 영역 -->
@@ -106,7 +116,7 @@ onBeforeMount(async () => {
       </div>
 
       <!-- 이미지 영역 -->
-      <div class="aspect-square w-full relative z-0 bg-gray-300 rounded-xl" v-if="currentPost?.images.length >= 1">
+      <div class="aspect-square w-full relative z-0 bg-gray-300" v-if="currentPost?.images.length >= 1">
         <Swiper
           :modules="[Navigation, Pagination]"
           :slides-per-view="1"
@@ -148,6 +158,8 @@ onBeforeMount(async () => {
     <WriteButton />
     <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />
   </div>
+  <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal">
+  </ConfirmModal>
 </template>
 
 <style>

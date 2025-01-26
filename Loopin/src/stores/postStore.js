@@ -282,6 +282,24 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
+  const getLoungePostIndexById = (postId) => {
+    return loungePosts.value.findIndex((post) => post.id === postId);
+  };
+
+  const updateLoungePosts = async (postId, updates) => {
+    const index = getLoungePostIndexById(postId);
+    //반응형으로 복사히지 않기 위해//useNonReactiveCopy훅으로 빼기
+    const oldPost = JSON.parse(JSON.stringify(loungePosts.value[index]));
+
+    Object.assign(loungePosts.value[index], updates);
+
+    const { error } = await supabase.from("lounge_posts").update(updates).eq("id", postId).select();
+    if (error) {
+      console.log("failed to update", error);
+      Object.assign(loungePosts.value[index], oldPost);
+    }
+  };
+
   // 소셜링
   const loadSocialPosts = async () => {
     try {
@@ -384,6 +402,7 @@ export const usePostStore = defineStore("postStore", () => {
     createLoungePost,
     loadLoungePosts,
     deleteLoungePost,
+    updateLoungePosts,
 
     socialingPosts,
     loadSocialPosts,
