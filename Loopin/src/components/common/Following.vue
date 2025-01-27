@@ -66,7 +66,7 @@ const toggleFollow = async (userId) => {
       )
     "
   >
-    {{ isFollowing ? "언팔로잉" : "팔로우" }}
+    {{ isFollowing ? "언팔로우" : "팔로우" }}
   </button>
 </template>
 <style scoped></style>

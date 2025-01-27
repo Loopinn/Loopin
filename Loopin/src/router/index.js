@@ -124,6 +124,12 @@ const router = createRouter({
       meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
+      path: "/profile/posts/club",
+      name: "profilePostsClub",
+      component: () => import("@/views/UserPostsClubView.vue"),
+      meta: { layout: "CenteredHeader", requireAuth: true },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
       component: () => import("@/views/NotFoundView.vue"),
