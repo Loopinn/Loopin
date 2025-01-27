@@ -96,18 +96,17 @@ export const usePostStore = defineStore("postStore", () => {
       console.error(error);
     }
   };
-
-  const updateClubPost = async (postId, updates) => {
-    const index = getClubPostIndexById(postId);
-    //반응형으로 복사히지 않기 위해//useNonReactiveCopy훅으로 빼기
-    const oldPost = JSON.parse(JSON.stringify(clubPosts.value[index]));
-
-    Object.assign(clubPosts.value[index], updates);
-
-    const { error } = await supabase.from("club_posts").update(updates).eq("id", postId).select();
-    if (error) {
-      console.log("failed to update", error);
-      Object.assign(clubPosts.value[index], oldPost);
+  const updateClubPost = async (newPostInfo, postId) => {
+    try {
+      const { data: updateData, error: updateError } = await supabase
+        .from("club_posts")
+        .update(newPostInfo)
+        .eq("id", postId)
+        .select();
+      console.log(updateData);
+      return updateData;
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -205,17 +204,17 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
-  const updateChallengePost = async (postId, updates) => {
-    const index = getChallengePostIndexById(postId);
-    //반응형으로 복사히지 않기 위해//useNonReactiveCopy훅으로 빼기
-    const oldPost = JSON.parse(JSON.stringify(challengePosts.value[index]));
-
-    Object.assign(challengePosts.value[index], updates);
-
-    const { error } = await supabase.from("challenge_posts").update(updates).eq("id", postId).select();
-    if (error) {
-      console.log("failed to update", error);
-      Object.assign(challengePosts.value[index], oldPost);
+  const updateChallengePost = async (newPostInfo, postId) => {
+    try {
+      const { data: updateData, error: updateError } = await supabase
+        .from("challenge_posts")
+        .update(newPostInfo)
+        .eq("id", postId)
+        .select();
+      console.log(updateData);
+      return updateData;
+    } catch (error) {
+      console.error(error);
     }
   };
 

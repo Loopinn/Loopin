@@ -13,7 +13,7 @@ import "vue-scroll-picker/lib/style.css";
 
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import KakaoMap from "@/components/KakaoMap.vue";
 import ChoiceModal from "@/components/modal/ChoiceModal.vue";
 
@@ -28,16 +28,125 @@ const userInfo = ref(null);
 
 const router = useRouter();
 const postStore = usePostStore();
-const { createSocialPost, createClubPost, createChallengePost } = postStore;
+const { createSocialPost, createClubPost, createChallengePost, updateSocialPost, updateClubPost, updateChallengePost } =
+  postStore;
+const route = useRoute();
 
 // 활동 선택에 따른 단계 배열
 const socialSteps = ["활동선택", "타입선택", "참가비", "주제", "장소", "멤버", "시간", "소개", "미리보기"]; // 소셜링
 const clubSteps = ["활동선택", "참가비", "주제", "장소", "멤버", "소개", "미리보기"]; // 클럽
 const challengeSteps = ["활동선택", "참가비", "주제", "시작종료", "주몇회", "멤버", "소개", "미리보기"]; // 챌린지
+// 업데이트
+const updateSocialSteps = ["타입선택", "참가비", "주제", "장소", "멤버", "시간", "소개", "미리보기"]; // 소셜링
+const updateClubSteps = ["참가비", "주제", "장소", "멤버", "소개", "미리보기"]; // 클럽
+const updateChallengeSteps = ["참가비", "주제", "시작종료", "주몇회", "멤버", "소개", "미리보기"]; // 챌린지
+
+onMounted(async () => {
+  const postType = route.params.type;
+  const postId = route.params.id;
+  if (postId) {
+    if (postType === "socialing") {
+      setState({ ...state.value, selectedActivity: "소셜링" });
+      updateSteps(updateSocialSteps);
+      const { data: socialingPost, error } = await supabase
+        .from("socialing_posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+      if (error) console.log("불러오기 실패", error.message);
+      console.log(socialingPost);
+      if (socialingPost) {
+        stateFields.socialingType = socialingPost.type;
+        stateFields.range = socialingPost.age_limit;
+        stateFields.category = socialingPost.category;
+        stateFields.subject = socialingPost.subject;
+        stateFields.meetDate = socialingPost.date;
+        stateFields.description = socialingPost.description;
+        socialingPost.fee !== 0 ? (stateFields.isFee = true) : (stateFields.isFee = false);
+        stateFields.fee = socialingPost.fee;
+        stateFields.feeInfo = socialingPost.fee_info;
+        stateFields.gender = socialingPost.gender;
+        stateFields.maxPeople = socialingPost.max_people;
+        socialingPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
+        stateFields.place = JSON.parse(socialingPost.place);
+        stateFields.meetTime = JSON.parse(socialingPost.time);
+        stateFields.title = socialingPost.title;
+        stateFields.socialingType = socialingPost.type;
+
+        //카테고리 인덱스
+        const index = categoryList.value.findIndex((category) => category.name === socialingPost.subject);
+        stateFields.activeIndex = index;
+        //이미지
+        previewImages.value = [...socialingPost.images];
+        fileCount.value = socialingPost.images.length;
+        selectedImage.value = [...socialingPost.images];
+      }
+    } else if (postType === "club") {
+      setState({ ...state.value, selectedActivity: "클럽" });
+      updateSteps(updateClubSteps);
+      const { data: clubPost, error } = await supabase.from("club_posts").select("*").eq("id", postId).single();
+      if (error) console.log("불러오기 실패", error.message);
+      console.log(clubPost);
+      if (clubPost) {
+        stateFields.range = clubPost.age_limit;
+        stateFields.category = clubPost.category;
+        stateFields.subject = clubPost.subject;
+        stateFields.description = clubPost.description;
+        clubPost.fee !== 0 ? (stateFields.isFee = true) : (stateFields.isFee = false);
+        stateFields.fee = clubPost.fee;
+        stateFields.feeInfo = clubPost.fee_info;
+        stateFields.gender = clubPost.gender;
+        stateFields.maxPeople = clubPost.max_people;
+        clubPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
+        stateFields.place = JSON.parse(clubPost.place);
+        stateFields.title = clubPost.title;
+
+        //카테고리 인덱스
+        const index = categoryList.value.findIndex((category) => category.name === clubPost.subject);
+        stateFields.activeIndex = index;
+        //이미지
+        previewImages.value = [...clubPost.images];
+        fileCount.value = clubPost.images.length;
+        selectedImage.value = [...clubPost.images];
+      }
+    } else if (postType === "challenge") {
+      setState({ ...state.value, selectedActivity: "챌린지" });
+      updateSteps(updateChallengeSteps);
+      const { data: challengePost, error } = await supabase
+        .from("challenge_posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+      if (error) console.log("불러오기 실패", error.message);
+      console.log(challengePost);
+      if (challengePost) {
+        stateFields.category = challengePost.category;
+        stateFields.description = challengePost.description;
+        challengePost.fee !== 0 ? (stateFields.isFee = true) : (stateFields.isFee = false);
+        stateFields.fee = challengePost.fee;
+        stateFields.feeInfo = challengePost.fee_info;
+        stateFields.maxPeople = challengePost.max_people;
+        stateFields.startDate = challengePost.start_date;
+        stateFields.endDate = challengePost.end_date;
+        stateFields.subject = challengePost.subject;
+        stateFields.tpw = challengePost.times_per_week;
+        stateFields.title = challengePost.title;
+
+        //카테고리 인덱스
+        const index = categoryList.value.findIndex((category) => category.name === challengePost.subject);
+        stateFields.activeIndex = index;
+        //이미지
+        previewImages.value = [...challengePost.images];
+        fileCount.value = challengePost.images.length;
+        selectedImage.value = [...challengePost.images];
+      }
+    }
+  }
+});
 
 // 기본 첫 단계 정의
 const steps = ["활동선택"];
-
+//stateField 초기화
 const handleReset = () => {
   stateFields.selectedActivity = "";
   stateFields.socialingType = "";
@@ -232,18 +341,6 @@ const getPlaceInfo = (placeInfo) => {
   setState({ ...state.value, place: stateFields.place });
 };
 
-//useFunnel 의 state 가 변하면 stateField 값 갱신
-watch(
-  () => state.value,
-  () => {
-    for (const key in stateFields) {
-      if (key in state.value) {
-        stateFields[key] = state.value[key];
-      }
-    }
-  },
-);
-
 //나이 슬라이더
 const minValue = 20; // 최소값
 const maxValue = 50; // 최대값
@@ -414,16 +511,6 @@ const disableNonSaturdays = (date) => {
   const day = new Date(date).getDay();
   return day !== 6; // 토요일이 아니면 비활성화
 };
-//startDate 변경 시 endDate 초기화
-watch(
-  () => stateFields.startDate,
-  () => {
-    stateFields.endDate = null;
-    nextTick(() => {
-      stateFields.endDate = null; // VueDatePicker에 상태 강제 반영
-    });
-  },
-);
 
 //소개 이미지 선택
 const handleFileChange = (event) => {
@@ -442,12 +529,14 @@ const handleFileChange = (event) => {
     }
   }
   event.target.value = "";
+  console.log(selectedImage.value);
 };
 //이미지 제거
 const removeImage = (index) => {
   previewImages.value.splice(index, 1); // 해당 인덱스의 이미지를 배열에서 제거
   selectedImage.value.splice(index, 1);
   fileCount.value = selectedImage.value.length;
+  console.log(selectedImage.value);
 };
 
 // 완료 버튼 액션
@@ -459,29 +548,31 @@ const handlePostSubmit = async () => {
   const imageUrls = [];
   if (selectedImage.value.length > 0) {
     for (let i = 0; i < selectedImage.value.length; i++) {
-      const file = selectedImage.value[i];
-      const fileName = `${Date.now()}-${file.name}`;
+      if (typeof selectedImage.value[i] === "string") {
+        imageUrls.push(selectedImage.value[i]);
+      } else {
+        const file = selectedImage.value[i];
+        const fileName = `${Date.now()}-${file.name}`;
 
-      // 이미지 파일을 Supabase에 업로드
-      const { data, error } = await supabase.storage.from("post-images").upload(`images/${fileName}`, file);
+        // 이미지 파일을 Supabase에 업로드
+        const { data, error } = await supabase.storage.from("post-images").upload(`images/${fileName}`, file);
 
-      if (error) {
-        console.error("Image upload failed:", error.message);
-        return; // 오류 발생 시 함수 종료
+        if (error) {
+          console.error("Image upload failed:", error.message);
+          return; // 오류 발생 시 함수 종료
+        }
+        // 업로드된 이미지의 public URL 가져오기
+        const { data: publicUrlData, error: urlError } = supabase.storage
+          .from("post-images")
+          .getPublicUrl(`images/${fileName}`);
+
+        if (urlError) {
+          console.error("Error getting public URL:", urlError.message);
+          return;
+        }
+        // 이미지 URL 배열에 추가
+        imageUrls.push(publicUrlData.publicUrl);
       }
-
-      // 업로드된 이미지의 public URL 가져오기
-      const { data: publicUrlData, error: urlError } = supabase.storage
-        .from("post-images")
-        .getPublicUrl(`images/${fileName}`);
-
-      if (urlError) {
-        console.error("Error getting public URL:", urlError.message);
-        return;
-      }
-
-      // 이미지 URL 배열에 추가
-      imageUrls.push(publicUrlData.publicUrl);
     }
   }
 
@@ -491,65 +582,82 @@ const handlePostSubmit = async () => {
   const postId = ref(null);
   try {
     if (stateFields.selectedActivity === "소셜링") {
-      const createdPost = await createSocialPost(
-        {
-          fee: stateFields.fee,
-          fee_info: stateFields.feeInfo,
-          subject: stateFields.subject,
-          category: stateFields.category,
-          title: stateFields.title,
-          description: stateFields.description,
-          images: imageUrls,
-          max_people: stateFields.maxPeople,
-          age_limit: stateFields.range,
-          gender: stateFields.gender,
-          place: stateFields.place,
-          type: stateFields.socialingType,
-          date: stateFields.meetDate,
-          time: stateFields.meetTime,
-        },
-        userId,
-      );
-      console.log(createdPost);
-      postId.value = createdPost[0].id;
+      const postData = {
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
+        images: imageUrls,
+        max_people: stateFields.maxPeople,
+        age_limit: stateFields.range,
+        gender: stateFields.gender,
+        place: stateFields.place,
+        type: stateFields.socialingType,
+        date: stateFields.meetDate,
+        time: stateFields.meetTime,
+      };
+      if (!route.params.id) {
+        // 새 게시글 생성
+        const createdPost = await createSocialPost(postData, userId);
+        postId.value = createdPost[0].id;
+      } else {
+        // 기존 게시글 업데이트
+        const updatedPost = await updateSocialPost(postData, route.params.id);
+        postId.value = updatedPost[0].id;
+      }
+      // 게시글 상세 페이지로 이동
       router.push(`/socialing/${postId.value}`);
     } else if (stateFields.selectedActivity === "클럽") {
-      const createdPost = await createClubPost(
-        {
-          fee: stateFields.fee,
-          fee_info: stateFields.feeInfo,
-          subject: stateFields.subject,
-          category: stateFields.category,
-          title: stateFields.title,
-          description: stateFields.description,
-          images: imageUrls,
-          max_people: stateFields.maxPeople,
-          age_limit: stateFields.range,
-          gender: stateFields.gender,
-          place: stateFields.place,
-        },
-        userId,
-      );
-      postId.value = createdPost[0].id;
+      const postData = {
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
+        images: imageUrls,
+        max_people: stateFields.maxPeople,
+        age_limit: stateFields.range,
+        gender: stateFields.gender,
+        place: stateFields.place,
+      };
+      if (!route.params.id) {
+        // 새 게시글 생성
+        const createdPost = await createClubPost(postData, userId);
+        postId.value = createdPost[0].id;
+      } else {
+        // 기존 게시글 업데이트
+        const updatedPost = await updateClubPost(postData, route.params.id);
+        postId.value = updatedPost[0].id;
+      }
+      // 게시글 상세 페이지로 이동
       router.push(`/club/${postId.value}`);
     } else if (stateFields.selectedActivity === "챌린지") {
-      const createdPost = await createChallengePost(
-        {
-          fee: stateFields.fee,
-          fee_info: stateFields.feeInfo,
-          subject: stateFields.subject,
-          category: stateFields.category,
-          title: stateFields.title,
-          description: stateFields.description,
-          images: imageUrls,
-          max_people: stateFields.maxPeople,
-          start_date: stateFields.startDate,
-          end_date: stateFields.endDate,
-          times_per_week: stateFields.tpw,
-        },
-        userId,
-      );
-      postId.value = createdPost[0].id;
+      const postData = {
+        category: stateFields.category,
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        title: stateFields.title,
+        description: stateFields.description,
+        images: imageUrls,
+        max_people: stateFields.maxPeople,
+        start_date: stateFields.startDate,
+        end_date: stateFields.endDate,
+        times_per_week: stateFields.tpw,
+      };
+      if (!route.params.id) {
+        // 새 게시글 생성
+        const createdPost = await createChallengePost(postData, userId);
+        postId.value = createdPost[0].id;
+      } else {
+        // 기존 게시글 업데이트
+        const updatedPost = await updateChallengePost(postData, route.params.id);
+        postId.value = updatedPost[0].id;
+      }
+      // 게시글 상세 페이지로 이동
       router.push(`/challenge/${postId.value}`);
     }
   } catch (e) {
@@ -612,6 +720,17 @@ onMounted(async () => {
   if (auth.loginUser) userInfo.value = auth.loginUser;
 });
 
+//useFunnel 의 state 가 변하면 stateField 값 갱신
+watch(
+  () => state.value,
+  () => {
+    for (const key in stateFields) {
+      if (key in state.value) {
+        stateFields[key] = state.value[key];
+      }
+    }
+  },
+);
 //stateField 값 변경 시 useFunnel state 업데이트
 watch(
   () => stateFields.socialingType,
@@ -649,6 +768,16 @@ watch(
     if (newValue !== null) setState({ ...state.value, endDate: newValue });
   },
 );
+// //startDate 변경 시 endDate 초기화
+// watch(
+//   () => stateFields.startDate,
+//   () => {
+//     stateFields.endDate = null;
+//     nextTick(() => {
+//       stateFields.endDate = null; // VueDatePicker에 상태 강제 반영
+//     });
+//   },
+// );
 watch(
   () => stateFields.tpw,
   (newValue) => {
@@ -1495,7 +1624,8 @@ watch(
         :disabled="!isNextEnabled"
         @click="finish"
       >
-        {{ stateFields.selectedActivity }} 열기
+        <span v-if="route.params.id">{{ stateFields.selectedActivity }} 수정</span>
+        <span v-else>{{ stateFields.selectedActivity }} 열기</span>
       </button>
       <button
         v-else
