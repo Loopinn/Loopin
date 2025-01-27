@@ -4,6 +4,9 @@ import ChannelPostCard from "../channel/ChannelPostCard.vue";
 import NoPosts from "../common/NoPosts.vue";
 import UserMeetingClub from "./UserMeetingClub.vue";
 import MoreBtn from "../common/MoreBtn.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const props = defineProps(["meetingData"]);
 console.log("meetingData", props.meetingData);
@@ -26,15 +29,23 @@ onBeforeMount(() => {
 <template>
   <div class="flex flex-col gap-[50px]">
     <div>
-      <p class="text-[18px] font-semibold mb-5">참여 중인 클럽</p>
+      <div class="mb-5 flex items-center justify-between">
+        <p class="text-[18px] font-medium">참여 중인 클럽</p>
+        <p
+          class="cursor-pointer hover:underline hover:underline-offset-4 text-gray-500"
+          @click="router.push('/profile/posts/club')"
+        >
+          더보기
+        </p>
+      </div>
       <div :class="`flex gap-3 flex-wrap items-start ${!clubPosts.length && 'justify-center'}`">
         <UserMeetingClub v-if="clubPosts.length" v-for="{ data, type } in clubPosts" :key="data.id" :postData="data" />
         <NoPosts v-else text="참여중인 클럽이 없어요!" />
       </div>
     </div>
     <div>
-      <p class="text-[18px] font-semibold mb-5">진행한 소셜링</p>
-      <div class="flex flex-col justify-center">
+      <p class="text-[18px] font-medium mb-5">진행한 소셜링</p>
+      <div :class="`flex flex-col justify-center ${!socialingPosts.length && 'items-center'}`">
         <RouterLink
           v-if="socialingPosts.length"
           v-for="{ data, type } in socialingPosts.slice(-3)"
@@ -48,8 +59,8 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="">
-      <p class="text-[18px] font-semibold mb-5">진행한 챌린지</p>
-      <div class="flex flex-col justify-center">
+      <p class="text-[18px] font-medium mb-5">진행한 챌린지</p>
+      <div :class="`flex flex-col justify-center ${!socialingPosts.length && 'items-center'}`">
         <RouterLink
           v-if="challengePosts.length"
           v-for="{ data, type } in challengePosts.slice(-3)"
