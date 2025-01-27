@@ -37,6 +37,7 @@ const profileImage = ref(null);
 const isLike = ref(null);
 const isLoading = ref(true);
 
+
 const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
 });
@@ -65,7 +66,6 @@ const likeCheck = async () => {
 
 async function fetchData() {
   await loadLoungePosts();
-  console.log("currentPost",loungePosts.value.find((post) => post.id === postId))
   const { data, error } = await supabase
   .from("userinfo")
   .select()
@@ -105,7 +105,7 @@ onBeforeMount(async () => {
       <div class="flex items-center justify-between py-4 px-4">
         <div class="flex items-center gap-2">
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-            <img :src="profileImage || userProfile" alt="프로필 이미지" class="w-12 h-12 rounded-full" />
+            <img :src="profileImage || userProfile" alt="프로필 이미지" class="w-8 h-8 rounded-full" />
           </div>
           <span class="font-bold">{{ nickname }}</span>
         </div>
@@ -153,7 +153,7 @@ onBeforeMount(async () => {
           </button>
         </div>
       </div>
-      <!-- <DetailComment :post-id="currentPost.id" /> -->
+       <DetailComment :post-id="currentPost.id" /> 
     </div>
     <WriteButton />
     <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />

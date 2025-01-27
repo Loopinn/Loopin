@@ -17,7 +17,11 @@ export const useAuthStore = defineStore(
       loginUser.value = { ...loginUser.value, ...updateValue };
     };
 
-    return { loginUser, setUser, clearUser, updateUser };
+    const deleteUser = (deleteValue) => {
+      loginUser.value = { ...deleteValue };
+    };
+
+    return { loginUser, setUser, clearUser, updateUser, deleteUser };
   },
   {
     persist: true,
