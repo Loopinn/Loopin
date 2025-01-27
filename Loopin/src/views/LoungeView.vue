@@ -17,6 +17,7 @@ import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 const router = useRouter();
 
 const postStore = usePostStore();
+
 const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
 

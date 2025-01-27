@@ -1,10 +1,15 @@
 <script setup>
-import { defineProps, onMounted, watch, ref } from "vue";
+import supabase from "@/config/supabase";
+import { defineProps, ref } from "vue";
 import ChoiceModal from "@/components/modal/ChoiceModal.vue";
 import { useRouter } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
+import { useAuthStore } from "@/stores/authStore";
+import { storeToRefs } from "pinia";
 
 const postStore = usePostStore();
+const authStore = useAuthStore();
+const { loginUser, deleteUser } = authStore;
 const { deleteLoungePost, loadLoungePosts } = postStore;
 
 const router = useRouter();
@@ -45,7 +50,21 @@ function handleAction(action) {
   }
 }
 
-function handleDelete() {
+const handleDelete = async () => {
+
+  const parsedPosts = loginUser.posts.map(post => JSON.parse(post)).filter((item) => item.id !== props.postId);
+  const { data, error } = await supabase
+    .from("userinfo")
+    .update({ posts: parsedPosts })
+    .eq("id", loginUser.id)
+    .select()
+    .single();
+  if (error) {
+    console.error("오류", error.message);
+    return;
+  }
+  
+  deleteUser(data) 
   deleteLoungePost(props.postId);
   router.push("/lounge").then(() => {
     loadLoungePosts();

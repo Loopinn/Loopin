@@ -12,7 +12,7 @@ const router = createRouter({
       meta: { layout: "LogoHeader" },
     },
     {
-      path: "/socialing",
+      path: "/socialing/:maincategory?/:subcategory?",
       name: "socialing",
       component: () => import("@/views/ChannelView.vue"),
       meta: { layout: "CenteredHeader" },
@@ -24,7 +24,7 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
-      path: "/club",
+      path: "/club/:maincategory?/:subcategory?",
       name: "club",
       component: () => import("@/views/ChannelView.vue"),
       meta: { layout: "CenteredHeader" },
@@ -36,7 +36,7 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
-      path: "/challenge",
+      path: "/challenge/:maincategory?/:subcategory?",
       name: "challenge",
       component: () => import("@/views/ChannelView.vue"),
       meta: { layout: "CenteredHeader" },

@@ -13,7 +13,6 @@ import Loading from "@/components/Loading.vue";
 
 const router = useRouter();
 const route = useRoute();
-
 const postStore = usePostStore();
 const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts, createLoungePost, updateLoungePosts } = postStore;
