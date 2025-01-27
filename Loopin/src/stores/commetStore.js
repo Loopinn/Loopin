@@ -102,7 +102,7 @@ export const useCommentStore = defineStore("commentStore", () => {
   // 라운지 피드
   const loadLoungeComments = async (postId) => {
     try {
-      const { data, error } = await supabase.from("lounge_comments").select("*").eq("post_id", postId);
+      const { data, error } = await supabase.from("lounge_comments").select("*").eq("post_id", postId).order("created_at", { ascending: false });
 
       console.log("lounge", data);
       loungeComments.value = data;
@@ -149,13 +149,13 @@ export const useCommentStore = defineStore("commentStore", () => {
 
       const currentComments = postInfo.comments;
       const deletedComments = currentComments.filter((curComment) => curComment !== commentId);
-
+      const deletedCommentsd = [...deletedComments];
       const response = await supabase.from("lounge_comments").delete().eq("id", commentId).select();
       console.log("삭제완료!", response);
 
       const { data, error } = await supabase
         .from("lounge_posts")
-        .update({ comments: deletedComments })
+        .update({ comments: deletedCommentsd })
         .eq("id", postInfo.id);
       if (error) console.error(error);
       console.log("게시판에 있는 댓글 내역도 삭제완료!", data);
