@@ -92,7 +92,7 @@ onBeforeMount(() => {
     <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="ml-[40px] w-[520px]">
-        <div class="h-[80px] flex gap-4">
+        <div v-if="userData" class="h-[80px] flex gap-4">
           <div class="flex-shrink-0">
             <img
               :src="userData.profile_img || 'https://i.pinimg.com/474x/7b/ba/01/7bba01bf74ea2597285004f06c7a7bd0.jpg'"
