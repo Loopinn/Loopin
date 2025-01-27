@@ -20,7 +20,11 @@ const userData = ref(null);
 const isModalOpen = ref(false);
 const modalMessage = ref("<b style='font-size: 22px; color: #000;'>로그아웃 하시겠습니까?</b>");
 
-const isActive = (path) => route.path === path;
+const isActive = (path) => {
+  if (path === "/")
+    return route.path === path; //    /
+  else return route.path.includes(path); // /socialing /club
+};
 
 const fetchSession = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
