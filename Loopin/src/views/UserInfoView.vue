@@ -25,7 +25,7 @@ watch(
   async (newPath) => {
     if (newPath === "/profile") {
       isMyPage.value = true;
-    } else {
+    } else if (newPath.split("/")[1] === "user") {
       isMyPage.value = false;
     }
     isLoading.value = true;
@@ -46,15 +46,15 @@ const infos = computed(() => {
   return [
     {
       name: "팔로워",
-      value: isMyPage.value ? loginUser.followers.length || 0 : userData.value?.followers.length || 0,
+      value: isMyPage.value ? loginUser.followers.length || 0 : userData.value.followers.length || 0,
     },
     {
       name: "팔로잉",
-      value: isMyPage.value ? loginUser.following.length || 0 : userData.value?.following.length || 0,
+      value: isMyPage.value ? loginUser.following.length || 0 : userData.value.following.length || 0,
     },
     {
       name: "피드",
-      value: isMyPage.value ? loginUser.posts?.length || 0 : userData.value?.posts.length || 0,
+      value: isMyPage.value ? loginUser.posts.length || 0 : userData.value.posts.length || 0,
     },
   ];
 });
@@ -159,6 +159,7 @@ const fetchData = async () => {
 };
 
 onBeforeMount(() => {
+  console.log(loginUser);
   if (loginUser && decodeURIComponent(route.path.split("/")[2]) === loginUser.nickname) {
     router.replace("/profile");
   }
@@ -257,7 +258,7 @@ const handleShare = () => {
         </button>
 
         <!-- 로그인한 유저만 보임 -->
-        <Following v-else-if="!isMyPage && loginUser && userData" :userId="userData.id" />
+        <Following v-else-if="!isMyPage && loginUser && userData" :userData="userData" />
       </div>
 
       <!-- 피드 정보 -->

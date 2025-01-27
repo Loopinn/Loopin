@@ -15,6 +15,7 @@ export const useAuthStore = defineStore(
 
     const updateUser = (updateValue) => {
       loginUser.value = { ...loginUser.value, ...updateValue };
+      console.log(loginUser.value, "authStore");
     };
 
     const deleteUser = (deleteValue) => {

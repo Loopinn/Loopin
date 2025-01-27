@@ -53,7 +53,7 @@ const isConfirm = ref(false);
 
 const checkNickname = async (newNickname) => {
   if (newNickname === loginUser.nickname) {
-    isConfirm.value = true;
+    // isConfirm.value = true;
     return;
   }
   try {
@@ -89,12 +89,21 @@ const isCheckPw = ref(true);
 // 유효성 검사 함수
 const validatePassword = (password) => passwordRegex.test(password);
 
+// 프로필변경 업데이트 요청함수
 const updateProfile = async () => {
+  if (
+    newNickname.value === loginUser.nickname &&
+    newDesc.value === loginUser.description &&
+    !image.value &&
+    !newPassword.value.length &&
+    !checkNewPassword.value.length
+  ) {
+    return router.push("/profile");
+  }
+
   // 닉네임 중복확인
   if (newNickname.value !== loginUser.nickname && !isConfirm.value) {
     return toast.warn("닉네임 중복확인을 해주세요!");
-  } else {
-    isConfirm.value = true;
   }
 
   // 비밀번호 확인
@@ -157,7 +166,7 @@ const updateProfile = async () => {
     description: userUpdate.description,
     profile_img: userUpdate.profile_img,
   });
-  toast("변경이 완료되었습니다!");
+  toast.success("변경이 완료되었습니다!");
   router.push("/profile");
 };
 
@@ -216,7 +225,6 @@ const cancelUpdate = () => {
                   <input
                     type="text"
                     v-model="newNickname"
-                    :disabled="isKakao"
                     :class="
                       twMerge(
                         'w-[250px] px-4 py-2 border border-gray-300 rounded-lg outline-none',
@@ -228,7 +236,6 @@ const cancelUpdate = () => {
                     v-if="!isConfirm"
                     type="button"
                     @click="checkNickname(newNickname)"
-                    :disabled="isKakao"
                     class="px-4 py-2 bg-[#F43630] text-white font-medium rounded-lg hover:bg-[#E02E28] transition-colors disabled:opacity-50"
                   >
                     중복 확인

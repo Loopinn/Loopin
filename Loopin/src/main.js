@@ -16,10 +16,11 @@ pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 app.use(router);
 app.use(Vue3Toastify, {
-  autoClose: 3000,
+  autoClose: 2800,
   position: toast.POSITION.TOP_CENTER,
   hideProgressBar: true,
   multiple: true,
+  clearOnUrlChange: false,
 });
 
 app.mount("#app");
