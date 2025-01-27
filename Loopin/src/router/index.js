@@ -48,6 +48,16 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/write",
+      name: "write",
+      component: () => import("@/views/PostCreateView.vue"),
+    },
+    {
+      path: "/write/:type/:id",
+      name: "update",
+      component: () => import("@/views/PostCreateView.vue"),
+    },
+    {
       path: "/uploadfeed",
       name: "uploadfeed",
       component: () => import("@/components/EXLoungePosts.vue"),

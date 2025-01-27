@@ -1,8 +1,9 @@
 import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 export function useFunnel(initialSteps, handleReset) {
   const router = useRouter();
+  const route = useRoute();
 
   const steps = ref(initialSteps); // 단계 배열
   const currentStepIndex = ref(0); // 현재 단계 인덱스
@@ -51,7 +52,7 @@ export function useFunnel(initialSteps, handleReset) {
   };
 
   const nextStep = () => {
-    if (currentStepIndex.value === 0) {
+    if (currentStepIndex.value === 0 && route.path === "/write") {
       if (localStorage.getItem(`${state.value.selectedActivity}`)) {
         openModal("load");
       }
@@ -64,7 +65,7 @@ export function useFunnel(initialSteps, handleReset) {
   const prevStep = () => {
     if (currentStepIndex.value === 0) {
       router.go(-1);
-    } else if (currentStepIndex.value === 1) {
+    } else if (currentStepIndex.value === 1 && route.path === "/write") {
       openModal("save");
     } else {
       currentStepIndex.value--;

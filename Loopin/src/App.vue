@@ -109,7 +109,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 </script>
 <template>
-  <div v-if="route.path === '/write'">
+  <div v-if="route.path.includes('/write') && !route.path.includes('/lounge')">
     <PostCreateView />
   </div>
   <div v-else class="flex flex-col w-full h-full min-h-screen bg-white">
