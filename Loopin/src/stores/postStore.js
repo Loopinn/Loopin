@@ -18,37 +18,60 @@ export const usePostStore = defineStore("postStore", () => {
     }
     if (data) {
       clubPosts.value = data;
-      subscribeClubPosts();
+      // subscribeClubPosts();
     }
   };
-  const subscribeClubPosts = () => {
-    supabase
-      .channel("club-posts-channel")
-      .on("postgres_changes", { event: "*", schema: "public", table: "club_posts" }, (payload) => {
-        if (payload.eventType === "INSERT") {
-          clubPosts.value.push(payload.new);
-        }
-        if (payload.eventType === "DELETE") {
-          const index = getClubPostIndexById(payload.old.id);
-          clubPosts.value.splice(index, 1);
-        }
-        if (payload.eventType === "UPDATE") {
-          const index = getClubPostIndexById(payload.new.id);
-          Object.assign(clubPosts.value[index], payload.new);
-        }
-      })
-      .subscribe();
-  };
+  // const subscribeClubPosts = () => {
+  //   supabase
+  //     .channel("club-posts-channel")
+  //     .on("postgres_changes", { event: "*", schema: "public", table: "club_posts" }, (payload) => {
+  //       if (payload.eventType === "INSERT") {
+  //         clubPosts.value.push(payload.new);
+  //       }
+  //       if (payload.eventType === "DELETE") {
+  //         const index = getClubPostIndexById(payload.old.id);
+  //         clubPosts.value.splice(index, 1);
+  //       }
+  //       if (payload.eventType === "UPDATE") {
+  //         const index = getClubPostIndexById(payload.new.id);
+  //         Object.assign(clubPosts.value[index], payload.new);
+  //       }
+  //     })
+  //     .subscribe();
+  // };
 
-  const getClubPostIndexById = (postId) => {
-    return clubPosts.value.findIndex((post) => post.id === postId);
-  };
+  // const getClubPostIndexById = (postId) => {
+  //   return clubPosts.value.findIndex((post) => post.id === postId);
+  // };
 
-  const deleteClubPost = async (postId) => {
-    const { error } = await supabase.from("club_posts").delete().eq("id", postId);
+  const deleteClubPost = async (postId, userId) => {
+    //클럽 포스트 테이블에서 삭제
+    const { error: deleteError } = await supabase.from("club_posts").delete().eq("id", postId);
+    if (deleteError) {
+      console.log("Failed to delete club post", deleteError);
+      return;
+    }
+    //userinfo 테이블에서도 삭제
+    const { data: userInfoData, error: userInfoError } = await supabase
+      .from("userinfo")
+      .select("posts")
+      .eq("id", userId)
+      .single();
+    if (userInfoError) {
+      console.log("Failed to delete userinfo data", userInfoError);
+      return;
+    }
+    //해당 postId 삭제
+    const updatedPosts = userInfoData.posts.filter((post) => {
+      const postObj = JSON.parse(post); // JSON 문자열을 객체로 변환
+      return postObj.id !== postId; // 해당 postId와 일치하는 항목을 제외
+    });
+    //필터링한 새로운 posts 배열로 업데이트
+    const { error: updateError } = await supabase.from("userinfo").update({ posts: updatedPosts }).eq("id", userId);
 
-    if (error) {
-      console.log("failed to delete", error);
+    if (updateError) {
+      console.log("Failed to update userinfo", updateError);
+      return;
     }
   };
 
@@ -121,38 +144,65 @@ export const usePostStore = defineStore("postStore", () => {
     if (data) {
       challengePosts.value = data;
       //실시간 구독
-      subscribeChallengePosts();
+      // subscribeChallengePosts();
     }
   };
 
-  const subscribeChallengePosts = () => {
-    supabase
-      .channel("challenge-posts-channel")
-      .on("postgres_changes", { event: "*", schema: "public", table: "challenge_posts" }, (payload) => {
-        if (payload.eventType === "INSERT") {
-          challengePosts.value.push(payload.new);
-        }
-        if (payload.eventType === "DELETE") {
-          const index = getChallengePostIndexById(payload.old.id);
-          challengePosts.value.splice(index, 1);
-        }
-        if (payload.eventType === "UPDATE") {
-          const index = getChallengePostIndexById(payload.new.id);
-          Object.assign(challengePosts.value[index], payload.new);
-        }
-      })
-      .subscribe();
-  };
+  // const subscribeChallengePosts = () => {
+  //   supabase
+  //     .channel("challenge-posts-channel")
+  //     .on("postgres_changes", { event: "*", schema: "public", table: "challenge_posts" }, (payload) => {
+  //       if (payload.eventType === "INSERT") {
+  //         challengePosts.value.push(payload.new);
+  //       }
+  //       if (payload.eventType === "DELETE") {
+  //         const index = getChallengePostIndexById(payload.old.id);
+  //         challengePosts.value.splice(index, 1);
+  //       }
+  //       if (payload.eventType === "UPDATE") {
+  //         const index = getChallengePostIndexById(payload.new.id);
+  //         Object.assign(challengePosts.value[index], payload.new);
+  //       }
+  //     })
+  //     .subscribe();
+  // };
 
-  const getChallengePostIndexById = (postId) => {
-    return challengePosts.value.findIndex((post) => post.id === postId);
-  };
+  // const getChallengePostIndexById = (postId) => {
+  //   return challengePosts.value.findIndex((post) => post.id === postId);
+  // };
 
-  const deleteChallengePost = async (postId) => {
-    const { error } = await supabase.from("challenge_posts").delete().eq("id", postId);
+  const deleteChallengePost = async (postId, userId) => {
+    // 챌린지 포스트 테이블에서 삭제
+    const { error: deleteError } = await supabase.from("challenge_posts").delete().eq("id", postId);
+    if (deleteError) {
+      console.log("Failed to delete challenge post", deleteError);
+      return;
+    }
 
-    if (error) {
-      console.log("failed to delete", error);
+    // userinfo 테이블에서 해당 사용자의 posts 가져오기
+    const { data: userInfoData, error: userInfoError } = await supabase
+      .from("userinfo")
+      .select("posts")
+      .eq("id", userId)
+      .single();
+
+    if (userInfoError) {
+      console.log("Failed to fetch userinfo data", userInfoError);
+      return;
+    }
+
+    // 해당 postId 삭제
+    const updatedPosts = userInfoData.posts.filter((post) => {
+      const postObj = JSON.parse(post); // JSON 문자열을 객체로 변환
+      return postObj.id !== postId; // 해당 postId와 일치하는 항목을 제외
+    });
+
+    // 필터링한 새로운 posts 배열로 업데이트
+    const { error: updateError } = await supabase.from("userinfo").update({ posts: updatedPosts }).eq("id", userId);
+
+    if (updateError) {
+      console.log("Failed to update userinfo", updateError);
+      return;
     }
   };
 
@@ -361,12 +411,42 @@ export const usePostStore = defineStore("postStore", () => {
     }
   };
 
-  const deleteSocialPost = async (postId) => {
+  const deleteSocialPost = async (postId, userId) => {
     try {
-      const response = await supabase.from("socialing_posts").delete().eq("id", postId).select();
-      return response;
+      // 소셜 포스트 테이블에서 삭제
+      const { error: deleteError } = await supabase.from("socialing_posts").delete().eq("id", postId);
+      if (deleteError) {
+        console.log("Failed to delete social post", deleteError);
+        return;
+      }
+
+      // userinfo 테이블에서 해당 사용자의 posts 가져오기
+      const { data: userInfoData, error: userInfoError } = await supabase
+        .from("userinfo")
+        .select("posts")
+        .eq("id", userId)
+        .single();
+
+      if (userInfoError) {
+        console.log("Failed to fetch userinfo data", userInfoError);
+        return;
+      }
+
+      // 해당 postId 삭제
+      const updatedPosts = userInfoData.posts.filter((post) => {
+        const postObj = JSON.parse(post); // JSON 문자열을 객체로 변환
+        return postObj.id !== postId; // 해당 postId와 일치하는 항목을 제외
+      });
+
+      // 필터링한 새로운 posts 배열로 업데이트
+      const { error: updateError } = await supabase.from("userinfo").update({ posts: updatedPosts }).eq("id", userId);
+
+      if (updateError) {
+        console.log("Failed to update userinfo", updateError);
+        return;
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to delete social post", error);
     }
   };
 

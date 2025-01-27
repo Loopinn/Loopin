@@ -1,8 +1,8 @@
 <script setup>
 import supabase from "@/config/supabase";
-import { defineProps, ref } from "vue";
+import { defineProps, onMounted, watch, ref, onBeforeMount } from "vue";
 import ChoiceModal from "@/components/modal/ChoiceModal.vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { usePostStore } from "@/stores/postStore";
 import { useAuthStore } from "@/stores/authStore";
 import { storeToRefs } from "pinia";
@@ -10,9 +10,10 @@ import { storeToRefs } from "pinia";
 const postStore = usePostStore();
 const authStore = useAuthStore();
 const { loginUser, deleteUser } = authStore;
-const { deleteLoungePost, loadLoungePosts } = postStore;
+const { loadLoungePosts, deleteLoungePost, deleteClubPost, deleteSocialPost, deleteChallengePost } = postStore;
 
 const router = useRouter();
+const route = useRoute();
 const isChoiceModalOpen = ref(false);
 const props = defineProps({
   isModalOpen: {
@@ -41,18 +42,23 @@ const toggleModal = () => {
   isChoiceModalOpen.value = false;
 };
 
-function handleAction(action) {
-  if (action === "수정") {
-    router.push(`/lounge/write/${props.postId}`);
-  } else {
+const handleAction = (action) => {
+  const routesMap = {
+    "/club": `/write/club/${props.postId}`,
+    "/socialing": `/write/socialing/${props.postId}`,
+    "/challenge": `/write/challenge/${props.postId}`,
+  };
+  const matchedRoute = Object.keys(routesMap).find((key) => route.fullPath.includes(key));
+  if (action === "삭제") {
     openChoiceModal();
     closeModal();
-  }
-}
+  } else if (matchedRoute) {
+    router.push(routesMap[matchedRoute]);
+  } else router.push(`/lounge/write/${props.postId}`);
+};
 
-const handleDelete = async () => {
-
-  const parsedPosts = loginUser.posts.map(post => JSON.parse(post)).filter((item) => item.id !== props.postId);
+const handleLoungeDelete = async () => {
+  const parsedPosts = loginUser.posts.map((post) => JSON.parse(post)).filter((item) => item.id !== props.postId);
   const { data, error } = await supabase
     .from("userinfo")
     .update({ posts: parsedPosts })
@@ -63,13 +69,65 @@ const handleDelete = async () => {
     console.error("오류", error.message);
     return;
   }
-  
-  deleteUser(data) 
+
+  deleteUser(data);
   deleteLoungePost(props.postId);
   router.push("/lounge").then(() => {
     loadLoungePosts();
   });
-}
+};
+
+const handleDelete = () => {
+  const routesMap = {
+    club: {
+      route: "/club",
+      deleteFunc: deleteClubPost,
+    },
+    socialing: {
+      route: "/socialing",
+      deleteFunc: deleteSocialPost,
+    },
+    challenge: {
+      route: "/challenge",
+      deleteFunc: deleteChallengePost,
+    },
+  };
+  const currentRoute = Object.keys(routesMap).find((key) => route.fullPath.includes(key));
+  if (currentRoute) {
+    const { route: redirectRoute, deleteFunc } = routesMap[currentRoute];
+    deleteFunc(props.postId, loginUser.id);
+    router.push(redirectRoute);
+  } else {
+    console.error("Invalid route or route not handled.");
+  }
+};
+
+const modalMessage = () => {
+  const routesMap = {
+    lounge: {
+      route: "/lounge",
+      type: "피드를",
+    },
+    club: {
+      route: "/club",
+      type: "클럽을",
+    },
+    socialing: {
+      route: "/socialing",
+      type: "소셜링을",
+    },
+    challenge: {
+      route: "/challenge",
+      type: "챌린지를",
+    },
+  };
+  const currentRoute = Object.keys(routesMap).find((key) => route.fullPath.includes(key));
+  if (currentRoute) {
+    const { type } = routesMap[currentRoute];
+    return type;
+  }
+  return null;
+};
 </script>
 
 <template>
@@ -86,10 +144,10 @@ const handleDelete = async () => {
   </div>
   <ChoiceModal
     :isOpen="isChoiceModalOpen"
-    :message="'피드를 삭제하시겠어요?'"
+    :message="`${modalMessage()} 삭제하시겠습니까?`"
     :buttonMessage="'확인'"
     @close="toggleModal"
-    @confirm="handleDelete"
+    @confirm="route.fullPath.includes('lounge') ? handleLoungeDelete() : handleDelete()"
   >
   </ChoiceModal>
 </template>

@@ -1396,9 +1396,16 @@ watch(
               <div class="h-[80px] flex gap-4">
                 <div class="flex items-center">
                   <img
+                    v-if="userInfo.profile_img"
                     :src="userInfo.profile_img"
                     alt="hostprofile"
-                    class="w-[60px] h-[60px] rounded-full object-cover"
+                    class="w-[60px] h-[60px] rounded-full"
+                  />
+                  <img
+                    v-else
+                    src="@/assets/images/no-profile.svg"
+                    alt="hostprofile"
+                    class="w-[60px] h-[60px] rounded-full"
                   />
                 </div>
                 <div class="mt-1 flex flex-col justify-center">
@@ -1479,9 +1486,16 @@ watch(
           </div>
           <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
             <img
+              v-if="userInfo.profile_img"
               :src="userInfo.profile_img"
               alt="hostprofile"
-              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+            />
+            <img
+              v-else
+              src="@/assets/images/no-profile.svg"
+              alt="hostprofile"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
             />
             <div class="text-center mt-[30px]">
               <p class="text-[12px] mb-1">{{ userInfo.nickname }}</p>
