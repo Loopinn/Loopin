@@ -576,7 +576,7 @@ const handlePostSubmit = async () => {
     }
   }
 
-  //post 생성
+  //post 생성, 수정
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData?.session?.user?.id;
   const postId = ref(null);
