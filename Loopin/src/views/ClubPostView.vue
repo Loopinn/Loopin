@@ -8,6 +8,7 @@ import { storeToRefs } from "pinia";
 import supabase from "@/config/supabase";
 import { useRoute } from "vue-router";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
+import MoreModal from "@/components/lounge/MoreModal.vue";
 
 const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
@@ -19,6 +20,8 @@ const postId = route.params.id;
 const userData = ref(null);
 const userId = ref("");
 const isLoading = ref(false);
+
+const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -71,6 +74,10 @@ const handleUpdateParticipants = (updatedParticipants) => {
   currentPost.value.participants = updatedParticipants;
 };
 
+const openModal = () => {
+  isModalOpen.value = true;
+};
+
 onMounted(async () => {
   console.log("현재 게시글", currentPost.value);
   await getUserId();
@@ -89,16 +96,19 @@ onBeforeMount(() => {
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
+    <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
+    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="ml-[40px] w-[520px]">
-        <div class="h-[80px] flex gap-4">
+        <div v-if="userData" class="h-[80px] flex gap-4 relative">
           <div class="flex-shrink-0">
             <img
-              :src="userData.profile_img || 'https://i.pinimg.com/474x/7b/ba/01/7bba01bf74ea2597285004f06c7a7bd0.jpg'"
+              v-if="userData.profile_img"
+              :src="userData.profile_img"
               alt="hostprofile"
               class="w-[60px] h-[60px] rounded-full"
             />
+            <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
             <div>
               <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
               <span class="ml-1 text-[12px] text-[#403F3F]"
@@ -113,6 +123,9 @@ onBeforeMount(() => {
             <p class="text-[12px]">
               호스트 <b>{{ userData.nickname }}</b>
             </p>
+          </div>
+          <div class="flex items-center gap-2 absolute right-0">
+            <button @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
           </div>
         </div>
 

@@ -9,6 +9,7 @@ import supabase from "@/config/supabase";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import Loading from "@/components/Loading.vue";
+import MoreModal from "@/components/lounge/MoreModal.vue";
 
 const postStore = usePostStore();
 const { socialingPosts } = storeToRefs(postStore);
@@ -20,6 +21,8 @@ const postId = route.params.id;
 const userData = ref(null);
 const userId = ref("");
 const isLoading = ref(false);
+
+const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -126,23 +129,35 @@ const formattedTime = computed(() => {
 const handleUpdateParticipants = (updatedParticipants) => {
   currentPost.value.participants = updatedParticipants;
 };
+const openModal = () => {
+  isModalOpen.value = true;
+};
 </script>
 <template>
+  <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img class="w-full h-[260px]" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
-    <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
+    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
+    <div v-if="userData" class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
         v-if="userData.profile_img"
         :src="userData.profile_img"
         alt="hostprofile"
         class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
       />
-      <div v-else class="w-[60px] h-[60px] rounded-full bg-[#F1F1F1] absolute left-[190px] top-[-30px]" />
+      <img
+        v-else
+        src="@/assets/images/no-profile.svg"
+        alt="hostprofile"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+      />
       <div class="text-center mt-[30px]">
         <p class="text-[12px] mb-1">{{ userData.nickname }}</p>
         <p class="text-[20px] font-bold">{{ currentPost.title }}</p>
       </div>
+    </div>
+    <div class="flex items-center gap-2 absolute right-[40px]">
+      <button @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
     </div>
     <!-- 한줄 요약 -->
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
