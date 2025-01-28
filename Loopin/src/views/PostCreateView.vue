@@ -606,6 +606,7 @@ const handlePostSubmit = async () => {
         // 새 게시글 생성
         const createdPost = await createSocialPost(postData, userId);
         postId.value = createdPost[0].id;
+        localStorage.removeItem("소셜링");
       } else {
         // 기존 게시글 업데이트
         const updatedPost = await updateSocialPost(postData, route.params.id);
@@ -631,6 +632,7 @@ const handlePostSubmit = async () => {
         // 새 게시글 생성
         const createdPost = await createClubPost(postData, userId);
         postId.value = createdPost[0].id;
+        localStorage.removeItem("클럽");
       } else {
         // 기존 게시글 업데이트
         const updatedPost = await updateClubPost(postData, route.params.id);
@@ -656,6 +658,7 @@ const handlePostSubmit = async () => {
         // 새 게시글 생성
         const createdPost = await createChallengePost(postData, userId);
         postId.value = createdPost[0].id;
+        localStorage.removeItem("챌린지");
       } else {
         // 기존 게시글 업데이트
         const updatedPost = await updateChallengePost(postData, route.params.id);
