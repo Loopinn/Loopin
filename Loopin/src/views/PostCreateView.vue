@@ -80,6 +80,8 @@ onMounted(async () => {
         previewImages.value = [...socialingPost.images];
         fileCount.value = socialingPost.images.length;
         selectedImage.value = [...socialingPost.images];
+
+        participantsCnt.value = socialingPost.participants.length;
       }
     } else if (postType === "club") {
       setState({ ...state.value, selectedActivity: "클럽" });
@@ -221,6 +223,8 @@ const fileInput = ref(null);
 const selectedImage = ref([]);
 const fileCount = ref(0);
 const previewImages = ref([]);
+
+const participantsCnt = ref(null);
 
 const categoryList = ref([
   {
@@ -694,6 +698,12 @@ const formatTime = (time) => {
 
   return `${ampm} ${formattedHours}:${formattedMinutes}`;
 };
+const period = computed(() => {
+  const start = new Date(stateFields.startDate);
+  const end = new Date(stateFields.endDate);
+
+  return (end - start) / (1000 * 60 * 60 * 24) + 1;
+});
 const formatPlace = (place) => {
   const placeName = place.road_address_name || place.address_name;
   return placeName.split(" ")[1];
@@ -1523,7 +1533,7 @@ watch(
                 </span>
 
                 <span v-if="stateFields.startDate && stateFields.endDate">
-                  {{ formatDate(stateFields.startDate) }} ~ {{ formatDate(stateFields.endDate) }}
+                  {{ formatDate(stateFields.startDate) }} {{ period }}일간
                 </span>
 
                 <div v-if="stateFields.tpw !== '-'" class="flex">
@@ -1547,11 +1557,11 @@ watch(
                       filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%);
                     "
                   />
-                  <span>1/{{ stateFields.maxPeople }}</span>
+                  <span>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}</span>
                 </div>
               </div>
               <div class="ml-[40px] mt-[70px] w-[520px]">
-                <pre>{{ stateFields.description }}</pre>
+                <pre class="">{{ stateFields.description }}</pre>
                 <!-- 안내사항 -->
                 <div class="mt-5">
                   <div
