@@ -611,6 +611,8 @@ const handlePostSubmit = async () => {
         localStorage.removeItem("소셜링");
       } else {
         // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateSocialPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
       }
@@ -637,6 +639,8 @@ const handlePostSubmit = async () => {
         localStorage.removeItem("클럽");
       } else {
         // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateClubPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
       }
@@ -663,6 +667,8 @@ const handlePostSubmit = async () => {
         localStorage.removeItem("챌린지");
       } else {
         // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateChallengePost(postData, route.params.id);
         postId.value = updatedPost[0].id;
       }
