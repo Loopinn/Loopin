@@ -8,6 +8,7 @@ import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import { resizeImage } from "@/utils/resizeImage";
+import { storeToRefs } from "pinia";
 import { twMerge } from "tailwind-merge";
 import { computed, onBeforeMount, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -16,7 +17,7 @@ import { toast } from "vue3-toastify";
 const isMyPage = ref(true);
 
 const authStore = useAuthStore();
-const { loginUser } = authStore;
+const { loginUser } = storeToRefs(authStore);
 
 const router = useRouter();
 const route = useRoute();
@@ -32,6 +33,7 @@ watch(
     }
     isLoading.value = true;
     await fetchData();
+    resizeProfile();
   },
 );
 
@@ -48,15 +50,15 @@ const infos = computed(() => {
   return [
     {
       name: "팔로워",
-      value: isMyPage.value ? loginUser.followers.length || 0 : userData.value.followers.length || 0,
+      value: isMyPage.value ? loginUser.value.followers.length || 0 : userData.value.followers.length || 0,
     },
     {
       name: "팔로잉",
-      value: isMyPage.value ? loginUser.following.length || 0 : userData.value.following.length || 0,
+      value: isMyPage.value ? loginUser.value.following.length || 0 : userData.value.following.length || 0,
     },
     {
       name: "피드",
-      value: isMyPage.value ? loginUser.posts.length || 0 : userData.value.posts.length || 0,
+      value: isMyPage.value ? loginUser.value.posts.length || 0 : userData.value.posts.length || 0,
     },
   ];
 });
@@ -68,11 +70,11 @@ const fetchData = async () => {
   console.log(route.fullPath);
 
   if (isMyPage.value) {
-    console.log(loginUser);
+    console.log(loginUser.value);
     try {
-      if (loginUser.posts) {
+      if (loginUser.value.posts) {
         // 모임 게시글 불러오기
-        const filterMeetingId = loginUser.posts.filter((postInfo) => {
+        const filterMeetingId = loginUser.value.posts.filter((postInfo) => {
           const info = JSON.parse(postInfo);
           return info.type !== "lounge_posts";
         });
@@ -88,7 +90,7 @@ const fetchData = async () => {
         userMeetingPosts.value = await Promise.all(meeting);
         console.log("모임 게시글", userMeetingPosts.value);
         // 피드 게시글 불러오기
-        const filterFeedId = loginUser.posts.filter((postInfo) => {
+        const filterFeedId = loginUser.value.posts.filter((postInfo) => {
           const info = JSON.parse(postInfo);
           return info.type === "lounge_posts";
         });
@@ -163,7 +165,7 @@ const fetchData = async () => {
 
 onBeforeMount(() => {
   console.log(loginUser);
-  if (loginUser && decodeURIComponent(route.path.split("/")[2]) === loginUser.nickname) {
+  if (loginUser.value && decodeURIComponent(route.path.split("/")[2]) === loginUser.value.nickname) {
     router.replace("/profile");
   }
 
@@ -172,13 +174,13 @@ onBeforeMount(() => {
   }
 });
 
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  await fetchData();
   resizeProfile();
 });
 
 const shortDesc = computed(() => {
-  const desc = isMyPage.value ? loginUser?.description || "" : userData.value?.description || "";
+  const desc = isMyPage.value ? loginUser.value.description || "" : userData.value?.description || "";
 
   if (desc.length >= 40 && !moreDesc.value) {
     return desc.slice(0, 38) + "...";
@@ -190,7 +192,7 @@ const moreDesc = ref(false);
 
 const handleShare = () => {
   navigator.clipboard
-    .writeText(`http://localhost:5173/user/${loginUser.nickname}`)
+    .writeText(`http://localhost:5173/user/${loginUser.value.nickname}`)
     .then(() => toast("프로필 주소가 복사되었습니다!"));
 };
 
@@ -204,8 +206,8 @@ const resizeProfile = () => {
     resizedProfile.value = resizeImage(img, 200, 200);
   };
   // 외부 URL에서 이미지 로드
-  if (isMyPage) img.src = loginUser.profile_img;
-  else img.src = userData.profile_img;
+  if (isMyPage.value) img.src = loginUser.value.profile_img;
+  else img.src = userData.value.profile_img;
 };
 </script>
 <template>
