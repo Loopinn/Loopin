@@ -1,13 +1,14 @@
 <script setup>
 import supabase from "@/config/supabase";
 import { twMerge } from "tailwind-merge";
-import { onBeforeMount, ref, watch, watchEffect } from "vue";
+import { onBeforeMount, onMounted, ref, watch, watchEffect } from "vue";
 import imgEditIcon from "../assets/images/profile_edit.svg";
 import CheckPw from "@/components/profileEdit/CheckPw.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
 import { passwordRegex } from "@/constants/validation";
 import { toast } from "vue3-toastify";
+import { resizeImage } from "@/utils/resizeImage";
 
 const authStore = useAuthStore();
 const { loginUser, updateUser } = authStore;
@@ -30,10 +31,19 @@ onBeforeMount(async () => {
 
   // newNickname.value = loginUser.nickname;
   newDesc.value = loginUser.description;
+
+  console.log(authStore.loginUser.profile_img);
+});
+onMounted(() => {
+  if (loginUser.profile_img) {
+    resizeProfile();
+  }
 });
 
+const resizedProfile = ref(null);
 const image = ref(null);
 const preImg = ref(null);
+//선택한 이미지 미리보기 리사이즈 추가
 const handleImgSelect = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -42,9 +52,31 @@ const handleImgSelect = (e) => {
     image.value = null;
   }
 
-  const preImgUrl = URL.createObjectURL(file);
-  console.log(preImgUrl);
-  preImg.value = preImgUrl;
+  // 이미지 파일을 읽어들임
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // 리사이징된 이미지 URL 얻기
+      const resizedImgUrl = resizeImage(img, 400, 400);
+      preImg.value = resizedImgUrl;
+    };
+
+    img.src = event.target.result; // FileReader로 읽어온 데이터
+  };
+
+  reader.readAsDataURL(file); // 파일을 읽어 Data URL로 변환
+};
+//외부 이미지 리사이즈
+//이미지를 로드할 때 CORS 설정을 추가하면 브라우저가 이미지에 대한 올바른 리소스 접근 권한을 처리할 수 있습니다.
+const resizeProfile = () => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = resizeImage(img, 400, 400);
+  };
+  img.src = loginUser.profile_img; // 외부 URL에서 이미지 로드
 };
 
 // 닉네임 중복 체크
@@ -191,18 +223,23 @@ const cancelUpdate = () => {
             <div class="flex items-center space-x-8 mb-8 pb-8 border-b border-gray-200">
               <div class="relative">
                 <img
-                  v-if="loginUser.profile_img && !preImg"
-                  :src="loginUser.profile_img"
+                  v-if="resizedProfile && !preImg"
+                  :src="resizedProfile"
                   alt="프로필 사진"
-                  class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
+                  class="w-32 h-32 rounded-full object-cover will-change-transform border-4 border-white shadow-md"
                 />
                 <img
-                  v-else-if="loginUser.profile_img && preImg"
+                  v-else-if="preImg"
                   :src="preImg"
                   alt="프로필 사진"
-                  class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
+                  class="w-32 h-32 rounded-full object-cover will-change-transform border-4 border-white shadow-md"
                 />
-                <div v-else class="w-32 h-32 rounded-full bg-white border-4 border-white shadow-md"></div>
+                <img
+                  v-else
+                  src="@/assets/images/no-profile.svg"
+                  alt="프로필 사진"
+                  class="w-32 h-32 rounded-full shadow-md object-cover will-change-transform"
+                />
                 <label
                   for="profile_img"
                   class="absolute bottom-0 right-[-5px] text-white p-2 rounded-full cursor-pointer"

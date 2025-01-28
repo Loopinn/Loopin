@@ -7,6 +7,7 @@ import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
 import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
 import supabase from "@/config/supabase";
 import { useAuthStore } from "@/stores/authStore";
+import { resizeImage } from "@/utils/resizeImage";
 import { twMerge } from "tailwind-merge";
 import { computed, onBeforeMount, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -169,7 +170,10 @@ onBeforeMount(() => {
   }
 });
 
-onMounted(fetchData);
+onMounted(() => {
+  fetchData();
+  resizeProfile();
+});
 
 const shortDesc = computed(() => {
   const desc = isMyPage.value ? loginUser?.description || "" : userData.value?.description || "";
@@ -187,6 +191,20 @@ const handleShare = () => {
     .writeText(`http://localhost:5173/user/${loginUser.nickname}`)
     .then(() => toast("프로필 주소가 복사되었습니다!"));
 };
+
+//프로필 이미지 리사이즈
+const resizedProfile = ref(null);
+const resizeProfile = () => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = resizeImage(img, 200, 200);
+  };
+  // 외부 URL에서 이미지 로드
+  if (isMyPage) img.src = loginUser.profile_img;
+  else img.src = userData.profile_img;
+};
 </script>
 <template>
   <div v-if="noUser">
@@ -198,12 +216,17 @@ const handleShare = () => {
     <div v-if="!isLoading">
       <div class="py-5 px-3">
         <img
-          v-if="isMyPage ? loginUser.profile_img : userData?.profile_img"
-          :src="isMyPage ? loginUser.profile_img : userData.profile_img"
+          v-if="resizedProfile"
+          :src="resizedProfile"
           alt="프로필 사진"
-          class="w-[75px] h-[75px] rounded-full shadow-md"
+          class="w-[75px] h-[75px] rounded-full shadow-md object-cover will-change-transform"
         />
-        <div v-else class="w-[75px] h-[75px] rounded-full bg-white border"></div>
+        <img
+          v-else
+          src="@/assets/images/no-profile.svg"
+          alt="프로필 사진"
+          class="w-[75px] h-[75px] rounded-full shadow-md object-cover will-change-transform"
+        />
         <h1 class="font-extrabold text-[18px] my-3">{{ isMyPage ? loginUser.nickname : userData?.nickname }}</h1>
         <p class="w-[350px] text-[#383535] break-words">
           {{ shortDesc }}

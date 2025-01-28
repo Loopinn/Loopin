@@ -125,7 +125,7 @@ onBeforeMount(async () => {
           class="h-full w-full"
         >
           <SwiperSlide v-for="(image, index) in currentPost?.images" :key="index" class="aspect-square">
-            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover " />
+            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover will-change-transform" />
           </SwiperSlide>
         </Swiper>
       </div>

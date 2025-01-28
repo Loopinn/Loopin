@@ -23,6 +23,7 @@ import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
 import { nextTick } from "vue";
+import { resizeImage } from "@/utils/resizeImage";
 
 const userInfo = ref(null);
 
@@ -80,6 +81,8 @@ onMounted(async () => {
         previewImages.value = [...socialingPost.images];
         fileCount.value = socialingPost.images.length;
         selectedImage.value = [...socialingPost.images];
+
+        participantsCnt.value = socialingPost.participants.length;
       }
     } else if (postType === "club") {
       setState({ ...state.value, selectedActivity: "클럽" });
@@ -221,6 +224,8 @@ const fileInput = ref(null);
 const selectedImage = ref([]);
 const fileCount = ref(0);
 const previewImages = ref([]);
+
+const participantsCnt = ref(null);
 
 const categoryList = ref([
   {
@@ -522,6 +527,7 @@ const handleFileChange = (event) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const reader = new FileReader();
+
       reader.onload = (e) => {
         previewImages.value.push(e.target.result); // 미리보기 URL 배열에 추가
       };
@@ -602,6 +608,7 @@ const handlePostSubmit = async () => {
         // 새 게시글 생성
         const createdPost = await createSocialPost(postData, userId);
         postId.value = createdPost[0].id;
+        localStorage.removeItem("소셜링");
       } else {
         // 기존 게시글 업데이트
         const updatedPost = await updateSocialPost(postData, route.params.id);
@@ -627,6 +634,7 @@ const handlePostSubmit = async () => {
         // 새 게시글 생성
         const createdPost = await createClubPost(postData, userId);
         postId.value = createdPost[0].id;
+        localStorage.removeItem("클럽");
       } else {
         // 기존 게시글 업데이트
         const updatedPost = await updateClubPost(postData, route.params.id);
@@ -652,6 +660,7 @@ const handlePostSubmit = async () => {
         // 새 게시글 생성
         const createdPost = await createChallengePost(postData, userId);
         postId.value = createdPost[0].id;
+        localStorage.removeItem("챌린지");
       } else {
         // 기존 게시글 업데이트
         const updatedPost = await updateChallengePost(postData, route.params.id);
@@ -694,6 +703,12 @@ const formatTime = (time) => {
 
   return `${ampm} ${formattedHours}:${formattedMinutes}`;
 };
+const period = computed(() => {
+  const start = new Date(stateFields.startDate);
+  const end = new Date(stateFields.endDate);
+
+  return (end - start) / (1000 * 60 * 60 * 24) + 1;
+});
 const formatPlace = (place) => {
   const placeName = place.road_address_name || place.address_name;
   return placeName.split(" ")[1];
@@ -796,6 +811,22 @@ watch(
     if (newValue !== "") setState({ ...state.value, description: newValue });
   },
 );
+
+//프로필 이미지 리사이즈
+const resizedProfile = ref(null);
+const resizeProfile = () => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = resizeImage(img, 200, 200);
+  };
+  // 외부 URL에서 이미지 로드
+  img.src = userInfo.value.profile_img;
+};
+onMounted(() => {
+  resizeProfile();
+});
 </script>
 
 <template>
@@ -1345,10 +1376,17 @@ watch(
                 />
                 <div class="text-sm text-gray-500">{{ fileCount }}/10</div>
               </div>
-              <div v-if="previewImages.length > 0" class="flex gap-2 relative">
-                <div v-for="(image, index) in previewImages" :key="index" class="relative">
-                  <!-- 미리보기 이미지 -->
-                  <img :src="image" alt="Preview-image" class="w-32 h-32 rounded-lg object-cover" />
+              <div class="flex overflow-x-auto space-x-2 slide-container">
+                <div
+                  v-for="(image, index) in previewImages"
+                  :key="index"
+                  class="flex-shrink-0 w-[128px] h-[128px] relative"
+                >
+                  <img
+                    :src="image"
+                    alt="Selected Image"
+                    class="w-full h-full object-cover will-change-transform border rounded-lg"
+                  />
                   <!-- 삭제 버튼 -->
                   <img
                     src="@/assets/images/delete.svg"
@@ -1387,7 +1425,11 @@ watch(
               class="w-full h-[260px]"
             >
               <SwiperSlide v-for="(image, index) in previewImages" :key="index">
-                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+                <img
+                  :src="image || noImage"
+                  alt="게시물 이미지"
+                  class="w-full h-full object-cover will-change-transform"
+                />
               </SwiperSlide>
             </Swiper>
           </div>
@@ -1399,7 +1441,7 @@ watch(
                     v-if="userInfo.profile_img"
                     :src="userInfo.profile_img"
                     alt="hostprofile"
-                    class="w-[60px] h-[60px] rounded-full"
+                    class="w-[60px] h-[60px] rounded-full object-cover"
                   />
                   <img
                     v-else
@@ -1480,16 +1522,20 @@ watch(
               class="w-full h-[260px]"
             >
               <SwiperSlide v-for="(image, index) in previewImages" :key="index">
-                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+                <img
+                  :src="image || noImage"
+                  alt="게시물 이미지"
+                  class="w-full h-full object-cover will-change-transform"
+                />
               </SwiperSlide>
             </Swiper>
           </div>
           <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
             <img
-              v-if="userInfo.profile_img"
-              :src="userInfo.profile_img"
+              v-if="resizedProfile"
+              :src="resizedProfile"
               alt="hostprofile"
-              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover"
             />
             <img
               v-else
@@ -1523,7 +1569,7 @@ watch(
                 </span>
 
                 <span v-if="stateFields.startDate && stateFields.endDate">
-                  {{ formatDate(stateFields.startDate) }} ~ {{ formatDate(stateFields.endDate) }}
+                  {{ formatDate(stateFields.startDate) }} {{ period }}일간
                 </span>
 
                 <div v-if="stateFields.tpw !== '-'" class="flex">
@@ -1547,11 +1593,11 @@ watch(
                       filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%);
                     "
                   />
-                  <span>1/{{ stateFields.maxPeople }}</span>
+                  <span>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}</span>
                 </div>
               </div>
               <div class="ml-[40px] mt-[70px] w-[520px]">
-                <pre>{{ stateFields.description }}</pre>
+                <pre class="">{{ stateFields.description }}</pre>
                 <!-- 안내사항 -->
                 <div class="mt-5">
                   <div

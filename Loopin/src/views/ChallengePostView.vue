@@ -10,6 +10,7 @@ import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import Loading from "@/components/Loading.vue";
 import MoreModal from "@/components/lounge/MoreModal.vue";
+import { resizeImage } from "@/utils/resizeImage";
 
 const postStore = usePostStore();
 const { challengePosts } = storeToRefs(postStore);
@@ -52,6 +53,7 @@ const fetchData = async () => {
 
       if (userDataFromDB) {
         userData.value = userDataFromDB;
+        resizeProfile();
       }
     } catch (error) {
       console.log("알 수 없는 오류 발생: ", error);
@@ -112,18 +114,35 @@ const period = computed(() => {
 const openModal = () => {
   isModalOpen.value = true;
 };
+
+//프로필 이미지 리사이즈
+const resizedProfile = ref(null);
+const resizeProfile = () => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = resizeImage(img, 200, 200);
+  };
+  // 외부 URL에서 이미지 로드
+  img.src = userData.value.profile_img;
+};
 </script>
 <template>
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ' '" alt="thumbnail" />
+    <img
+      class="w-full h-[260px] object-cover will-change-transform"
+      :src="currentPost.images ? currentPost.images[0] : ' '"
+      alt="thumbnail"
+    />
     <div v-if="userData" class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
-        v-if="userData.profile_img"
-        :src="userData.profile_img"
+        v-if="resizedProfile"
+        :src="resizedProfile"
         alt="hostprofile"
-        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover will-change-transform"
       />
       <img
         v-else

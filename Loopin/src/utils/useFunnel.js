@@ -64,7 +64,7 @@ export function useFunnel(initialSteps, handleReset) {
 
   const prevStep = () => {
     if (currentStepIndex.value === 0) {
-      router.go(-1);
+      router.push("/");
     } else if (currentStepIndex.value === 1 && route.path === "/write") {
       openModal("save");
     } else {

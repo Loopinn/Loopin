@@ -34,16 +34,16 @@ const images = ref([]);
 const postId = ref(route.params.id);
 
 const currentPost = computed(() => {
-    if (postId.value) {
-        const post = loungePosts.value.find((post) => post.id === postId.value);
-        if (post) {
-            description.value = post.description;
-            selectedImage.value = post.images;
-            category.value = post.category;
-            return post;
-        }
+  if (postId.value) {
+    const post = loungePosts.value.find((post) => post.id === postId.value);
+    if (post) {
+      description.value = post.description;
+      selectedImage.value = post.images;
+      category.value = post.category;
+      return post;
     }
-    return null;
+  }
+  return null;
 });
 
 watch(selectedItem, (newValue) => {
@@ -87,7 +87,6 @@ const handleSubmit = async () => {
   isLoading.value = true;
 
   try {
-
     if (!selectedImage.value || selectedImage.value.length === 0) {
       alert("이미지를 선택해야 합니다.");
       return;
@@ -104,12 +103,10 @@ const handleSubmit = async () => {
 
           if (imageError) throw imageError;
 
-          const { data: imagePath } = supabase.storage
-            .from("post-images")
-            .getPublicUrl(`images/feed/${fileName}`);
+          const { data: imagePath } = supabase.storage.from("post-images").getPublicUrl(`images/feed/${fileName}`);
 
           return imagePath.publicUrl;
-        })
+        }),
       );
 
       if (postId.value) {
@@ -129,7 +126,7 @@ const handleSubmit = async () => {
             images: imageUrls,
             category: category.value,
           },
-          creator.value
+          creator.value,
         );
         if (submitResponse && submitResponse.length > 0) {
           alert("피드 등록에 성공했습니다.");
@@ -161,7 +158,6 @@ onBeforeMount(async () => {
   const userId = data?.session?.user?.id;
   creator.value = isLoggedIn ? userId : "";
 });
-
 </script>
 
 <template>
@@ -176,7 +172,9 @@ onBeforeMount(async () => {
         <div class="flex justify-between items-center space-x-2 cursor-pointer" @click="openModal">
           <div class="flex items-center space-x-2">
             <img :src="paper" alt="paper" class="w-6 h-6" />
-            <span class="text-gray-500">{{ currentPost || selectedItem ? selectedItem || currentPost.category : "주제 선택" }}</span>
+            <span class="text-gray-500">{{
+              currentPost || selectedItem ? selectedItem || currentPost.category : "주제 선택"
+            }}</span>
             <input type="hidden" v-model="category" />
           </div>
           <img :src="arrow" alt="arrow" class="w-4 h-4" />
@@ -210,22 +208,27 @@ onBeforeMount(async () => {
                 :key="index"
                 class="flex-shrink-0 w-[128px] h-[128px] relative"
               >
-                <img :src="image" alt="Selected Image" class="w-full h-full object-cover border rounded-lg" />
-                <button
-                  type="button"
-                  @click.stop="removeImage(index)"
-                  class="absolute top-2 right-2 bg-black bg-opacity-30 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                >
-                  <span class="text-xl">&times;</span>
-                </button>
+                <img
+                  :src="image"
+                  alt="Selected Image"
+                  class="w-full h-full object-cover will-change-transform border rounded-lg"
+                />
+                <!-- 삭제 버튼 -->
+                <img
+                  src="@/assets/images/delete.svg"
+                  alt="delete"
+                  class="absolute top-2 right-2 opacity-50 cursor-pointer"
+                  @click="removeImage(index)"
+                />
               </div>
             </div>
           </div>
           <textarea
             v-model="description"
             class="mt-4 text-gray-500 w-full resize-none outline-none h-[200px]"
-             :placeholder="currentPost?.description ? '' : '오늘 어떤 것을 보고, 느끼고, 생각하셨나요?'"
-          >{{ currentPost ? currentPost?.description : '' }}</textarea>
+            :placeholder="currentPost?.description ? '' : '오늘 어떤 것을 보고, 느끼고, 생각하셨나요?'"
+            >{{ currentPost ? currentPost?.description : "" }}</textarea
+          >
         </div>
       </div>
     </div>

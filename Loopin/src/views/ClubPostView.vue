@@ -9,6 +9,7 @@ import supabase from "@/config/supabase";
 import { useRoute } from "vue-router";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import MoreModal from "@/components/lounge/MoreModal.vue";
+import { resizeImage } from "@/utils/resizeImage";
 
 const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
@@ -59,6 +60,7 @@ const fetchData = async () => {
 
       if (userDataFromDB) {
         userData.value = userDataFromDB;
+        resizeProfile();
       }
     } catch (error) {
       console.log("알 수 없는 오류 발생: ", error);
@@ -93,20 +95,37 @@ watchEffect(() => {
 onBeforeMount(() => {
   loadClubPosts();
 });
+
+//프로필 이미지 리사이즈
+const resizedProfile = ref(null);
+const resizeProfile = () => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = resizeImage(img, 200, 200);
+  };
+  // 외부 URL에서 이미지 로드
+  img.src = userData.value.profile_img;
+};
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
-    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
+    <img
+      class="w-full h-[260px] object-cover will-change-transform"
+      :src="currentPost.images ? currentPost.images[0] : ''"
+      alt="thumbnail"
+    />
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="ml-[40px] w-[520px]">
         <div v-if="userData" class="h-[80px] flex gap-4 relative">
           <div class="flex-shrink-0">
             <img
-              v-if="userData.profile_img"
-              :src="userData.profile_img"
+              v-if="resizedProfile"
+              :src="resizedProfile"
               alt="hostprofile"
-              class="w-[60px] h-[60px] rounded-full"
+              class="w-[60px] h-[60px] rounded-full object-cover will-change-transform"
             />
             <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
             <div>
