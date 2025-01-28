@@ -27,6 +27,7 @@ watch(
     if (newPath === "/profile") {
       isMyPage.value = true;
     } else if (newPath.split("/")[1] === "user") {
+      userNickName.value = route.params.id;
       isMyPage.value = false;
     }
     isLoading.value = true;
@@ -34,7 +35,7 @@ watch(
   },
 );
 
-const userNickName = route.params.id;
+const userNickName = ref(route.params.id);
 
 const userData = ref(null); // 유저페이지/유저데이터
 
@@ -109,13 +110,14 @@ const fetchData = async () => {
     }
   } else {
     try {
-      const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName);
+      const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName.value);
+      console.log(userNickName);
+      console.log(data, error);
       if (!data.length) {
         noUser.value = true;
         console.log(noUser.value);
         return;
       }
-      console.log(data, error);
 
       userData.value = data[0];
       console.log("유저정보", userData.value);
