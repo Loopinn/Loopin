@@ -3,6 +3,7 @@ import { ref, defineProps, onMounted, watchEffect, watch } from "vue";
 import supabase from "@/config/supabase";
 
 import MemberInfoList from "./MemberInfoList.vue";
+import { resizeImage } from "@/utils/resizeImage";
 
 const props = defineProps({
   participants: {
@@ -37,6 +38,17 @@ const fetchParticipantsInfo = async () => {
     if (data) {
       participantsInfo.value = data;
       console.log("participantsInfo", participantsInfo.value);
+
+      for (const participant of participantsInfo.value) {
+        if (participant.profile_img) {
+          try {
+            const resizedImageUrl = await resizeProfileImage(participant.profile_img);
+            participant.resizedProfileImg = resizedImageUrl; // 리사이즈된 이미지 URL 저장
+          } catch (error) {
+            console.error("이미지 리사이징 실패", error);
+          }
+        }
+      }
     }
   } catch (error) {
     console.log("참여자 정보를 가져오는 중 알 수 없는 오류:", error);
@@ -58,6 +70,22 @@ watch(
   },
   { immediate: true },
 );
+
+//프로필 이미지 리사이즈
+const resizeProfileImage = (imgUrl) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // CORS 설정
+    img.onload = () => {
+      const resizedImgUrl = resizeImage(img, 100, 100);
+      resolve(resizedImgUrl);
+    };
+    img.onerror = (error) => {
+      reject(error);
+    };
+    img.src = imgUrl;
+  });
+};
 </script>
 <template>
   <div class="mt-5">
@@ -71,10 +99,12 @@ watch(
     <!-- 참여자가 있는 경우 -->
     <div v-for="participant in participantsInfo" :key="participant.id" class="flex gap-1 mt-2">
       <img
-        :src="participant.profile_img || 'https://i.pinimg.com/474x/2e/36/de/2e36dee43874ca143efb4c6323188be6.jpg'"
-        alt="userProfile"
-        class="rounded-full w-9 h-9"
+        v-if="participant.resizedProfileImg"
+        :src="participant.resizedProfileImg"
+        alt="hostprofile"
+        class="rounded-full w-9 h-9 object-cover"
       />
+      <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="rounded-full w-9 h-9" />
       <div class="flex flex-col">
         <span class="text-[15px]">{{ participant.nickname }}</span>
         <span class="text-[13px] text-[#B1B1B1]">{{ participant.description || "자기소개가 없습니다." }}</span>

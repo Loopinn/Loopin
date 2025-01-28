@@ -57,7 +57,7 @@ onBeforeMount( () => {
 </script>
 
 <template>
-  <div class="px-5 py-6 min-h-full w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
+  <div class="px-5 py-6 min-h-[calc(100vh-194px)] w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
     <PageInfoSection
       :icon="loungeLogo"
       title="라운지"
@@ -71,7 +71,7 @@ onBeforeMount( () => {
             <div class="bg-gray-300 rounded-xl">
             <img
               :src="feed.images[0] || noImage"
-              class="w-full aspect-square object-cover rounded-md"
+              class="w-full aspect-square object-cover will-change-transform rounded-md"
               />
             </div>
           </RouterLink>

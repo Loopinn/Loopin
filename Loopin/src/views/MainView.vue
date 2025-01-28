@@ -88,7 +88,7 @@ onMounted(() => {
               <img
                 :src="feed.images[0] || noImage"
                 :alt="feed.description"
-                class="w-full aspect-square object-cover rounded-xl"
+                class="w-full aspect-square object-cover will-change-transform rounded-xl"
               />
             </RouterLink>
           </div>
