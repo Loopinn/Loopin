@@ -69,7 +69,7 @@ onMounted(async () => {
         stateFields.gender = socialingPost.gender;
         stateFields.maxPeople = socialingPost.max_people;
         socialingPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
-        stateFields.place = JSON.parse(socialingPost.place);
+        stateFields.place = socialingPost.place === "온라인" ? "온라인" : JSON.parse(socialingPost.place);
         stateFields.meetTime = JSON.parse(socialingPost.time);
         stateFields.title = socialingPost.title;
         stateFields.socialingType = socialingPost.type;
@@ -101,7 +101,7 @@ onMounted(async () => {
         stateFields.gender = clubPost.gender;
         stateFields.maxPeople = clubPost.max_people;
         clubPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
-        stateFields.place = JSON.parse(clubPost.place);
+        stateFields.place = clubPost.place === "온라인" ? "온라인" : JSON.parse(clubPost.place);
         stateFields.title = clubPost.title;
 
         //카테고리 인덱스
