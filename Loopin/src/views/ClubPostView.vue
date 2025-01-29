@@ -109,6 +109,23 @@ const resizeProfile = () => {
   img.src = userData.value.profile_img;
 };
 
+const formatFeeInfo = (fee) => {
+  switch (fee) {
+    case "contentFee":
+      return "콘텐츠 제작비";
+    case "hostFee":
+      return "호스트 수고비";
+    case "noshowFee":
+      return "노쇼 방지비";
+    case "rentalFee":
+      return "대관료";
+    case "materialFee":
+      return "재료비";
+    case "dessertFee":
+      return "다과비";
+  }
+};
+
 const openKakaoMap = () => {
   const kakaoMapUrl = `https://map.kakao.com/link/map/${JSON.parse(currentPost.value.place).id}`;
   window.open(kakaoMapUrl, "_blank");
@@ -124,8 +141,8 @@ const openKakaoMap = () => {
     />
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="ml-[40px] w-[520px]">
-        <div v-if="userData" class="h-[80px] flex gap-4 relative">
-          <div class="flex-shrink-0">
+        <div v-if="userData" class="flex gap-4 relative">
+          <div>
             <img
               v-if="resizedProfile"
               :src="resizedProfile"
@@ -133,14 +150,6 @@ const openKakaoMap = () => {
               class="w-[60px] h-[60px] rounded-full object-cover will-change-transform"
             />
             <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
-            <div>
-              <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
-              <span class="ml-1 text-[12px] text-[#403F3F]"
-                >{{ currentPost.participants ? currentPost.participants.length : 0 }}/{{
-                  currentPost.max_people
-                }}명</span
-              >
-            </div>
           </div>
           <div class="mt-1 flex flex-col justify-center">
             <p class="text-[20px] font-bold mb-1">{{ currentPost.title }}</p>
@@ -151,6 +160,13 @@ const openKakaoMap = () => {
           <div class="flex items-center gap-2 absolute right-0">
             <button @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
           </div>
+        </div>
+
+        <div class="mt-2">
+          <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
+          <span class="ml-1 text-[12px] text-[#403F3F]"
+            >{{ currentPost.participants ? currentPost.participants.length : 0 }}/{{ currentPost.max_people }}명</span
+          >
         </div>
 
         <div class="mt-[30px]">
@@ -171,7 +187,18 @@ const openKakaoMap = () => {
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />
-                <p>{{ currentPost.max_people }}명</p>
+                <p>
+                  {{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}명
+                  선착순
+                </p>
+              </div>
+              <div v-if="currentPost.fee !== 0" class="flex gap-1 mb-1">
+                <img src="@/assets/images/won.svg" alt="fee" />
+                <p>{{ currentPost.fee }}원</p>
+              </div>
+              <div v-if="currentPost.fee_info.length > 0" class="flex gap-1 mb-1">
+                <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                <span v-for="(info, index) in currentPost.fee_info" :key="index">{{ formatFeeInfo(info) }}</span>
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/location.svg" alt="location" />

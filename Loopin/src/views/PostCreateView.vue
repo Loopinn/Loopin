@@ -111,6 +111,8 @@ onMounted(async () => {
         previewImages.value = [...clubPost.images];
         fileCount.value = clubPost.images.length;
         selectedImage.value = [...clubPost.images];
+
+        participantsCnt.value = clubPost.participants.length;
       }
     } else if (postType === "challenge") {
       setState({ ...state.value, selectedActivity: "챌린지" });
@@ -142,6 +144,8 @@ onMounted(async () => {
         previewImages.value = [...challengePost.images];
         fileCount.value = challengePost.images.length;
         selectedImage.value = [...challengePost.images];
+
+        participantsCnt.value = challengePost.participants.length;
       }
     }
   }
@@ -484,6 +488,12 @@ const selectActivity = (activity) => {
 //fee input change
 const handleFeeChange = () => {
   setState({ ...state.value, fee: stateFields.fee });
+};
+const handleIsFeeFalse = () => {
+  stateFields.isFee = false;
+  stateFields.fee = 0;
+  stateFields.feeInfo = [];
+  setState({ ...state.value, fee: 0, feeInfo: [] });
 };
 
 // 체크박스 상태 업데이트
@@ -989,7 +999,7 @@ onMounted(() => {
                 'bg-[#1C8A6A] text-white': stateFields.isFee === false && stateFields.selectedActivity === '클럽',
                 'bg-[#3498D0] text-white': stateFields.isFee === false && stateFields.selectedActivity === '챌린지',
               }"
-              @click="stateFields.isFee = false"
+              @click="handleIsFeeFalse"
             >
               <p>없음</p>
             </button>
@@ -1466,6 +1476,13 @@ onMounted(() => {
                 </div>
               </div>
 
+              <div class="mt-2">
+                <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
+                <span class="ml-1 text-[12px] text-[#403F3F]"
+                  >{{ participantsCnt ? participantsCnt : 0 }}/{{ stateFields.maxPeople }}명</span
+                >
+              </div>
+
               <div class="mt-[30px]">
                 <pre>{{ stateFields.description }}</pre>
                 <!-- 안내사항 -->
@@ -1482,7 +1499,7 @@ onMounted(() => {
                     </div>
                     <div class="flex gap-1 mb-1">
                       <img src="@/assets/images/members.svg" alt="members" />
-                      <p>최대 {{ stateFields.maxPeople }}명</p>
+                      <p>{{ participantsCnt }}/{{ stateFields.maxPeople }}명 선착순</p>
                     </div>
                     <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
                       <img src="@/assets/images/won.svg" alt="fee" />
@@ -1585,7 +1602,7 @@ onMounted(() => {
                 />
                 <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
                   <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
-                  <span v-else>{{ formatPlace(stateFields.place) }}</span>
+                  <span v-else>{{ stateFields.place.place_name }}</span>
                   <span class="mx-1">·</span>
                 </div>
                 <span v-if="stateFields.meetDate && stateFields.meetTime">
@@ -1594,7 +1611,7 @@ onMounted(() => {
                 </span>
 
                 <span v-if="stateFields.startDate && stateFields.endDate">
-                  {{ formatDate(stateFields.startDate) }} {{ period }}일간
+                  {{ formatDate(stateFields.startDate) }} {{ period / 7 }}주 간
                 </span>
 
                 <div v-if="stateFields.tpw !== '-'" class="flex">
@@ -1644,13 +1661,13 @@ onMounted(() => {
                     </div>
                     <div class="flex gap-1 mb-1">
                       <img src="@/assets/images/members.svg" alt="members" />
-                      <p>최대 {{ stateFields.maxPeople }}명</p>
+                      <span>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}명 선착순</span>
                     </div>
-                    <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
+                    <div v-if="stateFields.isFee" class="flex gap-1 mb-1">
                       <img src="@/assets/images/won.svg" alt="fee" />
                       <p>{{ stateFields.fee }}원</p>
                     </div>
-                    <div v-if="stateFields.feeInfo.length > 0" class="flex gap-1 mb-1">
+                    <div v-if="stateFields.isFee && stateFields.feeInfo.length > 0" class="flex gap-1 mb-1">
                       <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
                       <span v-for="(info, index) in stateFields.feeInfo" :key="index">{{ formatFeeInfo(info) }}</span>
                     </div>
@@ -1666,6 +1683,13 @@ onMounted(() => {
                       }}</span>
                       <span v-if="stateFields.gender !== 'all'">{{ convertGender(stateFields.gender) }}</span>
                     </div>
+                    <div v-if="stateFields.startDate && stateFields.endDate" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/calendar.svg" alt="calendar" />
+                      <p>
+                        {{ period / 7 }}주 간 진행 - {{ formatDate(stateFields.startDate) }} ~
+                        {{ formatDate(stateFields.endDate) }}
+                      </p>
+                    </div>
                     <div v-if="stateFields.tpw !== '-'" class="flex gap-1 mb-1">
                       <img src="@/assets/images/stamp.svg" alt="stamp" />
                       <p>{{ stateFields.tpw }} 인증</p>
@@ -1673,10 +1697,6 @@ onMounted(() => {
                     <div v-if="stateFields.meetDate" class="flex gap-1 mb-1">
                       <img src="@/assets/images/calendar.svg" alt="calendar" />
                       <p>모임날짜 · {{ formatDate(stateFields.meetDate) }} {{ formatTime(stateFields.meetTime) }}</p>
-                    </div>
-                    <div v-if="stateFields.startDate && stateFields.endDate" class="flex gap-1 mb-1">
-                      <img src="@/assets/images/calendar.svg" alt="calendar" />
-                      <p>{{ formatDate(stateFields.startDate) }} ~ {{ formatDate(stateFields.endDate) }}</p>
                     </div>
                     <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
                       <div class="flex gap-1 mb-1">

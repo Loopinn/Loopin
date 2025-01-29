@@ -85,16 +85,17 @@ onBeforeMount(() => {
 const formattedDate = computed(() => {
   const dateString = currentPost.value.date;
 
-  const [_, month, day] = dateString.split("-");
+  const [year, month, day] = dateString.split("-");
 
   const date = new Date(dateString);
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
   const dayOfWeek = weekdays[date.getDay()];
 
+  const formattedYear = year.slice(-2);
   const formattedMonth = month.padStart(2, "0");
   const formattedDay = day.padStart(2, "0");
 
-  return `${formattedMonth}.${formattedDay}(${dayOfWeek})`;
+  return `${formattedYear}.${formattedMonth}.${formattedDay}(${dayOfWeek})`;
 });
 
 const place_name = computed(() => {
@@ -133,6 +134,30 @@ const handleUpdateParticipants = (updatedParticipants) => {
 };
 const openModal = () => {
   isModalOpen.value = true;
+};
+
+const formatPlace = (place) => {
+  if (place === "온라인") return place;
+  const parsedPlace = JSON.parse(place);
+  const placeName = parsedPlace.road_address_name || parsedPlace.address_name;
+  return placeName.split(" ")[1];
+};
+
+const formatFeeInfo = (fee) => {
+  switch (fee) {
+    case "contentFee":
+      return "콘텐츠 제작비";
+    case "hostFee":
+      return "호스트 수고비";
+    case "noshowFee":
+      return "노쇼 방지비";
+    case "rentalFee":
+      return "대관료";
+    case "materialFee":
+      return "재료비";
+    case "dessertFee":
+      return "다과비";
+  }
 };
 
 //프로필 이미지 리사이즈
@@ -211,7 +236,18 @@ const openKakaoMap = () => {
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />
-                <p>최소 2명 최대 {{ currentPost.max_people }}명</p>
+                <p>
+                  {{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}명
+                  선착순
+                </p>
+              </div>
+              <div v-if="currentPost.fee !== 0" class="flex gap-1 mb-1">
+                <img src="@/assets/images/won.svg" alt="fee" />
+                <p>{{ currentPost.fee }}원</p>
+              </div>
+              <div v-if="currentPost.fee_info.length > 0" class="flex gap-1 mb-1">
+                <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                <span v-for="(info, index) in currentPost.fee_info" :key="index">{{ formatFeeInfo(info) }}</span>
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/calendar.svg" alt="calendar" />

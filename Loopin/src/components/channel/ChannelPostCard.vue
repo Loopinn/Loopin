@@ -101,16 +101,16 @@ const isLiked = () => {
         <p>
           {{ post.type }}
         </p>
-        <p><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-2" /> {{ place_name }}</p>
+        <p class="flex items-center"><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-[2px]" /> {{ place_name }}</p>
         <p>· {{ socialingDate }}</p>
       </div>
       <div v-else-if="props.channelName === '클럽'" class="text-[#999999]">
-        <p><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-2" /> {{ place_name }}</p>
+        <p class="flex items-center"><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-[2px]" /> {{ place_name }}</p>
       </div>
       <div v-else class="text-[#999999] flex gap-1">
         <p><img :src="calendar" alt="calendar" class="inline" />{{ challengeDate }} ·</p>
         <p>{{ challengeDiffDay }}</p>
-        <p class="flex gap-1"><img :src="checkIcon" alt="" class="w-[15px]" /> {{ post.times_per_week }}</p>
+        <p class="flex gap-1"><img :src="checkIcon" alt="" class="w-[15px] mb-[2px]" /> {{ post.times_per_week }}</p>
       </div>
       <div class="flex items-center gap-1">
         <div class="flex -space-x-2">
