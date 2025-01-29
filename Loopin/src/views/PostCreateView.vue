@@ -69,7 +69,7 @@ onMounted(async () => {
         stateFields.gender = socialingPost.gender;
         stateFields.maxPeople = socialingPost.max_people;
         socialingPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
-        stateFields.place = JSON.parse(socialingPost.place);
+        stateFields.place = socialingPost.place === "온라인" ? "온라인" : JSON.parse(socialingPost.place);
         stateFields.meetTime = JSON.parse(socialingPost.time);
         stateFields.title = socialingPost.title;
         stateFields.socialingType = socialingPost.type;
@@ -101,7 +101,7 @@ onMounted(async () => {
         stateFields.gender = clubPost.gender;
         stateFields.maxPeople = clubPost.max_people;
         clubPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
-        stateFields.place = JSON.parse(clubPost.place);
+        stateFields.place = clubPost.place === "온라인" ? "온라인" : JSON.parse(clubPost.place);
         stateFields.title = clubPost.title;
 
         //카테고리 인덱스
@@ -611,6 +611,8 @@ const handlePostSubmit = async () => {
         localStorage.removeItem("소셜링");
       } else {
         // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateSocialPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
       }
@@ -637,6 +639,8 @@ const handlePostSubmit = async () => {
         localStorage.removeItem("클럽");
       } else {
         // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateClubPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
       }
@@ -663,6 +667,8 @@ const handlePostSubmit = async () => {
         localStorage.removeItem("챌린지");
       } else {
         // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateChallengePost(postData, route.params.id);
         postId.value = updatedPost[0].id;
       }
@@ -728,6 +734,10 @@ const formatFeeInfo = (fee) => {
     case "dessertFee":
       return "다과비";
   }
+};
+const openKakaoMap = () => {
+  const kakaoMapUrl = `https://map.kakao.com/link/map/${stateFields.place.id}`;
+  window.open(kakaoMapUrl, "_blank");
 };
 
 onMounted(async () => {
@@ -1494,15 +1504,30 @@ onMounted(() => {
                       }}</span>
                       <span v-if="stateFields.gender !== 'all'">{{ convertGender(stateFields.gender) }}</span>
                     </div>
-                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})" class="flex gap-1 mb-1">
-                      <img src="@/assets/images/location.svg" alt="location" />
-                      <div>
-                        <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
-                        <span v-else
-                          >{{ stateFields.place.place_name }} ({{
-                            stateFields.place.road_address_name || stateFields.place.address_name
-                          }})</span
-                        >
+                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
+                      <div class="flex gap-1 mb-1">
+                        <img src="@/assets/images/location.svg" alt="location" />
+                        <div>
+                          <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                          <span v-else
+                            >{{ stateFields.place.place_name }} ({{
+                              stateFields.place.road_address_name || stateFields.place.address_name
+                            }})</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        v-if="typeof stateFields.place !== 'string'"
+                        @click="openKakaoMap"
+                        class="flex cursor-pointer border rounded-lg shadow-md bg-gray-100 hover:bg-gray-200 overflow-hidden"
+                      >
+                        <img src="@/assets/images/location-map.svg" alt="location-map" />
+                        <div class="p-4">
+                          <p>{{ stateFields.place.place_name }}</p>
+                          <p class="text-[14px] text-[#403F3F]">
+                            {{ stateFields.place.road_address_name || stateFields.place.address_name }}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1653,15 +1678,30 @@ onMounted(() => {
                       <img src="@/assets/images/calendar.svg" alt="calendar" />
                       <p>{{ formatDate(stateFields.startDate) }} ~ {{ formatDate(stateFields.endDate) }}</p>
                     </div>
-                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})" class="flex gap-1 mb-1">
-                      <img src="@/assets/images/location.svg" alt="location" />
-                      <div>
-                        <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
-                        <span v-else
-                          >{{ stateFields.place.place_name }} ({{
-                            stateFields.place.road_address_name || stateFields.place.address_name
-                          }})</span
-                        >
+                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
+                      <div class="flex gap-1 mb-1">
+                        <img src="@/assets/images/location.svg" alt="location" />
+                        <div>
+                          <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                          <span v-else
+                            >{{ stateFields.place.place_name }} ({{
+                              stateFields.place.road_address_name || stateFields.place.address_name
+                            }})</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        v-if="typeof stateFields.place !== 'string'"
+                        @click="openKakaoMap"
+                        class="flex cursor-pointer border rounded-lg shadow-md bg-gray-100 hover:bg-gray-200 overflow-hidden"
+                      >
+                        <img src="@/assets/images/location-map.svg" alt="location-map" />
+                        <div class="p-4">
+                          <p>{{ stateFields.place.place_name }}</p>
+                          <p class="text-[14px] text-[#403F3F]">
+                            {{ stateFields.place.road_address_name || stateFields.place.address_name }}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
