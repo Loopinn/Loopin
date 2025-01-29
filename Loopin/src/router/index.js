@@ -130,6 +130,18 @@ const router = createRouter({
       meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
+      path: "/profile/posts/socialing",
+      name: "profilePostsSocialing",
+      component: () => import("@/views/UserPostsSocialingView.vue"),
+      meta: { layout: "CenteredHeader", requireAuth: true },
+    },
+    {
+      path: "/profile/posts/challenge",
+      name: "profilePostsChallenge",
+      component: () => import("@/views/UserPostsChallengeView.vue"),
+      meta: { layout: "CenteredHeader", requireAuth: true },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
       component: () => import("@/views/NotFoundView.vue"),
