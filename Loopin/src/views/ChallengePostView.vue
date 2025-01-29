@@ -127,6 +127,23 @@ const resizeProfile = () => {
   // 외부 URL에서 이미지 로드
   img.src = userData.value.profile_img;
 };
+
+const formatFeeInfo = (fee) => {
+  switch (fee) {
+    case "contentFee":
+      return "콘텐츠 제작비";
+    case "hostFee":
+      return "호스트 수고비";
+    case "noshowFee":
+      return "노쇼 방지비";
+    case "rentalFee":
+      return "대관료";
+    case "materialFee":
+      return "재료비";
+    case "dessertFee":
+      return "다과비";
+  }
+};
 </script>
 <template>
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
@@ -163,11 +180,21 @@ const resizeProfile = () => {
       <div class="pt-[50px]">
         <div class="text-center text-[#403F3F] mt-2">
           <img src="@/assets/images/calendar.svg" alt="calendar" class="inline-block" />
-          <span class="mr-2">{{ startDate }} {{ period }}일간</span>
-          <img src="@/assets/images/check-circle.svg" alt="check" class="inline-block" />
+          <span class="mr-2">{{ startDate }} {{ period /7 }}주 간</span>
+          <img
+            src="@/assets/images/check-circle.svg"
+            alt="check"
+            class="inline-block mb-[2px] mr-1"
+            style="filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%)"
+          />
           <span class="mr-2">{{ currentPost.times_per_week }}</span>
-          <img src="@/assets/images/members.svg" alt="membercount" class="inline-block" />
-          <span>12/14</span>
+          <img
+            src="@/assets/images/members.svg"
+            alt="membercount"
+            class="inline-block mb-[2px] mr-1"
+            style="filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%)"
+          />
+          <span>{{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}</span>
         </div>
         <div class="ml-[40px] mt-[70px] w-[520px]">
           <div>{{ currentPost.description }}</div>
@@ -188,16 +215,24 @@ const resizeProfile = () => {
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />
                 <p>
-                  {{ currentPost.participants ? currentPost.participants.length : 0 }}/{{ currentPost.max_people }}명
+                  {{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}명
                   선착순
                 </p>
               </div>
-              <div class="flex gap-1 mb-1">
-                <img src="@/assets/images/calendar.svg" alt="calendar" />
-                <p>{{ period }}일간 진행 - {{ startDate }} ~ {{ endDate }}</p>
+              <div v-if="currentPost.fee !== 0" class="flex gap-1 mb-1">
+                <img src="@/assets/images/won.svg" alt="fee" />
+                <p>{{ currentPost.fee }}원</p>
+              </div>
+              <div v-if="currentPost.fee_info.length > 0" class="flex gap-1 mb-1">
+                <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                <span v-for="(info, index) in currentPost.fee_info" :key="index">{{ formatFeeInfo(info) }}</span>
               </div>
               <div class="flex gap-1 mb-1">
-                <img src="@/assets/images/location.svg" alt="location" />
+                <img src="@/assets/images/calendar.svg" alt="calendar" />
+                <p>{{ period /7 }}주 간 진행 - {{ startDate }} ~ {{ endDate }}</p>
+              </div>
+              <div class="flex gap-1 mb-1">
+                <img src="@/assets/images/stamp.svg" alt="stamp" class="mb-[2px]" />
                 <p>{{ currentPost.times_per_week }} 인증</p>
               </div>
             </div>
