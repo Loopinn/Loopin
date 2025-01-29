@@ -147,12 +147,21 @@ const resizeProfile = () => {
   // 외부 URL에서 이미지 로드
   img.src = userData.value.profile_img;
 };
+
+const openKakaoMap = () => {
+  const kakaoMapUrl = `https://map.kakao.com/link/map/${JSON.parse(currentPost.value.place).id}`;
+  window.open(kakaoMapUrl, "_blank");
+};
 </script>
 <template>
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img class="w-full h-[260px] object-cover will-change-transform" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
+    <img
+      class="w-full h-[260px] object-cover will-change-transform"
+      :src="currentPost.images ? currentPost.images[0] : ''"
+      alt="thumbnail"
+    />
     <div v-if="userData" class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
         v-if="resizedProfile"
@@ -210,7 +219,27 @@ const resizeProfile = () => {
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/location.svg" alt="location" />
-                <p>{{ place_name }}</p>
+                <span>
+                  {{ place_name }}
+                </span>
+                <span v-if="currentPost.place !== '온라인'"
+                  >({{
+                    JSON.parse(currentPost.place).road_address_name || JSON.parse(currentPost.place).address_name
+                  }})</span
+                >
+              </div>
+              <div
+                v-if="currentPost.place !== '온라인'"
+                @click="openKakaoMap"
+                class="flex cursor-pointer border rounded-lg shadow-md bg-gray-100 hover:bg-gray-200 overflow-hidden"
+              >
+                <img src="@/assets/images/location-map.svg" alt="location-map" />
+                <div class="p-4">
+                  <p>{{ JSON.parse(currentPost.place).place_name }}</p>
+                  <p class="text-[14px] text-[#403F3F]">
+                    {{ JSON.parse(currentPost.place).road_address_name || JSON.parse(currentPost.place).address_name }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

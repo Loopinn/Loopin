@@ -39,7 +39,7 @@ const addressName = computed(() => {
     return "온라인";
   }
   const placeObj = currentPost.value?.place ? JSON.parse(currentPost.value.place) : null;
-  return placeObj.address_name;
+  return placeObj.place_name;
 });
 
 const fetchData = async () => {
@@ -108,6 +108,11 @@ const resizeProfile = () => {
   // 외부 URL에서 이미지 로드
   img.src = userData.value.profile_img;
 };
+
+const openKakaoMap = () => {
+  const kakaoMapUrl = `https://map.kakao.com/link/map/${JSON.parse(currentPost.value.place).id}`;
+  window.open(kakaoMapUrl, "_blank");
+};
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
@@ -170,7 +175,25 @@ const resizeProfile = () => {
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/location.svg" alt="location" />
-                <p>{{ addressName }}</p>
+                <span>{{ addressName }}</span>
+                <span v-if="currentPost.place !== '온라인'"
+                  >({{
+                    JSON.parse(currentPost.place).road_address_name || JSON.parse(currentPost.place).address_name
+                  }})</span
+                >
+              </div>
+              <div
+                v-if="currentPost.place !== '온라인'"
+                @click="openKakaoMap"
+                class="flex cursor-pointer border rounded-lg shadow-md bg-gray-100 hover:bg-gray-200 overflow-hidden"
+              >
+                <img src="@/assets/images/location-map.svg" alt="location-map" />
+                <div class="p-4">
+                  <p>{{ JSON.parse(currentPost.place).place_name }}</p>
+                  <p class="text-[14px] text-[#403F3F]">
+                    {{ JSON.parse(currentPost.place).road_address_name || JSON.parse(currentPost.place).address_name }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
