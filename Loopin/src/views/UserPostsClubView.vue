@@ -26,7 +26,7 @@ onBeforeMount(async () => {
 </script>
 <template>
   <div class="bg-[#f4f4f4] h-screen p-4">
-    <h2 class="text-center text-[22px] mb-3">참여 중인 클럽</h2>
+    <h2 class="text-center text-[22px] mb-3">내 클럽</h2>
     <RouterLink v-for="myClubPost in myClubPosts" :to="`/club/${myClubPost.id}`">
       <ChannelPostCard :post="myClubPost" channelName="클럽" />
     </RouterLink>
