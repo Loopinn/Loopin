@@ -4,12 +4,14 @@ import ChannelPostCard from "../channel/ChannelPostCard.vue";
 import NoPosts from "../common/NoPosts.vue";
 import UserMeetingClub from "./UserMeetingClub.vue";
 import MoreBtn from "../common/MoreBtn.vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 
-const props = defineProps(["meetingData"]);
+const props = defineProps(["meetingData", "isMyPage", "userNickName"]);
 console.log("meetingData", props.meetingData);
+console.log("userNickName", props.userNickName);
 
 const clubPosts = ref(null);
 const socialingPosts = ref(null);
@@ -33,7 +35,7 @@ onBeforeMount(() => {
         <p class="text-[18px] font-medium">참여 중인 클럽</p>
         <p
           class="cursor-pointer hover:underline hover:underline-offset-4 text-gray-500"
-          @click="router.push('/profile/posts/club')"
+          @click="router.push(`${isMyPage ? '/profile/posts/club' : `/user/${props.userNickName}/posts/club`}`)"
         >
           더보기
         </p>
@@ -55,7 +57,10 @@ onBeforeMount(() => {
           <ChannelPostCard :post="data" channelName="소셜링" />
         </RouterLink>
         <NoPosts v-else text="진행한 소셜링이 없어요" css="h-[50px]" />
-        <MoreBtn v-if="socialingPosts.length > 3" link="/profile/posts/socialing" />
+        <MoreBtn
+          v-if="socialingPosts.length > 3"
+          :link="`${isMyPage ? '/profile/posts/socialing' : `/user/${userNickName}/posts/socialing`}`"
+        />
       </div>
     </div>
     <div class="">
@@ -70,7 +75,10 @@ onBeforeMount(() => {
           <ChannelPostCard :post="data" channelName="챌린지" />
         </RouterLink>
         <NoPosts v-else text="진행한 챌린지가 없어요" css="h-[50px]" />
-        <MoreBtn v-if="challengePosts.length > 3" link="/profile/posts/challenge" />
+        <MoreBtn
+          v-if="challengePosts.length > 3"
+          :link="`${isMyPage ? '/profile/posts/challenge' : `/user/${userNickName}/posts/challenge`}`"
+        />
       </div>
     </div>
   </div>
