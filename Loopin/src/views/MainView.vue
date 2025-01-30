@@ -44,13 +44,18 @@ onMounted(() => {
   channelviews.value.forEach((channel) => {
     channel.load();
     console.log(channel.posts);
-    loadLoungePosts();
   });
+  loadLoungePosts();
 });
 </script>
 <template>
   <div class="w-[600px] mx-auto">
-    <div class="h-[290px] pl-7 bg-[#d9d9d9] bg-cover" style="background-image: url('https://whale-store.pstatic.net/20241218_299/1734504926246YrSbP_JPEG/2nd-008-Seungho_Choi.jpg');">
+    <div
+      class="h-[290px] pl-7 bg-[#d9d9d9] bg-cover"
+      style="
+        background-image: url(&quot;https://whale-store.pstatic.net/20241218_299/1734504926246YrSbP_JPEG/2nd-008-Seungho_Choi.jpg&quot;);
+      "
+    >
       <p class="text-[30px] pt-[53px] mb-[6px] text-white">취향과 관심이<br />만나는 커뮤니티</p>
       <p class="text-[20px] text-white">우리의 이야기가 시작되는 곳, 루핀</p>
     </div>

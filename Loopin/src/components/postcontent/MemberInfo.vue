@@ -25,31 +25,22 @@ const memberInfoModalClose = () => {
 
 const fetchParticipantsInfo = async () => {
   try {
-    const { data, error } = await supabase
-      .from("userinfo")
-      .select("nickname, profile_img, description")
-      .in("id", props.participants);
+    // participantsInfo 배열을 미리 초기화
+    participantsInfo.value = new Array(props.participants.length).fill(null);
 
-    if (error) {
-      console.log("참여자 정보를 가져오는 중 오류 발생:", error);
-      return;
-    }
+    await Promise.all(
+      props.participants.map(async (id, index) => {
+        const { data: userData, error: userError } = await supabase
+          .from("userinfo")
+          .select("id, nickname, profile_img, description")
+          .eq("id", id)
+          .single();
 
-    if (data) {
-      participantsInfo.value = data;
-      console.log("participantsInfo", participantsInfo.value);
-
-      for (const participant of participantsInfo.value) {
-        if (participant.profile_img) {
-          try {
-            const resizedImageUrl = await resizeProfileImage(participant.profile_img);
-            participant.resizedProfileImg = resizedImageUrl; // 리사이즈된 이미지 URL 저장
-          } catch (error) {
-            console.error("이미지 리사이징 실패", error);
-          }
-        }
-      }
-    }
+        participantsInfo.value[index] = userData;
+        resizeProfile(participantsInfo.value[index].profile_img, index);
+      }),
+    );
+    console.log("11234", participantsInfo.value);
   } catch (error) {
     console.log("참여자 정보를 가져오는 중 알 수 없는 오류:", error);
   }
@@ -71,20 +62,19 @@ watch(
   { immediate: true },
 );
 
-//프로필 이미지 리사이즈
-const resizeProfileImage = (imgUrl) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous"; // CORS 설정
-    img.onload = () => {
-      const resizedImgUrl = resizeImage(img, 100, 100);
-      resolve(resizedImgUrl);
-    };
-    img.onerror = (error) => {
-      reject(error);
-    };
-    img.src = imgUrl;
-  });
+// 이미지를 순서대로 저장
+const resizeProfile = (imgUrl, index) => {
+  if (!imgUrl) {
+    participantsInfo.value[index].profile_img = null;
+    return;
+  }
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    participantsInfo.value[index].profile_img = resizeImage(img, 100, 100);
+  };
+  img.src = imgUrl;
 };
 </script>
 <template>
@@ -97,17 +87,17 @@ const resizeProfileImage = (imgUrl) => {
       첫 참여자가 되어보세요!
     </div>
     <!-- 참여자가 있는 경우 -->
-    <div v-for="participant in participantsInfo" :key="participant.id" class="flex gap-1 mt-2">
+    <div v-for="participant in participantsInfo" class="flex gap-1 mt-2">
       <img
-        v-if="participant.resizedProfileImg"
-        :src="participant.resizedProfileImg"
+        v-if="participant?.profile_img"
+        :src="participant?.profile_img"
         alt="hostprofile"
         class="rounded-full w-9 h-9 object-cover"
       />
       <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="rounded-full w-9 h-9" />
       <div class="flex flex-col">
-        <span class="text-[15px]">{{ participant.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1]">{{ participant.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[15px]">{{ participant?.nickname }}</span>
+        <span class="text-[13px] text-[#B1B1B1]">{{ participant?.description || "자기소개가 없습니다." }}</span>
       </div>
     </div>
 

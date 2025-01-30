@@ -5,6 +5,10 @@ import calendar from "@/assets/images/calendar.svg";
 import checkIcon from "@/assets/images/check.svg";
 import likewhite_full from "@/assets/images/likewhite_full.svg";
 import likewhite from "@/assets/images/likewhite.svg";
+import supabase from "@/config/supabase";
+
+import noProfile from "@/assets/images/no-profile.svg";
+import { resizeImage } from "@/utils/resizeImage";
 
 const props = defineProps({
   post: {
@@ -21,19 +25,47 @@ const socialingDate = ref(null);
 const challengeDate = ref(null);
 const challengeDiffDay = ref(null);
 
-onBeforeMount(() => {
-  if (props.channelName === "소셜링") {
-    console.log("postCard", props.post);
+const participantImages = ref([]);
 
+onBeforeMount(async () => {
+  if (props.channelName === "소셜링") {
     socialingDate.value = formatDate(props.post.date);
   } else if (props.channelName === "챌린지") {
-    console.log("challenge", props.post);
-
     challengeDate.value = formatDate(props.post.start_date);
-
     challengeDiffDay.value = diffDay(props.post.start_date, props.post.end_date);
   }
+
+  // 순서를 유지하기 위해 미리 배열을 초기화
+  participantImages.value = new Array(props.post.participants.length).fill(null);
+
+  await Promise.all(
+    props.post.participants.map(async (id, index) => {
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select("profile_img")
+        .eq("id", id)
+        .single();
+
+      if (userData) {
+        resizeProfile(userData.profile_img, index);
+      }
+    })
+  );
 });
+// 이미지를 순서대로 저장
+const resizeProfile = (imgUrl, index) => {
+  if (!imgUrl) {
+    participantImages.value[index] = null;
+    return;
+  }
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    participantImages.value[index] = resizeImage(img, 100, 100);
+  };
+  img.src = imgUrl;
+};
 
 // 날짜 포맷팅
 const formatDate = (date) => {
@@ -84,7 +116,11 @@ const isLiked = () => {
 <template>
   <div class="h-[200px] flex rounded-2xl bg-white mb-6 cursor-pointer">
     <div class="relative">
-      <img :src="post.images ? post.images[0] : ''" alt="thumbnail" class="w-40 h-40 rounded-2xl m-5 object-cover will-change-transform" />
+      <img
+        :src="post.images ? post.images[0] : ''"
+        alt="thumbnail"
+        class="w-40 h-40 rounded-2xl m-5 object-cover will-change-transform"
+      />
       <button @click="isLiked">
         <img :src="like ? likewhite_full : likewhite" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
       </button>
@@ -101,11 +137,15 @@ const isLiked = () => {
         <p>
           {{ post.type }}
         </p>
-        <p class="flex items-center"><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-[2px]" /> {{ place_name }}</p>
+        <p class="flex items-center">
+          <img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-[2px]" /> {{ place_name }}
+        </p>
         <p>· {{ socialingDate }}</p>
       </div>
       <div v-else-if="props.channelName === '클럽'" class="text-[#999999]">
-        <p class="flex items-center"><img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-[2px]" /> {{ place_name }}</p>
+        <p class="flex items-center">
+          <img src="@/assets/images/location_gray.svg" alt="location" class="inline-block mb-[2px]" /> {{ place_name }}
+        </p>
       </div>
       <div v-else class="text-[#999999] flex gap-1">
         <p><img :src="calendar" alt="calendar" class="inline" />{{ challengeDate }} ·</p>
@@ -114,40 +154,26 @@ const isLiked = () => {
       </div>
       <div class="flex items-center gap-1">
         <div class="flex -space-x-2">
-          <img
-            src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
-            alt="memberprofile"
-            class="w-9 h-9 rounded-full border-2 border-white"
-          />
-          <img
-            src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
-            alt="memberprofile"
-            class="w-9 h-9 rounded-full border-2 border-white"
-          />
-
-          <img
-            src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
-            alt="memberprofile"
-            class="w-9 h-9 rounded-full border-2 border-white"
-          />
-          <img
-            src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
-            alt="memberprofile"
-            class="w-9 h-9 rounded-full border-2 border-white"
-          />
-          <!-- 참여 멤버 수가 6명 이상 ... -->
-          <div class="relative w-9 h-9">
+          <template v-for="(img, index) in participantImages" :key="index">
             <img
-              src="https://cdn.pixabay.com/photo/2019/12/29/17/45/winter-4727668_640.jpg"
+              v-if="index < 4 || participantImages.length <= 5"
+              :src="img || noProfile"
               alt="memberprofile"
-              class="w-9 h-9 rounded-full border-2 border-white"
+              class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
             />
-            <img
-              src="@/assets/images/more.svg"
-              alt="more"
-              class="absolute inset-0 w-9 h-9 rounded-full border-2 border-white bg-black bg-opacity-40"
-            />
-          </div>
+            <div v-else class="relative w-9 h-9">
+              <img
+                :src="img || noProfile"
+                alt="memberprofile"
+                class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
+              />
+              <img
+                src="@/assets/images/more.svg"
+                alt="more"
+                class="absolute inset-0 w-9 h-9 rounded-full border-2 border-white bg-black bg-opacity-40"
+              />
+            </div>
+          </template>
         </div>
         <img src="@/assets/images/members_gray.svg" alt="participants" />
         <p class="text-[#999999]">{{ post.participants ? post.participants.length : 0 }}/{{ post.max_people }}</p>
