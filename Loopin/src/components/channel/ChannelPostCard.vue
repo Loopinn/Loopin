@@ -8,6 +8,7 @@ import likewhite from "@/assets/images/likewhite.svg";
 import supabase from "@/config/supabase";
 
 import noProfile from "@/assets/images/no-profile.svg";
+import { resizeImage } from "@/utils/resizeImage";
 
 const props = defineProps({
   post: {
@@ -45,9 +46,20 @@ onBeforeMount(async () => {
       .select("profile_img")
       .eq("id", id)
       .single();
-    participantImages.value.push(userData.profile_img);
+    resizeProfile(userData.profile_img);
   }
 });
+//이미지 리사이즈
+const resizeProfile = (imgUrl) => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    participantImages.value.push(resizeImage(img, 100, 100));
+  };
+  // 외부 URL에서 이미지 로드
+  img.src = imgUrl;
+};
 
 // 날짜 포맷팅
 const formatDate = (date) => {
