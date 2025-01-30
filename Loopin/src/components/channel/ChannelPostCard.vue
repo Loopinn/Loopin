@@ -29,35 +29,41 @@ const participantImages = ref([]);
 
 onBeforeMount(async () => {
   if (props.channelName === "소셜링") {
-    console.log("postCard", props.post);
-
     socialingDate.value = formatDate(props.post.date);
   } else if (props.channelName === "챌린지") {
-    console.log("challenge", props.post);
-
     challengeDate.value = formatDate(props.post.start_date);
-
     challengeDiffDay.value = diffDay(props.post.start_date, props.post.end_date);
   }
 
-  for (const id of props.post.participants) {
-    const { data: userData, error: userError } = await supabase
-      .from("userinfo")
-      .select("profile_img")
-      .eq("id", id)
-      .single();
-    resizeProfile(userData.profile_img);
-  }
+  // 순서를 유지하기 위해 미리 배열을 초기화
+  participantImages.value = new Array(props.post.participants.length).fill(null);
+
+  await Promise.all(
+    props.post.participants.map(async (id, index) => {
+      const { data: userData, error: userError } = await supabase
+        .from("userinfo")
+        .select("profile_img")
+        .eq("id", id)
+        .single();
+
+      if (userData) {
+        resizeProfile(userData.profile_img, index);
+      }
+    })
+  );
 });
-//이미지 리사이즈
-const resizeProfile = (imgUrl) => {
+// 이미지를 순서대로 저장
+const resizeProfile = (imgUrl, index) => {
+  if (!imgUrl) {
+    participantImages.value[index] = null;
+    return;
+  }
+
   const img = new Image();
-  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.crossOrigin = "anonymous";
   img.onload = () => {
-    // 리사이징된 이미지 URL 얻기
-    participantImages.value.push(resizeImage(img, 100, 100));
+    participantImages.value[index] = resizeImage(img, 100, 100);
   };
-  // 외부 URL에서 이미지 로드
   img.src = imgUrl;
 };
 
