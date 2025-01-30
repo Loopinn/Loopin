@@ -331,7 +331,7 @@ const resizeProfile = () => {
           </div>
         </div>
         <div v-else-if="feedNav === '모임'" class="px-4 mt-4">
-          <UserInfoMeeting :meeting-data="userMeetingPosts" />
+          <UserInfoMeeting :meeting-data="userMeetingPosts" :isMyPage="isMyPage" :userNickName="userNickName" />
         </div>
       </div>
     </div>

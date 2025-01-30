@@ -112,6 +112,24 @@ const router = createRouter({
       meta: { layout: "CenteredHeader" },
     },
     {
+      path: "/user/:id/posts/club",
+      name: "userPostsClub",
+      component: () => import("@/views/UserPostsClubView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
+      path: "/user/:id/posts/socialing",
+      name: "userPostsSocialing",
+      component: () => import("@/views/UserPostsSocialingView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
+      path: "/user/:id/posts/challenge",
+      name: "userPostsChallenge",
+      component: () => import("@/views/UserPostsChallengeView.vue"),
+      meta: { layout: "CenteredHeader" },
+    },
+    {
       path: "/profile",
       name: "profile",
       component: () => import("@/views/UserInfoView.vue"),
@@ -126,19 +144,19 @@ const router = createRouter({
     {
       path: "/profile/posts/club",
       name: "profilePostsClub",
-      component: () => import("@/views/UserPostsClubView.vue"),
+      component: () => import("@/views/MyPostsClubView.vue"),
       meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
       path: "/profile/posts/socialing",
       name: "profilePostsSocialing",
-      component: () => import("@/views/UserPostsSocialingView.vue"),
+      component: () => import("@/views/MyPostsSocialingView.vue"),
       meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
       path: "/profile/posts/challenge",
       name: "profilePostsChallenge",
-      component: () => import("@/views/UserPostsChallengeView.vue"),
+      component: () => import("@/views/MyPostsChallengeView.vue"),
       meta: { layout: "CenteredHeader", requireAuth: true },
     },
     {
