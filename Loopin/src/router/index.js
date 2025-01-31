@@ -1,5 +1,6 @@
 import CenteredHeader from "@/components/header/CenteredHeader.vue";
 import supabase from "@/config/supabase";
+import { useAuthStore } from "@/stores/authStore";
 import { createRouter, createWebHistory } from "vue-router";
 import { toast } from "vue3-toastify";
 
@@ -169,10 +170,43 @@ const router = createRouter({
   ],
 });
 router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  const { loginUser } = authStore;
+
   const { data } = await supabase.auth.getSession();
   const isLoggedIn = !!data.session;
 
-  if (to.matched.some((record) => record.meta.requireAuth)) {
+  // 게시글 수정 페이지 접근 제한
+  if (to.name === "update") {
+    const postId = to.params.id;
+    const postType = to.params.type;
+
+    try {
+      // 게시글 정보 가져오기
+      const { data: post, error } = await supabase
+        .from(`${postType}_posts`) // 예: lounge_posts
+        .select("creator") // 작성자 ID만 가져오기
+        .eq("id", postId)
+        .single();
+
+      if (error || !post) {
+        toast.error("게시글을 찾을 수 없습니다.");
+        return next({ name: "main" });
+      }
+
+      // 작성자와 로그인 유저 비교
+      if (!loginUser || post.creator !== loginUser.id) {
+        toast.warning("작성자만 수정할 수 있습니다.");
+        return next({ name: "main" });
+      }
+
+      next();
+    } catch (error) {
+      console.error("게시글 정보를 불러오는 중 오류 발생:", error);
+      toast.error("게시글 정보를 가져오는 데 실패했습니다.");
+      next({ name: "main" });
+    }
+  } else if (to.matched.some((record) => record.meta.requireAuth)) {
     if (!isLoggedIn) {
       toast.warning("인증이 필요합니다.");
       next({ name: "signIn" });
