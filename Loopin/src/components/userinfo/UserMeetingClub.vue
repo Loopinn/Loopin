@@ -40,7 +40,7 @@ onMounted(() => {
         class="w-full h-full rounded-[10px] object-cover will-change-transform"
       />
     </div>
-    <p class="text-[13px] text-[#6e6e6e] line-clamp-2">
+    <p class="text-[13px] text-[#6e6e6e] line-clamp-2 text-center">
       {{ postData.title }}
     </p>
   </div>
