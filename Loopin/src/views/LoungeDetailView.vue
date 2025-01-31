@@ -14,29 +14,31 @@ import { feedLike } from "@/utils/feedLike";
 import DetailComment from "@/components/lounge/DetailComment.vue";
 import WriteButton from "@/components/lounge/WriteButton.vue";
 import noImage from "@/assets/images/noImage.svg";
-import userProfile from "@/assets/images/defaultprofile30.svg";
+import userProfile from "@/assets/images/no-profile.svg";
 import more from "@/assets/images/more-black.svg";
 import MoreModal from "@/components/lounge/MoreModal.vue";
 import Loading from "@/components/Loading.vue";
 import like from "../assets/images/likeblack_full.svg";
 import unlike from "../assets/images/likeblack.svg";
 import ConfirmModal from "@/components/modal/ConfirmModal.vue";
+import Following from "@/components/common/Following.vue";
+import { useAuthStore } from "@/stores/authStore";
 
 const route = useRoute();
 const router = useRouter();
 const postStore = usePostStore();
-const { loungePosts } = storeToRefs(postStore);
 const { loadLoungePosts } = postStore;
+const { loungePosts } = storeToRefs(postStore);
 
-const isModalOpen = ref(false);
 const postId = route.params.id;
 const userId = ref(null);
-const isMoreModalOpen = ref(false);
+const userData = ref(null);
 const nickname = ref(null);
 const profileImage = ref(null);
+const isMoreModalOpen = ref(false);
+const isModalOpen = ref(false);
 const isLike = ref(null);
 const isLoading = ref(true);
-
 
 const currentPost = computed(() => {
   return loungePosts.value.find((post) => post.id === postId);
@@ -49,33 +51,37 @@ const fetchUserId = async () => {
 
 const handleLike = debounce(async () => {
   const userIdValue = await fetchUserId();
-  if(userIdValue){
+  if (userIdValue) {
     const post = loungePosts.value.find((post) => post.id === postId);
     await feedLike(post, userIdValue);
     await loadLoungePosts();
     likeCheck();
-  }else{
+  } else {
     isModalOpen.value = true;
   }
 }, 300);
 
 const likeCheck = async () => {
-  const userIdValue = await fetchUserId();
-  isLike.value = currentPost.value.likes.includes(userIdValue);
+  if (currentPost.value.likes) {
+    const userIdValue = await fetchUserId();
+    isLike.value = currentPost.value.likes.includes(userIdValue) || null;
+  }
 };
 
 async function fetchData() {
   await loadLoungePosts();
   const { data, error } = await supabase
-  .from("userinfo")
-  .select()
-  .eq("id", loungePosts.value.find((post) => post.id === postId).creator);
-  
+    .from("userinfo")
+    .select()
+    .eq("id", loungePosts.value.find((post) => post.id === postId).creator);
+
   if (data && data.length > 0) {
+    userData.value = data[0];
     nickname.value = data[0].nickname;
     userId.value = data[0].id;
     profileImage.value = data[0].profile_img;
   }
+
   userId.value = await fetchUserId();
   isLoading.value = false;
 }
@@ -104,14 +110,20 @@ onBeforeMount(async () => {
       <!-- 헤더 영역 -->
       <div class="flex items-center justify-between py-4 px-4">
         <div class="flex items-center gap-2">
-          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-            <img :src="profileImage || userProfile" alt="프로필 이미지" class="w-8 h-8 rounded-full" />
+          <div class="w-12 h-12 rounded-full flex items-center justify-center mr-3">
+            <img
+              @click="router.push(`/user/${userData.nickname}`)"
+              :src="profileImage || userProfile"
+              alt="프로필 이미지"
+              class="rounded-full w-12 h-12 object-cover cursor-pointer"
+            />
           </div>
           <span class="font-bold">{{ nickname }}</span>
         </div>
         <div class="flex items-center gap-2">
-          <button v-if="userId !== currentPost.creator" class="text-[#f43630] font-semibold text-sm">팔로우</button>
-          <button v-else @click="openMoreModal"><img :src="more" alt="더보기" /></button>
+          <Following v-if="userId && userId !== currentPost.creator" :userData="userData" />
+          <button v-else-if="userId" @click="openMoreModal"><img :src="more" alt="더보기" /></button>
+          <div v-else></div>
         </div>
       </div>
 
@@ -153,7 +165,7 @@ onBeforeMount(async () => {
           </button>
         </div>
       </div>
-       <DetailComment :post-id="currentPost.id" /> 
+      <DetailComment :post-id="currentPost.id" />
     </div>
     <WriteButton />
     <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />
