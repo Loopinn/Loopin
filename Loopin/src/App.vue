@@ -88,6 +88,7 @@ watch(
   },
 );
 
+// 로그인, 로그아웃 시 함수
 supabase.auth.onAuthStateChange((event, session) => {
   setTimeout(async () => {
     if (event === "SIGNED_IN") {
@@ -111,6 +112,19 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
   }, 0);
 });
+
+// 프로필 수정 페이지 nav제거
+const isProfileEdit = ref(false);
+watch(
+  () => route.path,
+  () => {
+    if (route.path === "/profile/edit") {
+      isProfileEdit.value = true;
+    } else {
+      isProfileEdit.value = false;
+    }
+  },
+);
 </script>
 <template>
   <div v-if="route.path.includes('/write') && !route.path.includes('/lounge')">
@@ -122,7 +136,10 @@ supabase.auth.onAuthStateChange((event, session) => {
     </header>
 
     <!-- sticky top-0 -->
-    <nav class="flex gap-3 w-full h-[50px] items-center px-3.5 bg-white border-[#D9D9D9] border-b z-10">
+    <nav
+      v-if="!isProfileEdit"
+      class="flex gap-3 w-full h-[50px] items-center px-3.5 bg-white border-[#D9D9D9] border-b z-10"
+    >
       <RouterLink
         v-for="(link, index) in links"
         :key="index"

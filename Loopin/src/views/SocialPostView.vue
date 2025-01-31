@@ -7,7 +7,7 @@ import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
 import supabase from "@/config/supabase";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Loading from "@/components/Loading.vue";
 import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
@@ -16,6 +16,7 @@ const postStore = usePostStore();
 const { socialingPosts } = storeToRefs(postStore);
 const { loadSocialPosts } = postStore;
 
+const router = useRouter();
 const route = useRoute();
 const postId = route.params.id;
 
@@ -190,15 +191,17 @@ const openKakaoMap = () => {
     <div v-if="userData" class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
         v-if="resizedProfile"
+        @click="router.push(`/user/${userData.nickname}`)"
         :src="resizedProfile"
         alt="hostprofile"
-        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover will-change-transform"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover will-change-transform cursor-pointer"
       />
       <img
         v-else
+        @click="router.push(`/user/${userData.nickname}`)"
         src="@/assets/images/no-profile.svg"
         alt="hostprofile"
-        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] cursor-pointer"
       />
       <div class="text-center mt-[30px]">
         <p class="text-[12px] mb-1">{{ userData.nickname }}</p>
