@@ -31,17 +31,20 @@ const getUserId = async () => {
 
 const likeCheck = async () => {
   const userId = await getUserId();
-  likes.value = loungePosts.value.map((post) => ({ id: post.id, isLiked: post.likes.includes(userId) }));
+  likes.value = loungePosts.value.map((post) => ({
+    id: post.id,
+    isLiked: post.likes ? post.likes.includes(userId) : false,
+  }));
 };
 
 const handleLike = debounce(async (postId) => {
   const userId = await getUserId();
-  if(userId){
+  if (userId) {
     const post = loungePosts.value.find((post) => post.id === postId);
     await feedLike(post, userId);
     likes.value = likes.value.map((like) => (like.id === postId ? { ...like, isLiked: !like.isLiked } : like));
     await loadLoungePosts();
-  }else{
+  } else {
     isModalOpen.value = true;
   }
 }, 300);
@@ -51,8 +54,8 @@ const toggleModal = () => {
   router.push("/signIn");
 };
 
-onBeforeMount( () => {
-   Promise.all([loadLoungePosts(), getUserId(), likeCheck()]);
+onBeforeMount(() => {
+  Promise.all([loadLoungePosts(), getUserId(), likeCheck()]);
 });
 </script>
 
@@ -64,19 +67,19 @@ onBeforeMount( () => {
       subtitle="비슷한 관심사를 가진
       멤버들의 취향 피드 구독하기"
       alt="라운지 로고"
-      />
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2 relative">
-          <RouterLink :to="{ path: `/lounge/${feed.id}` }">
-            <div class="bg-gray-300 rounded-xl">
+    />
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2 relative">
+        <RouterLink :to="{ path: `/lounge/${feed.id}` }">
+          <div class="bg-gray-300 rounded-xl">
             <img
               :src="feed.images[0] || noImage"
               class="w-full aspect-square object-cover will-change-transform rounded-md"
-              />
-            </div>
-          </RouterLink>
-          <button class="absolute left-2 top-32 flex items-center" @click="handleLike(feed.id)">
-            <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" />
+            />
+          </div>
+        </RouterLink>
+        <button class="absolute left-2 top-32 flex items-center" @click="handleLike(feed.id)">
+          <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" />
         </button>
         <p class="text-xs leading-relaxed text-gray-800 line-clamp">
           {{ feed.description }}
