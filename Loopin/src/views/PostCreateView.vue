@@ -74,6 +74,7 @@ onMounted(async () => {
         stateFields.meetTime = JSON.parse(socialingPost.time);
         stateFields.title = socialingPost.title;
         stateFields.socialingType = socialingPost.type;
+        stateFields.selectedClub = socialingPost.for_club;
 
         //카테고리 인덱스
         const index = categoryList.value.findIndex((category) => category.name === socialingPost.subject);
@@ -203,6 +204,7 @@ const {
 const stateFields = reactive({
   selectedActivity: "",
   socialingType: "",
+  selectedClub: null,
   isFee: null,
   fee: 0,
   feeInfo: [],
@@ -442,7 +444,10 @@ const isNextEnabled = computed(() => {
   if (currentStep.value === "활동선택") {
     return stateFields.selectedActivity !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
   } else if (currentStep.value === "타입선택") {
-    return stateFields.socialingType !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
+    if (stateFields.socialingType === "클럽") {
+      return stateFields.selectedClub !== null;
+    }
+    return stateFields.socialingType !== "";
   } else if (currentStep.value === "참가비") {
     if (stateFields.isFee === true) {
       return stateFields.fee > 0 && stateFields.feeInfo.length > 0; // 참가비 입력 및 최소 체크박스 1개 확인
@@ -614,20 +619,21 @@ const handlePostSubmit = async () => {
         type: stateFields.socialingType,
         date: stateFields.meetDate,
         time: stateFields.meetTime,
+        for_club: stateFields.selectedClub,
       };
       if (!route.params.id) {
         // 새 게시글 생성
         const createdPost = await createSocialPost(postData, userId);
         postId.value = createdPost[0].id;
         localStorage.removeItem("소셜링");
-        toast("게시글이 생성되었습니다!")
+        toast("게시글이 생성되었습니다!");
       } else {
         // 기존 게시글 업데이트
         const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
         postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateSocialPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
-        toast("게시글이 수정되었습니다!")
+        toast("게시글이 수정되었습니다!");
       }
       // 게시글 상세 페이지로 이동
       router.push(`/socialing/${postId.value}`);
@@ -650,14 +656,14 @@ const handlePostSubmit = async () => {
         const createdPost = await createClubPost(postData, userId);
         postId.value = createdPost[0].id;
         localStorage.removeItem("클럽");
-        toast("게시글이 생성되었습니다!")
+        toast("게시글이 생성되었습니다!");
       } else {
         // 기존 게시글 업데이트
         const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
         postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateClubPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
-        toast("게시글이 수정되었습니다!")
+        toast("게시글이 수정되었습니다!");
       }
       // 게시글 상세 페이지로 이동
       router.push(`/club/${postId.value}`);
@@ -680,14 +686,14 @@ const handlePostSubmit = async () => {
         const createdPost = await createChallengePost(postData, userId);
         postId.value = createdPost[0].id;
         localStorage.removeItem("챌린지");
-        toast("게시글이 생성되었습니다!")
+        toast("게시글이 생성되었습니다!");
       } else {
         // 기존 게시글 업데이트
         const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
         postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateChallengePost(postData, route.params.id);
         postId.value = updatedPost[0].id;
-        toast("게시글이 수정되었습니다!")
+        toast("게시글이 수정되었습니다!");
       }
       // 게시글 상세 페이지로 이동
       router.push(`/challenge/${postId.value}`);
@@ -732,10 +738,10 @@ const period = computed(() => {
 
   return (end - start) / (1000 * 60 * 60 * 24) + 1;
 });
-const formatPlace = (place) => {
-  const placeName = place.road_address_name || place.address_name;
-  return placeName.split(" ")[1];
-};
+// const formatPlace = (place) => {
+//   const placeName = place.road_address_name || place.address_name;
+//   return placeName.split(" ")[1];
+// };
 const formatFeeInfo = (fee) => {
   switch (fee) {
     case "contentFee":
@@ -757,10 +763,56 @@ const openKakaoMap = () => {
   window.open(kakaoMapUrl, "_blank");
 };
 
+const myClubs = ref([]);
+const myClubsInfo = ref([]);
+
 onMounted(async () => {
   const auth = JSON.parse(localStorage.getItem("authStore"));
   if (auth.loginUser) userInfo.value = auth.loginUser;
+
+  //가입하거나 운영하는 클럽
+  const joinedClubs = userInfo.value.joinPosts.filter((joinP) => JSON.parse(joinP).type === "club_posts");
+  myClubs.value = [...myClubs.value, ...joinedClubs];
+  const createdClubs = userInfo.value.posts.filter((createP) => JSON.parse(createP).type === "club_posts");
+  myClubs.value = [...myClubs.value, ...createdClubs].map((joinP) => JSON.parse(joinP));
+
+  myClubs.value.forEach(async (club, index) => {
+    const { data, error } = await supabase.from("club_posts").select().eq("id", club.id);
+    myClubsInfo.value.push({
+      id: data[0].id,
+      image: data[0].images[0],
+      title: data[0].title,
+      description: data[0].description,
+    });
+    // 클럽 이미지 리사이징 실행
+    resizeClubImage(data[0].images[0], index);
+  });
 });
+const resizeClubImage = (imgUrl, index) => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 이슈 방지
+  img.onload = () => {
+    myClubsInfo.value[index].image = resizeImage(img, 200, 200);
+  };
+  img.src = imgUrl; // 첫 번째 클럽 이미지 로드
+};
+
+const selectSocialingType = (type) => {
+  stateFields.socialingType = type;
+  if (type === "일반") stateFields.selectedClub = null;
+};
+
+const handleClubSelect = (clubId) => {
+  stateFields.selectedClub = clubId;
+};
+
+watch(
+  () => stateFields.selectedClub,
+  (newValue) => {
+    setState({ ...state.value, selectedClub: newValue });
+    console.log(state.value);
+  },
+);
 
 //useFunnel 의 state 가 변하면 stateField 값 갱신
 watch(
@@ -939,13 +991,13 @@ onMounted(() => {
 
       <!-- 타입 선택 단계 (소셜링에서만 사용) -->
       <template #타입선택>
-        <div class="px-[15px]">
+        <div class="px-[15px] mb-[100px]">
           <h2 class="text-[30px] mb-[43px]">어떤 소셜링을 열어볼까요?</h2>
           <div class="flex flex-col gap-[15px]">
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
               :class="{ 'bg-[#F43630] text-white': stateFields.socialingType === '일반' }"
-              @click="stateFields.socialingType = '일반'"
+              @click="selectSocialingType('일반')"
             >
               <div class="px-[27px]">
                 <img v-if="stateFields.socialingType === '일반'" src="@/assets/images/socialing-active.svg" alt="" />
@@ -961,7 +1013,7 @@ onMounted(() => {
             <button
               class="border flex items-center w-full h-[80px] rounded-[16px]"
               :class="{ 'bg-[#F43630] text-white': stateFields.socialingType === '클럽' }"
-              @click="stateFields.socialingType = '클럽'"
+              @click="selectSocialingType('클럽')"
             >
               <div class="px-[27px]">
                 <img
@@ -978,6 +1030,28 @@ onMounted(() => {
                 </p>
               </div>
             </button>
+          </div>
+          <div v-if="myClubsInfo.length && stateFields.socialingType === '클럽'" class="mt-[30px]">
+            <div
+              v-for="club in myClubsInfo"
+              class="relative border rounded-[16px] flex h-[100px] mt-[15px] items-center px-[10px] cursor-pointer"
+              @click="handleClubSelect(club.id)"
+              :key="club.id"
+            >
+              <img :src="club.image" class="w-[80px] h-[80px] object-cover rounded-[16px]" alt="club-image" />
+              <div class="mx-[10px]">
+                <p>{{ club.title }}</p>
+                <p class="line-clamp-1 min-h-[24px] max-w-[423px] text-[#999996]">{{ club.description }}</p>
+              </div>
+              <div class="absolute right-[10px]">
+                <img
+                  v-if="stateFields.selectedClub === club.id"
+                  src="@/assets/images/circle-active.svg"
+                  alt="circle-active"
+                />
+                <img v-else src="@/assets/images/circle.svg" alt="circle" />
+              </div>
+            </div>
           </div>
         </div>
       </template>
@@ -1739,6 +1813,7 @@ onMounted(() => {
         </div>
       </template>
     </Funnel>
+    <div class="h-[1px]"></div>
     <div class="px-[15px]">
       <button
         v-if="currentStep === '미리보기'"
