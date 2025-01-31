@@ -138,10 +138,9 @@ onBeforeMount(async () => {
 // 날짜 포맷팅 함수
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}.${month}.${day}`;
+  return `${month}월 ${day}일`;
 };
 
 const handleInput = (event) => {
@@ -195,8 +194,8 @@ const handleInput = (event) => {
             <div class="flex text-[11px] text-gray-500">
               <span class="">좋아요 {{ comment?.likes?.length || "0" }} 개</span>
               <div class="flex gap-2 ml-4">
+                <span>{{ formatDate(comment.created_at) }}</span>
                 <div v-if="id === comment.creator && editingCommentId !== comment.id">
-                  <span>{{ formatDate(comment.created_at) }}</span>
                   <button @click="handleEdit(comment)" class="text-[#909090] underline mb-2 ml-2 hover:text-[#FF0000]">
                     수정
                   </button>
