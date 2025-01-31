@@ -1,9 +1,13 @@
 import supabase from "@/config/supabase";
+import { useAuthStore } from "@/stores/authStore";
 
-// 소셜링 게시글 좋아요 함수
+const authStore = useAuthStore();
+const { updateUser } = authStore;
+
+// 소셜링 게시글 참여하기 함수
 export const joinSocialing = async (postInfo, userId) => {
   try {
-    // 내가 좋아요를 한 게시글인지 확인
+    // 내가 참여한 게시글인지 확인
     const currentParticipants = postInfo.participants || [];
     const isJoin = currentParticipants.includes(userId);
 
@@ -19,6 +23,34 @@ export const joinSocialing = async (postInfo, userId) => {
 
     console.log(data);
     if (error) console.log(isJoin ? "참여하기 취소 오류" : "참여하기 오류!", error);
+
+    // 유저 DB 업데이트
+    const { data: userData, error: userError } = await supabase.from("userinfo").select().eq("id", userId).single();
+    console.log(userData);
+    const currentUserJoinPosts = userData.joinPosts;
+
+    const updateJoinClub = isJoin
+      ? currentUserJoinPosts.filter((joinPost) => {
+          const joinPostData = JSON.parse(joinPost);
+          return joinPostData.id !== postInfo.id;
+        })
+      : [...currentUserJoinPosts, { id: postInfo.id, type: "socialing_posts" }];
+
+    console.log(updateJoinClub);
+
+    const { data: userJoinPost, error: userJoinPostError } = await supabase
+      .from("userinfo")
+      .update({ joinPosts: updateJoinClub })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (userJoinPostError) {
+      console.error(userJoinPost);
+    }
+    console.log("userJoinPost", userJoinPost);
+    updateUser(userJoinPost);
+
     return data;
   } catch (error) {
     console.error(error);
