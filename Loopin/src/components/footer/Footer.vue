@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
@@ -15,38 +16,45 @@ const footerItems = [
     img: "/src/assets/images/home-footer.svg",
     activeImg: "/src/assets/images/home-active-footer.svg",
     route: "/",
+    isActive: computed(() => route.path === "/" || ["/socialing", "/club", "/challenge"].includes(route.path)),
   },
   {
     text: "라운지",
     img: "/src/assets/images/lounge-footer.svg",
     activeImg: "/src/assets/images/lounge-active-footer.svg",
     route: "/lounge",
+    isActive: computed(() => route.path.startsWith("/lounge")),
   },
-  { text: null, img: "/src/assets/images/post-footer.svg", activeImg: null, route: "/write" },
+  {
+    text: null,
+    img: "/src/assets/images/post-footer.svg",
+    activeImg: null,
+    route: "/write",
+    isActive: computed(() => route.path === "/write"),
+  },
   {
     text: "채팅",
     img: "/src/assets/images/chat-footer.svg",
     activeImg: "/src/assets/images/chat-active-footer.svg",
     route: "/chat",
+    isActive: computed(() => route.path === "/chat"),
   },
   {
     text: "마이페이지",
     img: "/src/assets/images/user-footer.svg",
     activeImg: "/src/assets/images/user-active-footer.svg",
     route: "/profile",
+    isActive: computed(() => route.path === "/profile"),
   },
 ];
 
+// 현재 페이지 아이콘 확인 함수
 const getImageUrl = (path) => {
   return new URL(path, import.meta.url).href;
 };
-// 현재 페이지 아이콘 확인 함수
+
 const getIcon = (item) => {
-  const activeRoutes = ["/", "/socialing", "/club", "/challenge"]; // 홈 아이콘을 활성화할 경로들
-  if (item.route === "/" && activeRoutes.includes(route.path)) {
-    return getImageUrl(item.activeImg);
-  }
-  return route.path === item.route ? getImageUrl(item.activeImg) : getImageUrl(item.img);
+  return item.isActive.value ? getImageUrl(item.activeImg) : getImageUrl(item.img);
 };
 </script>
 

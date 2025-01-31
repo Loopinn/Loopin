@@ -60,28 +60,35 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="px-5 py-6 min-h-[calc(100vh-194px)] w-full mx-auto pb-[64px] relative space-y-8 bg-[#f4f4f4]">
-    <PageInfoSection
-      :icon="loungeLogo"
-      title="라운지"
-      subtitle="비슷한 관심사를 가진
+  <div class="w-full mx-auto relative space-y-4 bg-[#f4f4f4] mb-4">
+    <div class="py-6">
+      <PageInfoSection
+        :icon="loungeLogo"
+        title="라운지"
+        subtitle="비슷한 관심사를 가진
       멤버들의 취향 피드 구독하기"
-      alt="라운지 로고"
-    />
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <div v-for="feed in loungePosts" :key="feed.id" class="space-y-2 relative">
+        alt="라운지 로고"
+      />
+    </div>
+    <div class="grid grid-cols-3 gap-2 px-7 bg-white rounded-t-[80px]">
+      <div class="col-span-3 flex justify-center items-center">
+        <svg width="50" height="50" xmlns="http://www.w3.org/2000/svg">
+          <line x1="10" y1="20" x2="90" y2="20" stroke="black" stroke-width="2" />
+          <line x1="10" y1="25" x2="90" y2="25" stroke="black" stroke-width="2" />
+          <line x1="10" y1="30" x2="90" y2="30" stroke="black" stroke-width="2" />
+        </svg>
+      </div>
+      <div v-for="feed in loungePosts" :key="feed.id" class="relative">
         <RouterLink :to="{ path: `/lounge/${feed.id}` }">
-          <div class="bg-gray-300 rounded-xl">
-            <img
-              :src="feed.images[0] || noImage"
-              class="w-full aspect-square object-cover will-change-transform rounded-md"
-            />
-          </div>
+          <img
+            :src="feed.images[0] || noImage"
+            class="w-full rounded-2xl aspect-square object-cover will-change-transform"
+          />
         </RouterLink>
-        <button class="absolute left-2 top-32 flex items-center" @click="handleLike(feed.id)">
-          <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" />
+        <button class="absolute left-3 top-[145px] flex items-center" @click="handleLike(feed.id)">
+          <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" class="" />
         </button>
-        <p class="text-xs leading-relaxed text-gray-800 line-clamp">
+        <p class="text-xs leading-relaxed text-gray-800 line-clamp pl-2 mt-1">
           {{ feed.description }}
         </p>
       </div>

@@ -104,18 +104,18 @@ onBeforeMount(async () => {
 
 <template>
   <Loading v-if="isLoading" />
-  <div v-if="!isLoading" class="py-0 min-h-screen w-full pb-[1px] relative space-y-8 bg-[#f4f4f4]">
+  <div v-if="!isLoading" class="py-0 min-h-screen w-full pb-[1px] relative">
     <!-- 게시물 카드 -->
-    <div class="">
+    <div class="h-full">
       <!-- 헤더 영역 -->
       <div class="flex items-center justify-between py-4 px-4">
         <div class="flex items-center gap-2">
-          <div class="w-12 h-12 rounded-full flex items-center justify-center mr-3">
+          <div class="w-14 h-14 rounded-full flex items-center justify-center mr-1">
             <img
               @click="router.push(`/user/${userData.nickname}`)"
               :src="profileImage || userProfile"
               alt="프로필 이미지"
-              class="rounded-full w-12 h-12 object-cover cursor-pointer"
+              class="w-14 h-14 rounded-full shadow-md object-cover will-change-transform cursor-pointer"
             />
           </div>
           <span class="font-bold">{{ nickname }}</span>
@@ -146,7 +146,7 @@ onBeforeMount(async () => {
       <div class="p-4 rounded-b-lg">
         <div
           v-if="currentPost?.category"
-          class="text-black bg-white text-[14px] rounded-2xl inline-block px-2 py-1 mr-[6px] mb-2 border border-gray-300"
+          class="text-[#f43630] bg-white text-[14px] rounded-2xl inline-block px-2 py-1 mr-[6px] mb-2 border border-[#f43630]"
         >
           {{ currentPost.category }}
         </div>
