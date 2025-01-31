@@ -26,6 +26,8 @@ const isLoading = ref(false);
 
 const isModalOpen = ref(false);
 
+const isUserInClub = ref(false);
+
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
   console.log("내 아이디: ", sessionData?.session?.user?.id);
@@ -72,9 +74,13 @@ onMounted(async () => {
 });
 
 // currentPost가 변경될 때마다 자동으로 실행
-watchEffect(() => {
+watchEffect(async () => {
   if (currentPost.value && currentPost.value?.creator) {
     fetchData();
+
+    const { data, error } = await supabase.from("club_posts").select().eq("id", currentPost.value.for_club);
+    const clubParticipants = data[0].participants;
+    isUserInClub.value = clubParticipants.includes(userId.value);
   }
 });
 
@@ -179,6 +185,7 @@ const openKakaoMap = () => {
   window.open(kakaoMapUrl, "_blank");
 };
 </script>
+
 <template>
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
@@ -188,6 +195,12 @@ const openKakaoMap = () => {
       :src="currentPost.images ? currentPost.images[0] : ''"
       alt="thumbnail"
     />
+    <div class="absolute top-3 left-3 flex gap-2">
+      <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
+      <div v-if="currentPost.for_club" class="text-[14px] text-white rounded-[16px] bg-[#1C8A6A] px-2 py-1">
+        클럽소셜링
+      </div>
+    </div>
     <div v-if="userData" class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
         v-if="resizedProfile"
@@ -209,7 +222,9 @@ const openKakaoMap = () => {
       </div>
     </div>
     <div class="flex items-center gap-2 absolute right-[40px]">
-      <button v-if="currentPost.creator === userId" @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
+      <button v-if="currentPost.creator === userId" @click="openModal">
+        <img src="@/assets/images/more-black.svg" alt="더보기" />
+      </button>
     </div>
     <!-- 한줄 요약 -->
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
@@ -293,6 +308,8 @@ const openKakaoMap = () => {
         :pageType="'socialing'"
         :userId="userId"
         :action="joinSocialing"
+        :isUserInClub="isUserInClub"
+        :clubId="currentPost?.for_club"
         @updateParticipants="handleUpdateParticipants"
       />
     </div>

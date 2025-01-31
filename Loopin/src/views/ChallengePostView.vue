@@ -155,6 +155,9 @@ const formatFeeInfo = (fee) => {
       :src="currentPost.images ? currentPost.images[0] : ' '"
       alt="thumbnail"
     />
+    <div class="absolute top-3 left-3 flex gap-2">
+      <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
+    </div>
     <div v-if="userData" class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
       <img
         v-if="resizedProfile"
