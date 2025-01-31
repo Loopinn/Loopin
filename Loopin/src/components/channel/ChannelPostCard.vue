@@ -11,6 +11,8 @@ import ConfirmModal from "../modal/ConfirmModal.vue";
 import supabase from "@/config/supabase";
 import noProfile from "@/assets/images/no-profile.svg";
 import { resizeImage } from "@/utils/resizeImage";
+import { useAuthStore } from "@/stores/authStore";
+import { storeToRefs } from "pinia";
 
 const props = defineProps({
   post: {
@@ -21,6 +23,9 @@ const props = defineProps({
     type: String,
   },
 });
+
+const authStore = useAuthStore();
+const { loginUser } = storeToRefs(authStore);
 
 const socialingDate = ref(null);
 
@@ -113,11 +118,6 @@ const place_name = computed(() => {
 const isModalOpen = ref(false);
 const isLiked = ref(false);
 
-const getUserId = async () => {
-  const { data: sessionData } = await supabase.auth.getSession();
-  return sessionData?.session?.user?.id;
-};
-
 const tables = {
   소셜링: "socialing_posts",
   클럽: "club_posts",
@@ -126,30 +126,31 @@ const tables = {
 const table = (channelName) => tables[channelName] || null;
 
 const likeCheck = async () => {
-  const userId = await getUserId();
-  const { data: userData, error: userDataError } = await supabase
-    .from("userinfo")
-    .select("postLikes")
-    .eq("id", userId)
-    .single();
+  if (loginUser.value) {
+    const { data: userData, error: userDataError } = await supabase
+      .from("userinfo")
+      .select("postLikes")
+      .eq("id", loginUser.value.id)
+      .single();
 
-  console.log(userData);
+    console.log(userData);
 
-  if (userDataError) {
-    console.error(userDataError);
+    if (userDataError) {
+      console.error(userDataError);
+    }
+
+    const likedPosts = userData?.postLikes ? userData.postLikes.map((item) => JSON.parse(item)) : [];
+    isLiked.value = likedPosts.some((post) => post.id === props.post.id);
   }
-
-  const likedPosts = userData?.postLikes ? userData.postLikes.map((item) => JSON.parse(item)) : [];
-  isLiked.value = likedPosts.some((post) => post.id === props.post.id);
 };
 
 const handleLike = debounce(async (event) => {
   event.preventDefault();
   const tableName = table(props.channelName);
-  const userId = await getUserId();
-  if (userId) {
+
+  if (loginUser.value) {
     const post = props.post;
-    await channelLike(post, userId, tableName);
+    await channelLike(post, loginUser.value.id, tableName);
     isLiked.value = !isLiked.value;
   } else {
     isModalOpen.value = true;
@@ -162,7 +163,7 @@ const toggleModal = () => {
 };
 
 onBeforeMount(() => {
-  Promise.all([getUserId(), likeCheck()]);
+  likeCheck();
 });
 
 // 참여자
@@ -189,7 +190,7 @@ onMounted(() => {
         alt="thumbnail"
         class="w-40 h-40 rounded-2xl m-5 object-cover will-change-transform"
       />
-      <button @click.stop.prevent="(event) => handleLike(event)">
+      <button v-if="loginUser" @click.stop.prevent="(event) => handleLike(event)">
         <img :src="isLiked ? like : unlike" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
       </button>
     </div>
