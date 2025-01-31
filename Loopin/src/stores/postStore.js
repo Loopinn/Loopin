@@ -391,6 +391,7 @@ export const usePostStore = defineStore("postStore", () => {
       place: typeof postInfo.place === "string" ? postInfo.place : JSON.stringify({ ...postInfo.place }),
       type: postInfo.type,
       participants: [userId],
+      for_club: postInfo.for_club,
     };
 
     try {
