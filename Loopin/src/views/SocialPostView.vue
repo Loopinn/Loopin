@@ -224,11 +224,11 @@ const openKakaoMap = () => {
         <div class="ml-[40px] mt-[70px] w-[520px]">
           <div>{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
-          <MemberInfo :participants="currentPost.participants || []" />
+          <MemberInfo :participants="currentPost.participants || []" :pageType="'socialing'" />
           <!-- 안내사항 -->
           <div class="mt-5">
-            <div class="text-[#FF0000]">안내사항</div>
-            <div class="font-bold">자세한 정보를 알려드릴게요</div>
+            <p class="text-[#FF0000]">안내사항</p>
+            <p>자세한 정보를 알려드릴게요</p>
             <div class="mt-2">
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/category.svg" alt="category" />
@@ -283,7 +283,7 @@ const openKakaoMap = () => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comment="currentPost.comments" />
+          <Comment :likes="currentPost.likes" :comment="currentPost.comments" :pageType="'socialing'" />
         </div>
       </div>
       <!-- 참여하기 -->

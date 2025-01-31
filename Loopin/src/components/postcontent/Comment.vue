@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref, defineProps, computed } from "vue";
 import CommentList from "./CommentList.vue";
 
 const text = ref("");
@@ -12,6 +12,21 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  pageType: {
+    type: String,
+  },
+});
+
+const textColor = computed(() => {
+  switch (props.pageType) {
+    case "socialing":
+      return "text-[#FF0000]";
+    case "challenge":
+      return "text-[#46A7CD]";
+    case "club":
+    default:
+      return "text-[#1C8A6A]";
+  }
 });
 
 // 댓글 등록 버튼
@@ -44,8 +59,8 @@ const commentModalClose = () => {
 </script>
 <template>
   <div class="mt-5">
-    <div class="text-[#FF0000]">댓글</div>
-    <div class="font-bold">소셜링이 궁금하다면 댓글을 남겨보세요</div>
+    <p :class="textColor">댓글</p>
+    <p>게시글이 궁금하다면 댓글을 남겨보세요</p>
     <div class="mt-2 flex gap-3">
       <div class="flex gap-2">
         <button @click="isLiked">
