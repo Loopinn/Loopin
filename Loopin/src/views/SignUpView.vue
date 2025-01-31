@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import { register } from "@/utils/auth/register";
 
@@ -8,6 +8,7 @@ import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 
 import showPassword from "@/assets/images/show-password.svg";
 import { emailRegex, idRegex, passwordRegex } from "@/constants/validation";
+import { useAuthStore } from "@/stores/authStore";
 
 const email = ref("");
 const password = ref("");
@@ -21,6 +22,14 @@ const isModalOpen = ref(false);
 const modalMessage = ref("");
 
 const router = useRouter();
+
+// 로그인헀으면 홈으로 리다이렉트
+const authStore = useAuthStore();
+onBeforeMount(() => {
+  if (authStore.loginUser) {
+    router.replace("/");
+  }
+});
 
 // 유효성 검사 함수
 const validateEmail = (email) => emailRegex.test(email);

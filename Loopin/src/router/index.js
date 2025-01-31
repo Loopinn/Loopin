@@ -1,6 +1,7 @@
 import CenteredHeader from "@/components/header/CenteredHeader.vue";
 import supabase from "@/config/supabase";
 import { createRouter, createWebHistory } from "vue-router";
+import { toast } from "vue3-toastify";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -173,7 +174,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.matched.some((record) => record.meta.requireAuth)) {
     if (!isLoggedIn) {
-      alert("인증이 필요합니다.");
+      toast.warning("인증이 필요합니다.");
       next({ name: "signIn" });
     } else {
       next();

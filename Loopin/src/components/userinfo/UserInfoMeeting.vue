@@ -34,7 +34,7 @@ onBeforeMount(() => {
       <div class="mb-5 flex items-center justify-between">
         <p class="text-[18px] font-medium">참여 중인 클럽</p>
         <p
-          class="cursor-pointer hover:underline hover:underline-offset-4 text-gray-500"
+          class="text-[14px] cursor-pointer hover:underline hover:underline-offset-4 text-gray-500"
           @click="router.push(`${isMyPage ? '/profile/posts/club' : `/user/${props.userNickName}/posts/club`}`)"
         >
           더보기

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import { login } from "@/utils/auth/login";
 import { kakaoLogin } from "@/utils/auth/kakaoLogin";
@@ -11,6 +11,7 @@ import ConfirmModal from "@/components/modal/ConfirmModal.vue";
 import showPassword from "@/assets/images/show-password.svg";
 import kakaoIcon from "@/assets/images/kakaoIcon.svg";
 import kakaoLoginText from "@/assets/images/kakaoLogin.svg";
+import { useAuthStore } from "@/stores/authStore";
 
 const email = ref("");
 const password = ref("");
@@ -21,6 +22,15 @@ const isModalOpen = ref(false);
 const modalMessage = ref("");
 
 const router = useRouter();
+
+const authStore = useAuthStore();
+
+// 로그인헀으면 홈으로 리다이렉트
+onBeforeMount(() => {
+  if (authStore.loginUser) {
+    router.replace("/");
+  }
+});
 
 const handleSubmit = async (e) => {
   e.preventDefault();
