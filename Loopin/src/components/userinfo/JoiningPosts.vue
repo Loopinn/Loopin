@@ -75,7 +75,7 @@ onBeforeMount(async () => {
       <li
         :class="
           twMerge(`w-[70px] h-[30px] text-[15px] bg-white flex items-center justify-center 
-        border-2  rounded-[20px] cursor-pointer ${categoryName === '클럽' && 'border-black'}`)
+        border  rounded-[20px] cursor-pointer ${categoryName === '클럽' && 'bg-[#1c8a6a] text-white'}`)
         "
         @click="categoryName = '클럽'"
       >
@@ -84,7 +84,7 @@ onBeforeMount(async () => {
       <li
         :class="
           twMerge(`w-[70px] h-[30px] text-[15px] bg-white flex items-center justify-center 
-        border-2  rounded-[20px] cursor-pointer ${categoryName === '소셜링' && 'border-black'}`)
+        border rounded-[20px] cursor-pointer ${categoryName === '소셜링' && 'bg-[#f43630] text-white'}`)
         "
         @click="categoryName = '소셜링'"
       >
@@ -93,7 +93,7 @@ onBeforeMount(async () => {
       <li
         :class="
           twMerge(`w-[70px] h-[30px] text-[15px] bg-white flex items-center justify-center 
-        border-2 rounded-[20px] cursor-pointer ${categoryName === '챌린지' && 'border-black'}`)
+        border rounded-[20px] cursor-pointer ${categoryName === '챌린지' && 'bg-[#3498D0] text-white'}`)
         "
         @click="categoryName = '챌린지'"
       >
