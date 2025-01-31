@@ -9,6 +9,7 @@ import NoPosts from "../common/NoPosts.vue";
 import clubIcon from "@/assets/images/club-active.svg";
 import socialingIcon from "@/assets/images/socialing-active.svg";
 import challengeIcon from "@/assets/images/challenge-active.svg";
+import Loading from "../Loading.vue";
 
 const props = defineProps(["isMyPage", "userNickName", "userJoinPosts"]);
 
@@ -53,6 +54,7 @@ onBeforeMount(async () => {
         }
       }),
     );
+    isLoading.value = false;
   } else {
     await Promise.all(
       props.userJoinPosts.map(async (joinPost) => {
@@ -70,6 +72,7 @@ onBeforeMount(async () => {
         }
       }),
     );
+    isLoading.value = false;
   }
 
   console.log(joiningClub.value);
@@ -78,7 +81,7 @@ onBeforeMount(async () => {
 });
 </script>
 <template>
-  <div>
+  <div v-if="!isLoading">
     <ul class="flex gap-2">
       <li
         :class="
@@ -168,6 +171,9 @@ onBeforeMount(async () => {
         </div>
       </div>
     </div>
+  </div>
+  <div v-else>
+    <Loading />
   </div>
 </template>
 <style scoped></style>
