@@ -3,10 +3,12 @@ import { dayNames } from "@/constants/dayNames";
 import { ref, defineProps, computed, onMounted, onBeforeMount } from "vue";
 import calendar from "@/assets/images/calendar.svg";
 import checkIcon from "@/assets/images/check.svg";
-import likewhite_full from "@/assets/images/likewhite_full.svg";
-import likewhite from "@/assets/images/likewhite.svg";
+import like from "@/assets/images/likewhite_full.svg";
+import unlike from "@/assets/images/likewhite.svg";
+import { channelLike } from "@/utils/channelLike";
+import { debounce } from "lodash";
+import ConfirmModal from "../modal/ConfirmModal.vue";
 import supabase from "@/config/supabase";
-
 import noProfile from "@/assets/images/no-profile.svg";
 import { resizeImage } from "@/utils/resizeImage";
 
@@ -49,7 +51,7 @@ onBeforeMount(async () => {
       if (userData) {
         resizeProfile(userData.profile_img, index);
       }
-    })
+    }),
   );
 });
 // 이미지를 순서대로 저장
@@ -106,12 +108,78 @@ const place_name = computed(() => {
     return JSON.parse(placeString).place_name;
   } else return placeString;
 });
-// 좋아요 버튼
-const like = ref(false);
 
-const isLiked = () => {
-  like.value = !like.value;
+// 좋아요
+const isModalOpen = ref(false);
+const isLiked = ref(false);
+
+const getUserId = async () => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  return sessionData?.session?.user?.id;
 };
+
+const tables = {
+  소셜링: "socialing_posts",
+  클럽: "club_posts",
+  챌린지: "challenge_posts",
+};
+const table = (channelName) => tables[channelName] || null;
+
+const likeCheck = async () => {
+  const userId = await getUserId();
+  const { data: userData, error: userDataError } = await supabase
+    .from("userinfo")
+    .select("postLikes")
+    .eq("id", userId)
+    .single();
+
+  console.log(userData);
+
+  if (userDataError) {
+    console.error(userDataError);
+  }
+
+  const likedPosts = userData?.postLikes ? userData.postLikes.map((item) => JSON.parse(item)) : [];
+  isLiked.value = likedPosts.some((post) => post.id === props.post.id);
+};
+
+const handleLike = debounce(async (event) => {
+  event.preventDefault();
+  const tableName = table(props.channelName);
+  const userId = await getUserId();
+  if (userId) {
+    const post = props.post;
+    await channelLike(post, userId, tableName);
+    isLiked.value = !isLiked.value;
+  } else {
+    isModalOpen.value = true;
+  }
+}, 300);
+
+const toggleModal = () => {
+  isModalOpen.value = false;
+  router.push("/signIn");
+};
+
+onBeforeMount(() => {
+  Promise.all([getUserId(), likeCheck()]);
+});
+
+// 참여자
+const participantsInfo = ref([]);
+
+const getParticipantsInfo = async () => {
+  try {
+    const { data, error } = await supabase.from("userinfo").select("profile_img").in("id", props.post.participants);
+    participantsInfo.value = data;
+  } catch (error) {
+    console.log("getParticipantsInfoError");
+  }
+};
+
+onMounted(() => {
+  getParticipantsInfo();
+});
 </script>
 <template>
   <div class="h-[200px] flex rounded-2xl bg-white mb-6 cursor-pointer">
@@ -121,8 +189,8 @@ const isLiked = () => {
         alt="thumbnail"
         class="w-40 h-40 rounded-2xl m-5 object-cover will-change-transform"
       />
-      <button @click="isLiked">
-        <img :src="like ? likewhite_full : likewhite" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
+      <button @click.stop.prevent="(event) => handleLike(event)">
+        <img :src="isLiked ? like : unlike" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
       </button>
     </div>
 
@@ -180,5 +248,8 @@ const isLiked = () => {
       </div>
     </div>
   </div>
+
+  <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal">
+  </ConfirmModal>
 </template>
 <style scoped></style>
