@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits, computed } from "vue";
 
 const props = defineProps({
   isOpen: {
@@ -14,6 +14,9 @@ const props = defineProps({
     type: String,
     default: "default",
   },
+  pageType: {
+    type: String,
+  },
 });
 
 const emit = defineEmits(["confirm", "close"]);
@@ -24,6 +27,18 @@ const confirmAction = () => {
 const closeModal = () => {
   emit("close");
 };
+
+const bgColor = computed(() => {
+  switch (props.pageType) {
+    case "socialing":
+      return "bg-[#FF0000] hover:bg-[#CC0000]";
+    case "challenge":
+      return "bg-[#46A7CD] hover:bg-[#3B8FB3]";
+    case "club":
+    default:
+      return "bg-[#1C8A6A] hover:bg-[#176E55]";
+  }
+});
 </script>
 
 <template>
@@ -38,14 +53,15 @@ const closeModal = () => {
 
       <div class="flex space-x-8">
         <button
-          class="w-[120px] px-4 py-2 bg-[#F43630] text-white rounded-md hover:bg-[#E53030] font-bold"
+          class="w-[120px] px-4 py-2 text-white rounded-md"
+          :class="bgColor"
           @click="confirmAction"
           v-text="buttonMessage"
         ></button>
 
         <!-- 취소 버튼 -->
         <button
-          class="w-[120px] px-4 py-2.5 bg-white text-black border border-[#1C8A6A] rounded-md hover:bg-gray-400 font-bold text-[#1C8A6A]"
+          class="w-[120px] px-4 py-2.5 bg-white text-black border border-[#1C8A6A] rounded-md hover:bg-gray-400 text-[#1C8A6A]"
           @click="closeModal"
         >
           취소

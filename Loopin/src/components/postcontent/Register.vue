@@ -46,12 +46,12 @@ const buttonText = computed(() => {
 });
 const buttonStyle = computed(() => {
   return isJoined.value
-    ? "bg-gray-400 text-white font-bold"
+    ? "bg-gray-400 text-white"
     : props.pageType === "socialing"
-      ? "bg-[#FF0000] text-white font-bold"
+      ? "bg-[#FF0000] text-white "
       : props.pageType === "challenge"
-        ? "bg-[#46A7CD] text-white font-bold"
-        : "bg-[#1C8A6A] text-white font-bold";
+        ? "bg-[#46A7CD] text-white"
+        : "bg-[#1C8A6A] text-white";
 });
 
 const toggleModal = () => {
@@ -100,6 +100,7 @@ const handleConfirm = async () => {
     :isOpen="isModalOpen"
     :message="modalMessage"
     :buttonMessage="getButtonMessage"
+    :pageType="props.pageType"
     @confirm="handleConfirm"
     @close="toggleModal"
   />

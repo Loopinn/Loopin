@@ -202,7 +202,7 @@ const formatFeeInfo = (fee) => {
         <div class="ml-[40px] mt-[70px] w-[520px]">
           <div>{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
-          <MemberInfo :participants="currentPost.participants || []" />
+          <MemberInfo :participants="currentPost.participants || []" :pageType="'challenge'" />
           <!-- 안내사항 -->
           <div class="mt-5">
             <div class="text-[#46A7CD]">안내사항</div>
@@ -241,7 +241,7 @@ const formatFeeInfo = (fee) => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comments="currentPost.comments" />
+          <Comment :likes="currentPost.likes" :comments="currentPost.comments" :pageType="'challenge'" />
         </div>
       </div>
       <!-- 참여하기 -->
