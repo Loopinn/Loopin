@@ -2,6 +2,7 @@
 import { defineProps, ref, computed, defineEmits } from "vue";
 
 import ChoiceModal from "../modal/ChoiceModal.vue";
+import { useRouter } from "vue-router";
 
 const props = defineProps({
   title: {
@@ -20,7 +21,15 @@ const props = defineProps({
   action: {
     type: Function,
   },
+  isUserInClub: {
+    type: Boolean,
+  },
+  clubId: {
+    type: String,
+  },
 });
+
+const router = useRouter();
 
 const emit = defineEmits(["updateParticipants"]);
 
@@ -41,6 +50,7 @@ const getButtonMessage = computed(() => {
   return isJoined.value ? "취소" : activityType;
 });
 const buttonText = computed(() => {
+  if (!props.isUserInClub && props.clubId) return "클럽 참여하러 가기";
   const activityType = props.pageType === "socialing" || props.pageType === "challenge" ? "참여" : "신청";
   return isJoined.value ? `${activityType} 취소` : `${activityType}하기`;
 });
@@ -53,6 +63,17 @@ const buttonStyle = computed(() => {
         ? "bg-[#46A7CD] text-white"
         : "bg-[#1C8A6A] text-white";
 });
+
+const moveToClub = () => {
+  console.log(props.clubId);
+  console.log(props.isUserInClub);
+  if (!props.clubId) {
+    console.error("clubId가 없습니다!");
+    return;
+  }
+  console.log(props.clubId);
+  router.push(`/club/${props.clubId}`);
+};
 
 const toggleModal = () => {
   isModalOpen.value = !isModalOpen.value;
@@ -92,7 +113,11 @@ const handleConfirm = async () => {
       <span class="text-center text-[#FF0000]">00</span>
     </div>
 
-    <button class="w-[400px] h-[60px] rounded-[30px] text-[25px]" :class="buttonStyle" @click="toggleModal">
+    <button
+      class="w-[400px] h-[60px] rounded-[30px] text-[25px]"
+      :class="buttonStyle"
+      @click="!props.isUserInClub && props.clubId ? moveToClub() : toggleModal()"
+    >
       {{ buttonText }}
     </button>
   </div>
