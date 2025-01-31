@@ -85,9 +85,13 @@ onBeforeMount(() => {
             class="w-full rounded-2xl aspect-square object-cover will-change-transform"
           />
         </RouterLink>
-        <button class="absolute left-3 top-[145px] flex items-center" @click="handleLike(feed.id)">
-          <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" class="" />
-        </button>
+
+        <div class="absolute bottom-14 left-3">
+          <button class="flex items-center" @click="handleLike(feed.id)">
+            <img :src="likes.find((like) => like.id === feed.id)?.isLiked ? like : unlike" alt="좋아요" />
+          </button>
+        </div>
+
         <p class="text-xs leading-relaxed text-gray-800 line-clamp pl-2 mt-1">
           {{ feed.description }}
         </p>
