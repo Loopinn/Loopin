@@ -240,7 +240,7 @@ const handleWheel = (event) => {
   <div class="mx-auto py-3 min-h-screen w-[600px] bg-[#F4F4F4]">
     <div class="mx-[15px]">
       <!-- categories -->
-      <div class="sticky z-10 top-0 bg-[#f4f4f4]">
+      <div class="sticky z-9 top-0 bg-[#f4f4f4]">
         <div class="mb-7 pl-1">
           <div
             v-for="(maincategory, index) in categories"

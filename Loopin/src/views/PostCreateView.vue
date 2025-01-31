@@ -24,6 +24,7 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
 import { nextTick } from "vue";
 import { resizeImage } from "@/utils/resizeImage";
+import { toast } from "vue3-toastify";
 
 const userInfo = ref(null);
 
@@ -619,12 +620,14 @@ const handlePostSubmit = async () => {
         const createdPost = await createSocialPost(postData, userId);
         postId.value = createdPost[0].id;
         localStorage.removeItem("소셜링");
+        toast("게시글이 생성되었습니다!")
       } else {
         // 기존 게시글 업데이트
         const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
         postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateSocialPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
+        toast("게시글이 수정되었습니다!")
       }
       // 게시글 상세 페이지로 이동
       router.push(`/socialing/${postId.value}`);
@@ -647,12 +650,14 @@ const handlePostSubmit = async () => {
         const createdPost = await createClubPost(postData, userId);
         postId.value = createdPost[0].id;
         localStorage.removeItem("클럽");
+        toast("게시글이 생성되었습니다!")
       } else {
         // 기존 게시글 업데이트
         const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
         postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateClubPost(postData, route.params.id);
         postId.value = updatedPost[0].id;
+        toast("게시글이 수정되었습니다!")
       }
       // 게시글 상세 페이지로 이동
       router.push(`/club/${postId.value}`);
@@ -675,12 +680,14 @@ const handlePostSubmit = async () => {
         const createdPost = await createChallengePost(postData, userId);
         postId.value = createdPost[0].id;
         localStorage.removeItem("챌린지");
+        toast("게시글이 생성되었습니다!")
       } else {
         // 기존 게시글 업데이트
         const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
         postData.updated_at = koreaTime.toISOString();
         const updatedPost = await updateChallengePost(postData, route.params.id);
         postId.value = updatedPost[0].id;
+        toast("게시글이 수정되었습니다!")
       }
       // 게시글 상세 페이지로 이동
       router.push(`/challenge/${postId.value}`);

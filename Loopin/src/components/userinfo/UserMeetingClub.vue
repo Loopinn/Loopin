@@ -34,6 +34,7 @@ onMounted(() => {
   <div class="w-[72px] flex flex-col items-center gap-2 cursor-pointer" @click="handleClick">
     <div class="bg-white w-[70px] h-[70px] rounded-[10px]">
       <img
+        v-if="resizedProfile"
         :src="resizedProfile"
         alt="배너이미지"
         class="w-full h-full rounded-[10px] object-cover will-change-transform"

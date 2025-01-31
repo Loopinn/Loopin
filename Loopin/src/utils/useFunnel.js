@@ -67,7 +67,7 @@ export function useFunnel(initialSteps, handleReset) {
       if (route.params.id) {
         const type = route.params.type;
         if (["socialing", "club", "challenge"].includes(type)) {
-          router.push(`/${type}/${route.params.id}`);
+          router.replace(`/${type}/${route.params.id}`);
         } else {
           router.push("/"); // 예외 처리 (잘못된 type일 경우 홈으로 이동)
         }
