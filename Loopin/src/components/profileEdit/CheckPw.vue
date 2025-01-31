@@ -38,7 +38,7 @@ const handleSubmit = async () => {
 };
 </script>
 <template>
-  <div class="bg-[#f7f7f7] flex flex-col justify-center items-center relative" style="height: calc(100vh - 192px)">
+  <div class="bg-[#f7f7f7] flex flex-col justify-center items-center relative" style="height: calc(100vh - 145px)">
     <div class="px-8 py-6 w-full bg-gradient-to-r from-[#F43630] to-[#FF6B66] absolute top-0">
       <h1 class="text-2xl font-bold text-white">보안 확인</h1>
       <p class="text-red-100 mt-1">

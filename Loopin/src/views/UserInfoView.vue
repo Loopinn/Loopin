@@ -289,7 +289,7 @@ const resizeProfile = () => {
       </div>
 
       <!-- 피드 정보 -->
-      <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[750px]' : 'min-h-[700px]'}`">
+      <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[calc(100vh-486px)]' : 'min-h-[calc(100vh-586px)]'}`">
         <ul class="h-[45px] flex bg-white sticky top-0">
           <li
             :class="
