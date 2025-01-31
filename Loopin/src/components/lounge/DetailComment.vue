@@ -176,8 +176,9 @@ const handleInput = (event) => {
         <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4">
           <img
             :src="userInfo[index]?.profile_img || userProfile"
+            @click="router.push(`/user/${userInfo[index].nickname}`)"
             alt="유저 아이콘"
-            class="w-10 h-10 rounded-full object-cover"
+            class="w-10 h-10 rounded-full object-cover cursor-pointer"
           />
         </div>
         <div class="flex w-full">
@@ -207,8 +208,10 @@ const handleInput = (event) => {
                   </button>
                 </div>
                 <div v-else-if="id === comment.creator" class="flex items-center">
-                  <button @click="handleUpdateComment(comment.id)" class="ml-2 mb-2 text-blue-500">등록</button>
-                  <button @click="handleCancelEdit" class="ml-2 mb-2 text-red-500">취소</button>
+                  <button @click="handleUpdateComment(comment.id)" class="ml-2 mb-2 underline hover:text-[#FF0000]">
+                    등록
+                  </button>
+                  <button @click="handleCancelEdit" class="ml-1 mb-2 underline hover:text-[#FF0000]">취소</button>
                 </div>
                 <div v-else></div>
               </div>
@@ -227,7 +230,8 @@ const handleInput = (event) => {
 </template>
 
 <style scoped>
-input {
+input,
+textarea {
   resize: none;
   outline: none;
 }
