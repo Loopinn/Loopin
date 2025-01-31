@@ -2,6 +2,7 @@
 import Following from "@/components/common/Following.vue";
 import NoPosts from "@/components/common/NoPosts.vue";
 import Loading from "@/components/Loading.vue";
+import JoiningPosts from "@/components/userinfo/JoiningPosts.vue";
 import NoUser from "@/components/userinfo/NoUser.vue";
 import UserInfoFeed from "@/components/userinfo/UserInfoFeed.vue";
 import UserInfoMeeting from "@/components/userinfo/UserInfoMeeting.vue";
@@ -304,22 +305,22 @@ const resizeProfile = () => {
           <li
             :class="
               twMerge(
-                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '태그' ? 'border-black' : ''}`,
+                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '참가한 모임' ? 'border-black' : ''}`,
               )
             "
-            @click="feedNav = '태그'"
+            @click="feedNav = '참가한 모임'"
           >
-            태그
+            참가한 모임
           </li>
           <li
             :class="
               twMerge(
-                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '모임' ? 'border-black' : ''}`,
+                `flex-1 flex items-center justify-center cursor-pointer border-b border-transparent ${feedNav === '내 게시글' ? 'border-black' : ''}`,
               )
             "
-            @click="feedNav = '모임'"
+            @click="feedNav = '내 게시글'"
           >
-            모임
+            내 게시글
           </li>
         </ul>
         <div v-if="feedNav === '피드'">
@@ -330,8 +331,11 @@ const resizeProfile = () => {
             <NoPosts text="피드가 없네요!" css="text-[20px]" />
           </div>
         </div>
-        <div v-else-if="feedNav === '모임'" class="px-4 mt-4">
+        <div v-else-if="feedNav === '내 게시글'" class="px-4 mt-4">
           <UserInfoMeeting :meeting-data="userMeetingPosts" :isMyPage="isMyPage" :userNickName="userNickName" />
+        </div>
+        <div v-else class="px-4 mt-4">
+          <JoiningPosts :isMyPage="isMyPage" :userNickName="userNickName" :userJoinPosts="userData?.joinPosts" />
         </div>
       </div>
     </div>
