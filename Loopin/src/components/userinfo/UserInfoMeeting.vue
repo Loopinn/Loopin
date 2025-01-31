@@ -56,7 +56,7 @@ onBeforeMount(() => {
         >
           <ChannelPostCard :post="data" channelName="소셜링" />
         </RouterLink>
-        <NoPosts v-else text="진행한 소셜링이 없어요" css="h-[50px] flex items-center justify-center" />
+        <NoPosts v-else text="진행한 소셜링이 없어요!" css="h-[50px] flex items-center justify-center" />
         <MoreBtn
           v-if="socialingPosts.length > 3"
           :link="`${isMyPage ? '/profile/posts/socialing' : `/user/${userNickName}/posts/socialing`}`"
@@ -74,7 +74,7 @@ onBeforeMount(() => {
         >
           <ChannelPostCard :post="data" channelName="챌린지" />
         </RouterLink>
-        <NoPosts v-else text="진행한 챌린지가 없어요" css="h-[50px] flex items-center justify-center" />
+        <NoPosts v-else text="진행한 챌린지가 없어요!" css="h-[50px] flex items-center justify-center" />
         <MoreBtn
           v-if="challengePosts.length > 3"
           :link="`${isMyPage ? '/profile/posts/challenge' : `/user/${userNickName}/posts/challenge`}`"

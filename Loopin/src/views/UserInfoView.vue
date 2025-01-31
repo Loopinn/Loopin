@@ -58,7 +58,7 @@ const infos = computed(() => {
       value: isMyPage.value ? loginUser.value.following.length || 0 : userData.value.following.length || 0,
     },
     {
-      name: "피드",
+      name: "게시글",
       value: isMyPage.value ? loginUser.value.posts.length || 0 : userData.value.posts.length || 0,
     },
   ];
@@ -204,11 +204,15 @@ const resizeProfile = () => {
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
     // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = null;
     resizedProfile.value = resizeImage(img, 200, 200);
   };
+  console.log(resizedProfile.value);
+  resizedProfile.value = isMyPage.value ? loginUser.value.profile_img : userData.value.profile_img;
   // 외부 URL에서 이미지 로드
-  if (isMyPage.value) img.src = loginUser.value.profile_img;
-  else img.src = userData.value.profile_img;
+  // if (isMyPage.value) img.src = loginUser.value.profile_img;
+  // else img.src = userData.value.profile_img;
+  img.src = resizedProfile.value;
 };
 </script>
 <template>
@@ -223,6 +227,7 @@ const resizeProfile = () => {
         <img
           v-if="resizedProfile"
           :src="resizedProfile"
+          :key="resizedProfile"
           alt="프로필 사진"
           class="w-[75px] h-[75px] rounded-full shadow-md object-cover will-change-transform"
         />
@@ -321,7 +326,7 @@ const resizeProfile = () => {
             "
             @click="feedNav = '내 게시글'"
           >
-            내 게시글
+            {{ isMyPage ? "내 게시글" : "게시글" }}
           </li>
         </ul>
         <div v-if="feedNav === '피드'">

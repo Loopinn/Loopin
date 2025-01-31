@@ -1,4 +1,8 @@
 <script setup>
+import socialingLogo from "@/assets/images/socialing.svg";
+import clubLogo from "@/assets/images/club.svg";
+import challengeLogo from "@/assets/images/challenge.svg";
+import loungeLogo from "@/assets/images/loungeLogo.svg";
 import ChannelPostCard from "@/components/channel/ChannelPostCard.vue";
 import MoreBtn from "@/components/common/MoreBtn.vue";
 import PageInfoSection from "@/components/common/PageInfoSection.vue";
@@ -12,7 +16,7 @@ const { loadSocialPosts, loadClubPosts, loadChallengePosts, loadLoungePosts } = 
 
 const channelviews = ref([
   {
-    icon: "./src/assets/images/socialing.svg",
+    icon: socialingLogo,
     alt: "socailingLogo",
     title: "소셜링",
     subtitle: "똑같은 일상을 다채롭게 만들어 줄\n 원데이 취향 모임으로 만나요",
@@ -21,7 +25,7 @@ const channelviews = ref([
     load: loadSocialPosts,
   },
   {
-    icon: "./src/assets/images/club.svg",
+    icon: clubLogo,
     alt: "clubLogo",
     title: "클럽",
     subtitle: "지속형 모임으로\n 계속해서 친하게 지내요",
@@ -30,7 +34,7 @@ const channelviews = ref([
     load: loadClubPosts,
   },
   {
-    icon: "./src/assets/images/challenge.svg",
+    icon: challengeLogo,
     alt: "chanllengeLogo",
     title: "챌린지",
     subtitle: "같은 목표를 가진\n 멤버들과 함께 도전해요",
@@ -80,7 +84,7 @@ onMounted(() => {
       <!-- 라운지 -->
       <div class="">
         <PageInfoSection
-          icon="./src/assets/images/loungeLogo.svg"
+          :icon="loungeLogo"
           title="라운지"
           subtitle="비슷한 관심사를 가진
         멤버들의 취향 피드 구독하기"

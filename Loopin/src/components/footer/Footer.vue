@@ -1,6 +1,15 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import homeFooterIcon from "@/assets/images/home-footer.svg";
+import homeFooterActiveIcon from "@/assets/images/home-active-footer.svg";
+import loungeFooterIcon from "@/assets/images/lounge-footer.svg";
+import loungeFooterActiveIcon from "@/assets/images/lounge-active-footer.svg";
+import writeFooterIcon from "@/assets/images/post-footer.svg";
+import chatFooterIcon from "@/assets/images/chat-footer.svg";
+import chatFooterActiveIcon from "@/assets/images/chat-active-footer.svg";
+import userFooterIcon from "@/assets/images/user-footer.svg";
+import userFooterActiveIcon from "@/assets/images/user-active-footer.svg";
 
 const router = useRouter();
 const route = useRoute();
@@ -13,8 +22,8 @@ function navigate(index) {
 const footerItems = [
   {
     text: "홈",
-    img: "/src/assets/images/home-footer.svg",
-    activeImg: "/src/assets/images/home-active-footer.svg",
+    img: homeFooterIcon,
+    activeImg: homeFooterActiveIcon,
     route: "/",
     isActive: computed(
       () => route.path === "/" || ["/socialing", "/club", "/challenge"].some((prefix) => route.path.startsWith(prefix)),
@@ -22,29 +31,29 @@ const footerItems = [
   },
   {
     text: "라운지",
-    img: "/src/assets/images/lounge-footer.svg",
-    activeImg: "/src/assets/images/lounge-active-footer.svg",
+    img: loungeFooterIcon,
+    activeImg: loungeFooterActiveIcon,
     route: "/lounge",
     isActive: computed(() => route.path.startsWith("/lounge")),
   },
   {
     text: null,
-    img: "/src/assets/images/post-footer.svg",
+    img: writeFooterIcon,
     activeImg: null,
     route: "/write",
     isActive: computed(() => route.path === "/write"),
   },
   {
     text: "채팅",
-    img: "/src/assets/images/chat-footer.svg",
-    activeImg: "/src/assets/images/chat-active-footer.svg",
+    img: chatFooterIcon,
+    activeImg: chatFooterActiveIcon,
     route: "/chat",
     isActive: computed(() => route.path === "/chat"),
   },
   {
     text: "마이페이지",
-    img: "/src/assets/images/user-footer.svg",
-    activeImg: "/src/assets/images/user-active-footer.svg",
+    img: userFooterIcon,
+    activeImg: userFooterActiveIcon,
     route: "/profile",
     isActive: computed(() => route.path === "/profile"),
   },
