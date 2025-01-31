@@ -159,7 +159,7 @@ const openKakaoMap = () => {
             </p>
           </div>
           <div class="flex items-center gap-2 absolute right-0">
-            <button @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
+            <button v-if="currentPost.creator === userId" @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
           </div>
         </div>
 
