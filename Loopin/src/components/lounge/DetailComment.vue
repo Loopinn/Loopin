@@ -36,6 +36,7 @@ const postStore = usePostStore();
 const { loginUser } = authStore;
 const { loungeComments } = storeToRefs(commentStore);
 const { loungePosts } = storeToRefs(postStore);
+const { loadLoungePosts } = postStore;
 const {
   loadLoungeComments,
   createLoungeComment,
@@ -44,21 +45,20 @@ const {
   loungeCommentLike,
   loungeCommentUnLike,
 } = commentStore;
-const comments = computed(() => loungeComments.value.filter((comment) => comment.post_id === props.postId) || []);
 
-const currentPost = computed(() => {
-  return loungePosts.value.find((post) => post.id === props.postId);
-});
+const comments = computed(() => loungeComments.value.filter((comment) => comment.post_id === props.postId) || []);
+const currentPost = computed(() => loungePosts.value.find((post) => post.id === props.postId));
 
 const handleLike = debounce(async (commentId) => {
   const userIdValue = await getUserId();
   if (userIdValue) {
-    const post = loungeComments.value.find((post) => post.id === commentId);
+    const comment = comments.value.find((post) => post.id === commentId);
+    await likeCheck();
     const like = likes.value.find((data) => data.id === commentId);
     if (like.isLiked) {
-      await loungeCommentUnLike(post, userIdValue);
+      await loungeCommentUnLike(comment, userIdValue);
     } else {
-      await loungeCommentLike(post, userIdValue);
+      await loungeCommentLike(comment, userIdValue);
     }
     likes.value = likes.value.map((like) => (like.id === commentId ? { ...like, isLiked: !like.isLiked } : like));
     await loadLoungeComments(props.postId);
@@ -81,7 +81,7 @@ const handleSubmit = async () => {
     await createLoungeComment({ comment: inputText.value, post_id: props.postId, creator: loginUser.id });
     inputText.value = "";
     await loadLoungeComments(props.postId);
-    await getUserId();
+    await loadLoungePosts();
   } else {
     isModalOpen.value = true;
   }
@@ -95,7 +95,7 @@ const toggleModal = () => {
 const handleDelete = async (commentId) => {
   await deleteLoungeComment(currentPost.value, commentId);
   await loadLoungeComments(props.postId);
-  await getUserId();
+  await loadLoungePosts();
 };
 
 const handleEdit = (comment) => {
@@ -106,7 +106,6 @@ const handleEdit = (comment) => {
 const handleUpdateComment = async (commentId) => {
   await updateLoungeComment(editedContent.value, commentId);
   await loadLoungeComments(props.postId);
-  await getUserId();
   editingCommentId.value = null;
 };
 
