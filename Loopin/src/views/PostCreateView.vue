@@ -1458,8 +1458,8 @@ onMounted(() => {
               <div class="h-[80px] flex gap-4">
                 <div class="flex items-center">
                   <img
-                    v-if="userInfo.profile_img"
-                    :src="userInfo.profile_img"
+                    v-if="resizedProfile"
+                    :src="resizedProfile"
                     alt="hostprofile"
                     class="w-[60px] h-[60px] rounded-full object-cover"
                   />
@@ -1479,7 +1479,7 @@ onMounted(() => {
               <div class="mt-2">
                 <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
                 <span class="ml-1 text-[12px] text-[#403F3F]"
-                  >{{ participantsCnt ? participantsCnt : 0 }}/{{ stateFields.maxPeople }}명</span
+                  >{{ participantsCnt ? participantsCnt : 1 }}/{{ stateFields.maxPeople }}명</span
                 >
               </div>
 
@@ -1499,7 +1499,7 @@ onMounted(() => {
                     </div>
                     <div class="flex gap-1 mb-1">
                       <img src="@/assets/images/members.svg" alt="members" />
-                      <p>{{ participantsCnt }}/{{ stateFields.maxPeople }}명 선착순</p>
+                      <p>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}명 선착순</p>
                     </div>
                     <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
                       <img src="@/assets/images/won.svg" alt="fee" />
