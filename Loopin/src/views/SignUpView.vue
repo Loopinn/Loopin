@@ -108,7 +108,11 @@ const toggleModal = () => {
           placeholder="비밀번호를 입력해 주세요."
           v-model="password"
         />
-        <button @click="togglePasswordVisible" class="absolute right-4 bottom-0 transform -translate-y-1/2">
+        <button
+          type="button"
+          @click="togglePasswordVisible"
+          class="absolute right-4 bottom-0 transform -translate-y-1/2"
+        >
           <img :src="showPassword" alt="Show password " />
         </button>
       </div>
@@ -120,7 +124,11 @@ const toggleModal = () => {
           placeholder="비밀번호를 입력해 주세요."
           v-model="verifyPassword"
         />
-        <button @click="toggleVerifyPasswordVisible" class="absolute right-4 bottom-0 transform -translate-y-1/2">
+        <button
+          type="button"
+          @click="toggleVerifyPasswordVisible"
+          class="absolute right-4 bottom-0 transform -translate-y-1/2"
+        >
           <img :src="showPassword" alt="Show password " />
         </button>
       </div>

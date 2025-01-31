@@ -173,24 +173,23 @@ const openKakaoMap = () => {
         <div class="mt-[30px]">
           <div>{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
-          <MemberInfo :participants="currentPost.participants || []" />
+          <MemberInfo
+            v-if="userData"
+            :participants="currentPost.participants || []"
+            :userData="userData"
+            :pageType="'club'"
+          />
           <!-- 안내사항 -->
           <div class="mt-5">
-            <div class="text-[#FF0000]">안내사항</div>
-            <div class="font-bold">자세한 정보를 알려드릴게요</div>
+            <p class="text-[#1C8A6A]">안내사항</p>
+            <p>자세한 정보를 알려드릴게요</p>
             <div class="mt-2">
-              <div class="flex gap-1 mb-1">
-                <img src="@/assets/images/category.svg" alt="category" />
-
-                <router-link to="#" class="underline">{{ currentPost.subject }}</router-link>
-                <span v-if="currentPost.subject"> > </span>
-                <router-link to="#" class="underline">{{ currentPost.category }}</router-link>
-              </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />
                 <p>
-                  {{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}명
-                  선착순
+                  <!-- {{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}명
+                  선착순 -->
+                  {{ currentPost.max_people }}명
                 </p>
               </div>
               <div v-if="currentPost.fee !== 0" class="flex gap-1 mb-1">
@@ -210,6 +209,13 @@ const openKakaoMap = () => {
                   }})</span
                 >
               </div>
+              <div class="flex gap-1 mb-1">
+                <img src="@/assets/images/category.svg" alt="category" />
+
+                <router-link to="#" class="underline">{{ currentPost.subject }}</router-link>
+                <span v-if="currentPost.subject"> > </span>
+                <router-link to="#" class="underline">{{ currentPost.category }}</router-link>
+              </div>
               <div
                 v-if="currentPost.place !== '온라인'"
                 @click="openKakaoMap"
@@ -226,12 +232,12 @@ const openKakaoMap = () => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comments="currentPost.comments" />
+          <Comment :likes="currentPost.likes" :comments="currentPost.comments" :pageType="'club'" />
         </div>
       </div>
     </div>
 
-    <!-- 참여하기 -->
+    <!-- 신청하기 -->
     <Register
       :title="currentPost.title"
       :currentPost="currentPost"

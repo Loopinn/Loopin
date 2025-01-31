@@ -24,7 +24,7 @@ const handleSubmit = async () => {
     try {
       const { data, error } = await login(props.uemail, ucheck.value);
       if (!error && data) {
-        toast("인증되었습니다");
+        toast.success("인증되었습니다");
         emit("update:checkPW", true);
       } else {
         toast.error("비밀번호가 일치하지 않습니다!");

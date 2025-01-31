@@ -1,5 +1,6 @@
 <script setup>
 import supabase from "@/config/supabase";
+import { toast } from "vue3-toastify";
 import { computed, onBeforeMount, ref, watch } from "vue";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
@@ -19,6 +20,8 @@ const { loadLoungePosts, createLoungePost, updateLoungePosts } = postStore;
 
 const isModalOpen = ref(false);
 const isLoading = ref(false);
+const isConModalOpen = ref(false);
+const msg = ref("");
 
 const selectedItem = ref(null);
 const selectedImage = ref([]);
@@ -88,7 +91,7 @@ const handleSubmit = async () => {
 
   try {
     if (!selectedImage.value || selectedImage.value.length === 0) {
-      alert("이미지를 선택해야 합니다.");
+      toast("이미지를 선택해야 합니다.");
       return;
     }
 
@@ -115,7 +118,7 @@ const handleSubmit = async () => {
           description: description.value,
           images: images ? selectedImage.value : imageUrls,
         });
-        alert("피드 등록에 성공했습니다.");
+        toast("피드가 수정되었습니다.");
         router.push(`/lounge/${postId.value}`);
       } else {
         // 새로운 포스트 생성
@@ -129,23 +132,23 @@ const handleSubmit = async () => {
           creator.value,
         );
         if (submitResponse && submitResponse.length > 0) {
-          alert("피드 등록에 성공했습니다.");
+          toast("피드 등록에 성공했습니다.");
           router.push(`/lounge/${submitResponse[0].id}`);
         } else {
-          alert("피드 등록에 실패했습니다.");
+          toast("피드 등록에 실패했습니다.");
         }
       }
     } else {
       if (!category.value) {
-        alert("카테고리를 선택해 주세요.");
+        toast("카테고리를 선택해 주세요.");
       }
       if (!description.value) {
-        alert("설명을 채워주세요.");
+        toast("설명을 채워주세요.");
       }
     }
   } catch (error) {
     console.error("게시물 제출 중 오류 발생:", error);
-    alert("작업 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    toast("작업 중 오류가 발생했습니다. 다시 시도해 주세요.");
   } finally {
     isLoading.value = false;
   }

@@ -73,7 +73,6 @@ const likeCheck = async () => {
     id: post.id,
     isLiked: post.likes ? post.likes.includes(userId) : false,
   }));
-  console.log(likes.value);
 };
 
 const handleSubmit = async () => {
@@ -129,7 +128,6 @@ const getUserId = async () => {
   });
   id.value = sessionData?.session?.user?.id;
   profile.value = sessionData?.session?.user.user_metadata.profile_img;
-  console.log(profile);
   return id.value;
 };
 
@@ -156,12 +154,13 @@ const handleInput = (event) => {
 </script>
 
 <template>
-  <div class="p-4 rounded-b-lg">
+  <div class="p-4 rounded-t-[80px] bg-[#f4f4f4]">
+    <div class="flex justify-center items-center py-2">댓글</div>
     <form @submit.prevent="handleSubmit" class="flex items-center gap-2 mb-4 p-3 rounded">
       <div class="relative inline-block">
         <div class="absolute inset-0 w-10 h-10 bg-gray-700 rounded-full -z-10"></div>
         <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4">
-          <img :src="profile || userProfile" alt="유저 아이콘" class="w-12 h-12 rounded-full object-cover" />
+          <img :src="profile || userProfile" alt="유저 아이콘" class="w-12 h-12 rounded-full shadow-md object-cover" />
         </div>
       </div>
       <input
@@ -222,14 +221,14 @@ const handleInput = (event) => {
         </div>
       </li>
     </ul>
-    <p v-else class="text-gray-500">아직 댓글이 없습니다.</p>
+    <p v-else class="text-gray-500 text-center">아직 댓글이 없습니다.</p>
   </div>
   <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal">
   </ConfirmModal>
 </template>
 
 <style scoped>
-textarea {
+input {
   resize: none;
   outline: none;
 }

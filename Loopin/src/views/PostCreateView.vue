@@ -1568,8 +1568,8 @@ onMounted(() => {
                 <pre>{{ stateFields.description }}</pre>
                 <!-- 안내사항 -->
                 <div class="mt-5">
-                  <div class="text-[#1C8A6A]">안내사항</div>
-                  <div class="font-bold">자세한 정보를 알려드릴게요</div>
+                  <p class="text-[#1C8A6A]">안내사항</p>
+                  <p>자세한 정보를 알려드릴게요</p>
                   <div class="mt-2">
                     <div class="flex gap-1 mb-1">
                       <img src="@/assets/images/category.svg" alt="category" />

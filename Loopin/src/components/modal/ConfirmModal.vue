@@ -34,7 +34,7 @@ const closeModal = () => {
       <p class="text-center text-gray-700 text-lg mt-4" v-html="message"></p>
 
       <button
-        class="w-[160px] px-4 py-3 bg-[#F43630] text-white rounded-md hover:bg-[#E53030] font-bold"
+        class="w-[160px] px-4 py-3 bg-[#F43630] text-white rounded-md hover:bg-[#E53030]"
         @click="closeModal"
         v-text="buttonMessage"
       ></button>
