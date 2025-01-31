@@ -1,12 +1,16 @@
 import supabase from "@/config/supabase";
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { useAuthStore } from "./authStore";
 
 export const usePostStore = defineStore("postStore", () => {
   const socialingPosts = ref([]);
   const clubPosts = ref([]);
   const challengePosts = ref([]);
   const loungePosts = ref([]);
+
+  const authStore = useAuthStore();
+  const { updateUser } = authStore;
 
   //클럽
   const loadClubPosts = async () => {
@@ -69,6 +73,8 @@ export const usePostStore = defineStore("postStore", () => {
     //필터링한 새로운 posts 배열로 업데이트
     const { error: updateError } = await supabase.from("userinfo").update({ posts: updatedPosts }).eq("id", userId);
 
+    updateUser({ posts: updatedPosts });
+
     if (updateError) {
       console.log("Failed to update userinfo", updateError);
       return;
@@ -108,11 +114,13 @@ export const usePostStore = defineStore("postStore", () => {
 
       const currentPosts = userData.posts || [];
 
-      const updatePosts = [...currentPosts, { id: postId, type: "club_posts" }];
+      const updatePosts = [...currentPosts, JSON.stringify({ id: postId, type: "club_posts" })];
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
       console.log("updateResponse", updateResponse);
+
+      updateUser({ posts: updatePosts });
 
       return clubPost;
     } catch (error) {
@@ -200,6 +208,8 @@ export const usePostStore = defineStore("postStore", () => {
     // 필터링한 새로운 posts 배열로 업데이트
     const { error: updateError } = await supabase.from("userinfo").update({ posts: updatedPosts }).eq("id", userId);
 
+    updateUser({ posts: updatedPosts });
+
     if (updateError) {
       console.log("Failed to update userinfo", updateError);
       return;
@@ -242,11 +252,13 @@ export const usePostStore = defineStore("postStore", () => {
 
       const currentPosts = userData.posts || [];
 
-      const updatePosts = [...currentPosts, { id: postId, type: "challenge_posts" }];
+      const updatePosts = [...currentPosts, JSON.stringify({ id: postId, type: "challenge_posts" })];
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
       console.log("updateResponse", updateResponse);
+
+      updateUser({ posts: updatePosts });
 
       return challengePost;
     } catch (error) {
@@ -399,11 +411,13 @@ export const usePostStore = defineStore("postStore", () => {
 
       const currentPosts = userData.posts || [];
 
-      const updatePosts = [...currentPosts, { id: postId, type: "socialing_posts" }];
+      const updatePosts = [...currentPosts, JSON.stringify({ id: postId, type: "socialing_posts" })];
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
       console.log("updateResponse", updateResponse);
+
+      updateUser({ posts: updatePosts });
 
       return socialPost;
     } catch (error) {
@@ -440,6 +454,8 @@ export const usePostStore = defineStore("postStore", () => {
 
       // 필터링한 새로운 posts 배열로 업데이트
       const { error: updateError } = await supabase.from("userinfo").update({ posts: updatedPosts }).eq("id", userId);
+
+      updateUser({ posts: updatedPosts });
 
       if (updateError) {
         console.log("Failed to update userinfo", updateError);

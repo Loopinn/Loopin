@@ -34,12 +34,13 @@ onMounted(() => {
   <div class="w-[72px] flex flex-col items-center gap-2 cursor-pointer" @click="handleClick">
     <div class="bg-white w-[70px] h-[70px] rounded-[10px]">
       <img
+        v-if="resizedProfile"
         :src="resizedProfile"
         alt="배너이미지"
         class="w-full h-full rounded-[10px] object-cover will-change-transform"
       />
     </div>
-    <p class="text-[13px] text-[#6e6e6e] line-clamp-2">
+    <p class="text-[13px] text-[#6e6e6e] line-clamp-2 text-center">
       {{ postData.title }}
     </p>
   </div>

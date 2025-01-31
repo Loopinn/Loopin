@@ -40,7 +40,6 @@ const fetchParticipantsInfo = async () => {
         resizeProfile(participantsInfo.value[index].profile_img, index);
       }),
     );
-    console.log("11234", participantsInfo.value);
   } catch (error) {
     console.log("참여자 정보를 가져오는 중 알 수 없는 오류:", error);
   }
