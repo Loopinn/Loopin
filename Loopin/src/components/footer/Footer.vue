@@ -16,7 +16,9 @@ const footerItems = [
     img: "/src/assets/images/home-footer.svg",
     activeImg: "/src/assets/images/home-active-footer.svg",
     route: "/",
-    isActive: computed(() => route.path === "/" || ["/socialing", "/club", "/challenge"].includes(route.path)),
+    isActive: computed(
+      () => route.path === "/" || ["/socialing", "/club", "/challenge"].some((prefix) => route.path.startsWith(prefix)),
+    ),
   },
   {
     text: "라운지",
