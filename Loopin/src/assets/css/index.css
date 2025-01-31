@@ -41,7 +41,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 img {
   image-rendering: -webkit-optimize-contrast; /* 대비 최적화 */
-  image-rendering: crisp-edges;  /* 선명하게 유지 */
+  image-rendering: crisp-edges; /* 선명하게 유지 */
 }
 pre {
   font-family: "GongGothicMedium";
@@ -112,4 +112,10 @@ pre {
 .Toastify__toast-container--top-center {
   top: 50px !important;
   transform: translateX(-50%);
+}
+
+.Toastify__toast {
+  width: 350px;
+  height: 80px;
+  font-size: 18px;
 }

@@ -12,6 +12,7 @@ import showPassword from "@/assets/images/show-password.svg";
 import kakaoIcon from "@/assets/images/kakaoIcon.svg";
 import kakaoLoginText from "@/assets/images/kakaoLogin.svg";
 import { useAuthStore } from "@/stores/authStore";
+import { twMerge } from "tailwind-merge";
 
 const email = ref("");
 const password = ref("");
@@ -117,7 +118,12 @@ const navigateToSignUp = () => {
         </div>
         <button
           type="submit"
-          class="w-full h-[48px] bg-[#d9d9d9] rounded-[20px] flex items-center justify-center text-[#999996] text-lg mt-4"
+          :class="
+            twMerge(
+              `w-full h-[48px]  rounded-[20px] flex items-center justify-center text-lg mt-4 
+              ${email.trim().length > 0 && password.trim().length > 0 ? 'bg-[#f43630] text-white' : 'bg-[#d9d9d9] text-[#999996]'}`,
+            )
+          "
         >
           로그인
         </button>

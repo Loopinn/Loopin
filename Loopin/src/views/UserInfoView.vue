@@ -291,7 +291,7 @@ const resizeProfile = () => {
 
       <!-- 피드 정보 -->
       <div :class="`mt-10 bg-[#f4f4f4] ${!isMyPage ? 'min-h-[750px]' : 'min-h-[700px]'}`">
-        <ul class="h-[45px] flex bg-white sticky top-0 z-40">
+        <ul class="h-[45px] flex bg-white sticky top-0 z-[5]">
           <li
             :class="
               twMerge(
