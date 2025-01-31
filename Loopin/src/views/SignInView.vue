@@ -21,6 +21,8 @@ const passwordVisible = ref(false);
 const isLoading = ref(false);
 const isModalOpen = ref(false);
 const modalMessage = ref("");
+const loginSuccess = ref(false);
+const modalSuccess = ref("");
 
 const router = useRouter();
 
@@ -44,12 +46,18 @@ const handleSubmit = async (e) => {
       }
     }
     console.log("로그인 성공: ", response);
-    router.push("/");
+    modalSuccess.value = `<b style='font-size: 18px; color: #000;'>로그인에 성공했습니다.</b>`;
+    loginSuccess.value = true;
   } catch (error) {
     console.error(error);
     modalMessage.value = "<b style='font-size: 18px; color: #000;'>올바른 이메일과 비밀번호를 입력해주세요.</b>";
     isModalOpen.value = true;
   }
+};
+
+const handleLoginSuccess = () => {
+  router.push("/");
+  loginSuccess.value = false;
 };
 
 const kakaoLoginHandler = async () => {
@@ -60,7 +68,6 @@ const kakaoLoginHandler = async () => {
       // OAuth 호출 자체 실패
       console.log("카카오 로그인 실패: ", kakaoError);
       modalMessage.value = `<b style='font-size: 18px; color: #000;'>카카오 로그인 중 문제가 발생했습니다.<br />다시 시도해주세요.</b>`;
-      isModalOpen.value = true;
       return;
     }
 
@@ -139,6 +146,8 @@ const navigateToSignUp = () => {
         </div>
       </button>
     </div>
+    <ConfirmModal :isOpen="loginSuccess" :message="modalSuccess" :buttonMessage="'확인'" @close="handleLoginSuccess">
+    </ConfirmModal>
     <ConfirmModal :isOpen="isModalOpen" :message="modalMessage" :buttonMessage="'확인'" @close="toggleModal">
     </ConfirmModal>
   </div>
