@@ -6,7 +6,7 @@ import { joinClub } from "@/utils/joinClub";
 import { usePostStore } from "@/stores/postStore";
 import { storeToRefs } from "pinia";
 import supabase from "@/config/supabase";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
@@ -15,6 +15,7 @@ const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
 const { loadClubPosts } = postStore;
 
+const router = useRouter();
 const route = useRoute();
 const postId = route.params.id;
 
@@ -142,7 +143,7 @@ const openKakaoMap = () => {
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
       <div class="ml-[40px] w-[520px]">
         <div v-if="userData" class="flex gap-4 relative">
-          <div>
+          <div @click="router.push(`/user/${userData.nickname}`)" class="cursor-pointer">
             <img
               v-if="resizedProfile"
               :src="resizedProfile"
