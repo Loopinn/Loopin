@@ -1,8 +1,13 @@
 <script setup>
-import { ref, defineProps, computed } from "vue";
+import { ref, defineProps, defineEmits, onBeforeMount, computed } from "vue";
 import CommentList from "./CommentList.vue";
-import likeBlackIcon from "@/assets/images/likeblack.svg";
-import likeBlackFillIcon from "@/assets/images/likeblack_full.svg";
+import like from "@/assets/images/likeblack_full.svg";
+import unlike from "@/assets/images/likeblack.svg";
+import { debounce } from "lodash";
+import { channelLike } from "@/utils/channelLike";
+import ConfirmModal from "../modal/ConfirmModal.vue";
+import supabase from "@/config/supabase";
+import { useAuthStore } from "@/stores/authStore";
 
 const text = ref("");
 
@@ -10,14 +15,21 @@ const props = defineProps({
   comments: {
     type: Array,
   },
-  likes: {
-    type: Number,
-    required: true,
+  currentPost: {
+    type: Object,
   },
   pageType: {
     type: String,
   },
+  userId: {
+    type: String,
+  },
+  isLiked: {
+    type: Boolean,
+  },
 });
+const authStore = useAuthStore();
+const emit = defineEmits(["updateLike"]);
 
 const textColor = computed(() => {
   switch (props.pageType) {
@@ -41,12 +53,52 @@ const hideButton = () => {
   isButtonVisible.value = false;
 };
 
-// 좋아요 버튼
-const like = ref(false);
+// 좋아요
+const isModalOpen = ref(false);
 
-const isLiked = () => {
-  like.value = !like.value;
+const tables = {
+  socialing: "socialing_posts",
+  club: "club_posts",
+  challenge: "challenge_posts",
 };
+
+const table = (channel) => tables[channel] || null;
+
+const likeCheck = async () => {
+  const { data: userData, error: userDataError } = await supabase
+    .from("userinfo")
+    .select("postLikes")
+    .eq("id", authStore.loginUser.id)
+    .single();
+
+  console.log(userData);
+
+  if (userDataError) {
+    console.error(userDataError);
+  }
+
+  const likedPosts = userData?.postLikes ? userData.postLikes.map((item) => JSON.parse(item)) : [];
+  const isLikedNow = likedPosts.some((post) => post.id === props.currentPost.id);
+  emit("updateLike", isLikedNow);
+};
+
+const handleLike = debounce(async () => {
+  const tableName = table(props.pageType);
+  if (props.userId) {
+    await channelLike(props.currentPost, props.userId, tableName);
+    emit("updateLike", !props.isLiked);
+  } else {
+    isModalOpen.value = true;
+  }
+}, 300);
+
+const toggleModal = () => {
+  isModalOpen.value = false;
+};
+
+onBeforeMount(() => {
+  likeCheck();
+});
 
 // 댓글 모달
 const commentModal = ref(false);
@@ -65,17 +117,17 @@ const commentModalClose = () => {
     <p>게시글이 궁금하다면 댓글을 남겨보세요</p>
     <div class="mt-2 flex gap-3">
       <div class="flex gap-2">
-        <button @click="isLiked">
-          <img :src="like ? likeBlackFillIcon : likeBlackIcon" alt="like" class="w-[30px] h-[30px]" />
+        <button @click="handleLike">
+          <img :src="props.isLiked ? like : unlike" alt="like" class="w-[30px] h-[30px]" />
         </button>
-        <span>{{ likes }}</span>
+        <span>{{ props.currentPost.likes }}</span>
       </div>
       <div class="flex gap-2">
         <button>
           <img src="@/assets/images/comment.svg" alt="comment" @click="commentModalOpen" />
           <CommentList :isOpen="commentModal" @close="commentModalClose" />
         </button>
-        <span>{{ comments ? "commments.length" : 0 }}</span>
+        <span>{{ props.comments ? props.comments.length : 0 }}</span>
       </div>
     </div>
     <div class="mt-3 flex gap-4">
@@ -95,5 +147,6 @@ const commentModalClose = () => {
       <button v-if="isButtonVisible" :disabled="!text.trim()" class="text-[#B1B1B1] hover:text-[#FF0000]">등록</button>
     </div>
   </div>
+  <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal" />
 </template>
 <style scoped></style>

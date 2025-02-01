@@ -1,6 +1,6 @@
 <script setup>
 import { dayNames } from "@/constants/dayNames";
-import { ref, defineProps, computed, onMounted, onBeforeMount } from "vue";
+import { ref, defineProps, computed, onBeforeMount } from "vue";
 import calendar from "@/assets/images/calendar.svg";
 import checkIcon from "@/assets/images/check.svg";
 import like from "@/assets/images/likewhite_full.svg";
@@ -150,7 +150,6 @@ const likeCheck = async () => {
 };
 
 const handleLike = debounce(async (event) => {
-  event.preventDefault();
   const tableName = table(props.channelName);
 
   if (loginUser.value) {
@@ -169,22 +168,6 @@ const toggleModal = () => {
 
 onBeforeMount(() => {
   likeCheck();
-});
-
-// 참여자
-const participantsInfo = ref([]);
-
-const getParticipantsInfo = async () => {
-  try {
-    const { data, error } = await supabase.from("userinfo").select("profile_img").in("id", props.post.participants);
-    participantsInfo.value = data;
-  } catch (error) {
-    console.log("getParticipantsInfoError");
-  }
-};
-
-onMounted(() => {
-  getParticipantsInfo();
 });
 </script>
 <template>
@@ -257,7 +240,6 @@ onMounted(() => {
     </div>
   </div>
 
-  <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal">
-  </ConfirmModal>
+  <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal" />
 </template>
 <style scoped></style>

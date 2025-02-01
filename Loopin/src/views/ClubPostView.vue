@@ -131,6 +131,12 @@ const openKakaoMap = () => {
   const kakaoMapUrl = `https://map.kakao.com/link/map/${JSON.parse(currentPost.value.place).id}`;
   window.open(kakaoMapUrl, "_blank");
 };
+
+const isLiked = ref(false);
+
+const updateLikeStatus = (isLikedNow) => {
+  isLiked.value = isLikedNow;
+};
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
@@ -162,7 +168,9 @@ const openKakaoMap = () => {
             </p>
           </div>
           <div class="flex items-center gap-2 absolute right-0">
-            <button v-if="currentPost.creator === userId" @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
+            <button v-if="currentPost.creator === userId" @click="openModal">
+              <img src="@/assets/images/more-black.svg" alt="더보기" />
+            </button>
           </div>
         </div>
 
@@ -235,7 +243,14 @@ const openKakaoMap = () => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comments="currentPost.comments" :pageType="'club'" />
+          <Comment
+            :currentPost="currentPost"
+            :userId="userId"
+            :pageType="'club'"
+            :comments="currentPost.comments"
+            :isLiked="isLiked"
+            @updateLike="updateLikeStatus"
+          />
         </div>
       </div>
     </div>
@@ -247,7 +262,9 @@ const openKakaoMap = () => {
       :pageType="'club'"
       :userId="userId"
       :action="joinClub"
+      :isLiked="isLiked"
       @updateParticipants="handleUpdateParticipants"
+      @updateLike="updateLikeStatus"
     />
   </div>
 </template>

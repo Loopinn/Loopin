@@ -145,6 +145,12 @@ const formatFeeInfo = (fee) => {
       return "다과비";
   }
 };
+
+const isLiked = ref(false);
+
+const updateLikeStatus = (isLikedNow) => {
+  isLiked.value = isLikedNow;
+};
 </script>
 <template>
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
@@ -179,7 +185,9 @@ const formatFeeInfo = (fee) => {
       </div>
     </div>
     <div class="flex items-center gap-2 absolute right-[40px]">
-      <button v-if="currentPost.creator === userId" @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
+      <button v-if="currentPost.creator === userId" @click="openModal">
+        <img src="@/assets/images/more-black.svg" alt="더보기" />
+      </button>
     </div>
     <!-- 한줄 요약 -->
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
@@ -244,7 +252,14 @@ const formatFeeInfo = (fee) => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comments="currentPost.comments" :pageType="'challenge'" />
+          <Comment
+            :currentPost="currentPost"
+            :userId="userId"
+            :pageType="'challenge'"
+            :comments="currentPost.comments"
+            :isLiked="isLiked"
+            @updateLike="updateLikeStatus"
+          />
         </div>
       </div>
       <!-- 참여하기 -->
@@ -254,7 +269,9 @@ const formatFeeInfo = (fee) => {
         :pageType="'challenge'"
         :userId="userId"
         :action="joinChallenge"
+        :isLiked="isLiked"
         @updateParticipants="handleUpdateParticipants"
+        @updateLike="updateLikeStatus"
       />
     </div>
   </div>
