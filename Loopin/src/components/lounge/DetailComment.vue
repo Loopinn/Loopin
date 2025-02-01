@@ -81,6 +81,7 @@ const handleSubmit = async () => {
     await createLoungeComment({ comment: inputText.value, post_id: props.postId, creator: loginUser.id });
     inputText.value = "";
     await loadLoungeComments(props.postId);
+    await getUserId();
     await loadLoungePosts();
   } else {
     isModalOpen.value = true;
@@ -95,6 +96,7 @@ const toggleModal = () => {
 const handleDelete = async (commentId) => {
   await deleteLoungeComment(currentPost.value, commentId);
   await loadLoungeComments(props.postId);
+  await getUserId();
   await loadLoungePosts();
 };
 
