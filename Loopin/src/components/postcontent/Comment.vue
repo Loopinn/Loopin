@@ -1,6 +1,8 @@
 <script setup>
 import { ref, defineProps, computed } from "vue";
 import CommentList from "./CommentList.vue";
+import likeBlackIcon from "@/assets/images/likeblack.svg";
+import likeBlackFillIcon from "@/assets/images/likeblack_full.svg";
 
 const text = ref("");
 
@@ -64,11 +66,7 @@ const commentModalClose = () => {
     <div class="mt-2 flex gap-3">
       <div class="flex gap-2">
         <button @click="isLiked">
-          <img
-            :src="like ? '../src/assets/images/likeblack_full.svg' : '../src/assets/images/likeblack.svg'"
-            alt="like"
-            class="w-[30px] h-[30px]"
-          />
+          <img :src="like ? likeBlackFillIcon : likeBlackIcon" alt="like" class="w-[30px] h-[30px]" />
         </button>
         <span>{{ likes }}</span>
       </div>
