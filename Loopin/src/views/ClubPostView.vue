@@ -29,6 +29,7 @@ const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
   console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
+  return sessionData?.session?.user?.id;
 };
 
 const currentPost = computed(() => {
@@ -84,6 +85,7 @@ const openModal = () => {
 onMounted(async () => {
   console.log("현재 게시글", currentPost.value);
   await getUserId();
+  await fetchData();
 });
 
 // currentPost가 변경될 때마다 자동으로 실행
@@ -95,6 +97,7 @@ watchEffect(() => {
 
 onBeforeMount(() => {
   loadClubPosts();
+  console.log(currentPost.value); // 현재 게시물 출력
 });
 
 //프로필 이미지 리사이즈
@@ -162,7 +165,9 @@ const openKakaoMap = () => {
             </p>
           </div>
           <div class="flex items-center gap-2 absolute right-0">
-            <button v-if="currentPost.creator === userId" @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
+            <button v-if="currentPost.creator === userId" @click="openModal">
+              <img src="@/assets/images/more-black.svg" alt="더보기" />
+            </button>
           </div>
         </div>
 
@@ -235,7 +240,12 @@ const openKakaoMap = () => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comments="currentPost.comments" :pageType="'club'" />
+          <Comment
+            :likes="currentPost.likes"
+            :comments="currentPost.comments || []"
+            :postId="currentPost.id"
+            :pageType="'club'"
+          />
         </div>
       </div>
     </div>

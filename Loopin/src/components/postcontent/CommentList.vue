@@ -1,7 +1,97 @@
 <script setup>
-import { ref } from "vue";
+import { defineProps, ref, reactive, defineEmits } from "vue";
+import supabase from "@/config/supabase";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { useCommentStore } from "@/stores/commetStore";
+import { useAuthStore } from "@/stores/authStore";
+import { usePostStore } from "@/stores/postStore";
+
+const authStore = useAuthStore();
+const commentStore = useCommentStore();
+const postStore = usePostStore();
+
+const { loginUser } = authStore;
+const { socialComments } = storeToRefs(commentStore);
+const { socialingPosts } = storeToRefs(postStore);
+const { clubComments } = storeToRefs(commentStore);
+const { clubPosts } = storeToRefs(postStore);
+const { challengeComments } = storeToRefs(commentStore);
+const { challengePosts } = storeToRefs(postStore);
+
+const props = defineProps({
+  comments: {
+    type: Array,
+  },
+  userInfo: {
+    type: Array,
+    required: true,
+  },
+  postId: {
+    type: String,
+  },
+  pageType: {
+    type: String,
+  },
+  isOpen: {
+    type: Boolean,
+    required: true,
+  },
+});
+const {
+  loadSocialComments,
+  createSocialComment,
+  deleteSocialComment,
+  updateSocialComment,
+  socialCommentLike,
+  socialCommentUnLike,
+
+  loadClubComments,
+  createClubComment,
+  deleteClubComment,
+  updateClubComment,
+  clubCommentLike,
+  clubCommentUnLike,
+
+  loadChallengeComments,
+  createChallengeComment,
+  deleteChallengeComment,
+  updateChallengeComment,
+} = commentStore;
+
+// 어디서 왔는지에 따라 다른 함수 지정
+const postMap = {
+  socialing: socialingPosts,
+  club: clubPosts,
+  challenge: challengePosts,
+};
+
+const commentMap = {
+  socialing: socialComments,
+  club: clubComments,
+  challenge: challengeComments,
+};
+
+const createCommentMap = {
+  socialing: createSocialComment,
+  club: createClubComment,
+  challenge: createChallengeComment,
+};
+
+const loadCommentsMap = {
+  socialing: loadSocialComments,
+  club: loadClubComments,
+  challenge: loadChallengeComments,
+};
+
+const emit = defineEmits(["close", "commentAdded"]);
+
+const router = useRouter();
 
 const text = ref("");
+const userInfo = ref(props.userInfo);
+const userId = ref(null);
+const profile = ref(null);
 
 // 작성자 확인
 const isAuth = ref(false);
@@ -13,15 +103,46 @@ const isLiked = () => {
   like.value = !like.value;
 };
 
-// 댓글 모달
-const props = defineProps({
-  isOpen: {
-    type: Boolean,
-    required: true,
-  },
-});
+const getUserId = async () => {
+  const mapComments = commentMap[props.pageType];
 
-const emit = defineEmits(["close"]);
+  const { data: sessionData } = await supabase.auth.getSession();
+  // socialComments.value.map(async (i, index) => {
+  mapComments.value.map(async (i, index) => {
+    const { data: userData, error: userError } = await supabase
+      .from("userinfo")
+      .select("nickname, profile_img")
+      .eq("id", i.creator)
+      .single();
+
+    userInfo.value[index] = userData;
+  });
+  userId.value = sessionData?.session?.user?.id || "";
+  profile.value = sessionData?.session?.user.profile_img;
+  return sessionData?.session?.user?.id || "";
+};
+
+const handleSubmit = async () => {
+  try {
+    const userId = await getUserId();
+    if (userId) {
+      const createComment = createCommentMap[props.pageType];
+      const loadComments = loadCommentsMap[props.pageType];
+      await createComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
+      text.value = "";
+      await loadComments(props.postId);
+      await getUserId();
+      emit("commentAdded", props.postId);
+    }
+  } catch (error) {
+    console.log("댓글 등록 실패:", error);
+  }
+};
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toISOString().split("T")[0];
+};
 
 const closeModal = () => {
   emit("close");
@@ -42,16 +163,30 @@ const closeModal = () => {
 
       <!-- 댓글 -->
       <div class="border-t border-gray-300 w-[80%] h-[80%] overflow-y-scroll scrollbar-hide">
-        <div class="flex justify-center gap-[10px] py-3">
-          <img src="@/assets/images/defaultprofile.svg" alt="userprofile" class="w-7 h-7 rounded-full" />
+        <div v-for="(comment, idx) in comments" :key="idx" class="flex justify-center gap-[10px] py-3">
+          <img
+            v-if="userInfo[idx]?.profile_img"
+            :src="userInfo[idx].profile_img"
+            alt="userprofile"
+            class="w-7 h-7 rounded-full"
+            @click="router.push(`/user/${userInfo[idx].nickname}`)"
+          />
+
+          <img
+            v-else
+            src="@/assets/images/defaultprofile.svg"
+            alt="userprofile"
+            class="w-7 h-7 rounded-full"
+            @click="router.push(`/user/${userInfo[idx].nickname}`)"
+          />
 
           <div class="flex flex-col items-start">
-            <div class="mb-2 font-semibold text-[11px]">유저명</div>
+            <div class="mb-2 font-semibold text-[11px]">{{ userInfo[idx]?.nickname }}</div>
             <p class="mb-2 w-[300px] text-[10px] text-left">
-              댓글입니다.댓글입니다.댓글입니다.댓글입니다.댓글입니다.댓글입니다.댓글입니다.댓글입니다.댓글입니다.
+              {{ comment.comment }}
             </p>
             <div class="font-semibold text-[9px] text-[#909090]">
-              <p>2025.01.20 좋아요 1개</p>
+              {{ formatDate(comment.created_at) }} 좋아요 {{ comment.likes || 0 }}개
             </div>
           </div>
 
@@ -83,9 +218,12 @@ const closeModal = () => {
       </div>
 
       <!-- 댓글 입력란 -->
-      <div class="absolute bottom-0 pb-3 flex justify-center w-[80%] gap-4 py-2 border-t border-gray-300 bg-white">
+      <form
+        @submit.prevent="handleSubmit"
+        class="absolute bottom-0 pb-3 flex justify-center w-[80%] gap-4 py-2 border-t border-gray-300 bg-white"
+      >
         <img
-          src="https://i.pinimg.com/474x/2e/36/de/2e36dee43874ca143efb4c6323188be6.jpg"
+          :src="profile || 'https://i.pinimg.com/474x/2e/36/de/2e36dee43874ca143efb4c6323188be6.jpg'"
           alt="userProfile"
           class="rounded-full w-7 h-7"
         />
@@ -95,8 +233,8 @@ const closeModal = () => {
           placeholder="댓글 달기 ..."
           class="w-[78%] resize-none placeholder-[#B1B1B1] outline-none"
         />
-        <button class="text-[#B1B1B1] hover:text-[#FF0000]" :disabled="!text.trim()">등록</button>
-      </div>
+        <button type="submit" class="text-[#B1B1B1] hover:text-[#FF0000]" :disabled="!text.trim()">등록</button>
+      </form>
     </div>
   </div>
 </template>

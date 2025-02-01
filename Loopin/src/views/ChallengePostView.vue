@@ -30,6 +30,7 @@ const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
   console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
+  return sessionData?.session?.user?.id;
 };
 
 const currentPost = computed(() => {
@@ -73,6 +74,7 @@ const handleUpdateParticipants = (updatedParticipants) => {
 onMounted(async () => {
   console.log("현재 게시글", currentPost.value);
   await getUserId();
+  await fetchData();
 });
 
 // currentPost가 변경될 때마다 자동으로 실행
@@ -179,7 +181,9 @@ const formatFeeInfo = (fee) => {
       </div>
     </div>
     <div class="flex items-center gap-2 absolute right-[40px]">
-      <button v-if="currentPost.creator === userId" @click="openModal"><img src="@/assets/images/more-black.svg" alt="더보기" /></button>
+      <button v-if="currentPost.creator === userId" @click="openModal">
+        <img src="@/assets/images/more-black.svg" alt="더보기" />
+      </button>
     </div>
     <!-- 한줄 요약 -->
     <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
@@ -244,7 +248,12 @@ const formatFeeInfo = (fee) => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comments="currentPost.comments" :pageType="'challenge'" />
+          <Comment
+            :likes="currentPost.likes"
+            :comments="currentPost.comments"
+            :postId="currentPost.id"
+            :pageType="'challenge'"
+          />
         </div>
       </div>
       <!-- 참여하기 -->
