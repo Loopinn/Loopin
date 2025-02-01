@@ -66,6 +66,11 @@ const resizeProfile = (imgUrl, index) => {
     return;
   }
 
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    participantImages.value[index] = imgUrl;
+    return;
+  }
+
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => {
@@ -223,25 +228,27 @@ onMounted(() => {
       </div>
       <div class="flex items-center gap-1">
         <div class="flex -space-x-2">
-          <template v-for="(img, index) in participantImages" :key="index">
-            <img
-              v-if="index < 4 || participantImages.length <= 5"
-              :src="img || noProfile"
-              alt="memberprofile"
-              class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
-            />
-            <div v-else class="relative w-9 h-9">
+          <template v-for="(img, index) in participantImages.slice(0, 5)" :key="index">
+            <div v-if="index === 4 && participantImages.length > 5" class="relative w-9 h-9">
+              <!-- 5번째 프로필 이미지 -->
               <img
                 :src="img || noProfile"
                 alt="memberprofile"
                 class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
               />
+              <!-- '더보기(more)' 이미지 오버레이 -->
               <img
                 src="@/assets/images/more.svg"
                 alt="more"
                 class="absolute inset-0 w-9 h-9 rounded-full border-2 border-white bg-black bg-opacity-40"
               />
             </div>
+            <img
+              v-else
+              :src="img || noProfile"
+              alt="memberprofile"
+              class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
+            />
           </template>
         </div>
         <img src="@/assets/images/members_gray.svg" alt="participants" />
