@@ -1,11 +1,13 @@
 <script setup>
-import { defineProps, ref, reactive, defineEmits } from "vue";
+import { defineProps, ref, reactive, defineEmits, onBeforeMount, onMounted, watch, watchEffect } from "vue";
 import supabase from "@/config/supabase";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useCommentStore } from "@/stores/commetStore";
 import { useAuthStore } from "@/stores/authStore";
 import { usePostStore } from "@/stores/postStore";
+import likeBlackIcon from "@/assets/images/likeblack.svg";
+import likeBlackFullIcon from "@/assets/images/likeblack_full.svg";
 
 const authStore = useAuthStore();
 const commentStore = useCommentStore();
@@ -96,13 +98,6 @@ const profile = ref(null);
 // 작성자 확인
 const isAuth = ref(false);
 
-// 좋아요 버튼
-const like = ref(false);
-
-const isLiked = () => {
-  like.value = !like.value;
-};
-
 const getUserId = async () => {
   const mapComments = commentMap[props.pageType];
 
@@ -147,6 +142,79 @@ const formatDate = (dateString) => {
 const closeModal = () => {
   emit("close");
 };
+
+// 좋아요 버튼
+const likes = ref({});
+
+const initiallizeLikes = () => {
+  console.log("이니셜");
+  props.comments.forEach((comment) => {
+    console.log(comment.likes);
+    if (comment.likes && comment.likes.includes(loginUser.id)) {
+      likes.value[comment.id] = true;
+    } else {
+      likes.value[comment.id] = false;
+    }
+  });
+  console.log("likes", likes.value);
+};
+
+const handleCommentLike = async (commentInfo) => {
+  if (props.pageType === "socialing") {
+    // 소셜링 댓글 좋아요
+    if (commentInfo.likes && commentInfo.likes.includes(loginUser.id)) {
+      // 좋아요 취소
+      await socialCommentUnLike(commentInfo, loginUser.id);
+      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+
+      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
+      props.comments[index].likes = props.comments[index].likes.filter((id) => id !== loginUser.id);
+    } else {
+      // 좋아요~
+      await socialCommentLike(commentInfo, loginUser.id);
+      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
+      if (props.comments[index].likes) {
+        props.comments[index].likes.push(loginUser.id);
+      } else {
+        props.comments[index].likes = [`${loginUser.id}`];
+      }
+    }
+  } else if (props.pageType === "club") {
+    // 클럽 댓글 좋아요
+    if (commentInfo.likes && commentInfo.likes.includes(loginUser.id)) {
+      // 좋아요 취소
+      await clubCommentUnLike(commentInfo, loginUser.id);
+      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+
+      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
+      props.comments[index].likes = props.comments[index].likes.filter((id) => id !== loginUser.id);
+    } else {
+      // 좋아요~
+      await clubCommentLike(commentInfo, loginUser.id);
+      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
+      if (props.comments[index].likes) {
+        props.comments[index].likes.push(loginUser.id);
+      } else {
+        props.comments[index].likes = [`${loginUser.id}`];
+      }
+    }
+  }
+};
+
+onBeforeMount(() => {
+  console.log("props  ", props);
+  initiallizeLikes();
+});
+
+watchEffect(() => {
+  if (props.isOpen) {
+    initiallizeLikes();
+  } else {
+    initiallizeLikes();
+  }
+});
 </script>
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center">
@@ -186,7 +254,7 @@ const closeModal = () => {
               {{ comment.comment }}
             </p>
             <div class="font-semibold text-[9px] text-[#909090]">
-              {{ formatDate(comment.created_at) }} 좋아요 {{ comment.likes || 0 }}개
+              {{ formatDate(comment.created_at) }} 좋아요 {{ comment.likes?.length || 0 }}개
             </div>
           </div>
 
@@ -206,12 +274,16 @@ const closeModal = () => {
               </button>
             </div>
 
-            <button class="ml-7" @click="isLiked">
-              <img
-                :src="like ? './src/assets/images/likeblack_full.svg' : './src/assets/images/likeblack.svg'"
-                alt="like"
-                class="w-5 h-5"
-              />
+            <button
+              class="ml-7"
+              @click="
+                async () => {
+                  await handleCommentLike(comment);
+                  console.log(comment, loginUser);
+                }
+              "
+            >
+              <img :src="likes[comment.id] ? likeBlackFullIcon : likeBlackIcon" alt="like" class="w-5 h-5" />
             </button>
           </div>
         </div>
