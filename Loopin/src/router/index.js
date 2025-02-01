@@ -53,6 +53,7 @@ const router = createRouter({
       path: "/write",
       name: "write",
       component: () => import("@/views/PostCreateView.vue"),
+      meta: { requireAuth: true },
     },
     {
       path: "/write/:type/:id",

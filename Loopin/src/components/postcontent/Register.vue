@@ -3,6 +3,9 @@ import { defineProps, ref, computed, defineEmits } from "vue";
 
 import ChoiceModal from "../modal/ChoiceModal.vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
+
+const authStore = useAuthStore();
 
 const props = defineProps({
   title: {
@@ -50,11 +53,15 @@ const getButtonMessage = computed(() => {
   return isJoined.value ? "취소" : activityType;
 });
 const buttonText = computed(() => {
+  if (!authStore.loginUser) return "로그인 후 이용가능합니다";
   if (!props.isUserInClub && props.clubId) return "클럽 참여하러 가기";
   const activityType = props.pageType === "socialing" || props.pageType === "challenge" ? "참여" : "신청";
   return isJoined.value ? `${activityType} 취소` : `${activityType}하기`;
 });
 const buttonStyle = computed(() => {
+  if (!authStore.loginUser) {
+    return "bg-gray-400 text-white";
+  }
   return isJoined.value
     ? "bg-gray-400 text-white"
     : props.pageType === "socialing"
@@ -114,8 +121,9 @@ const handleConfirm = async () => {
     </div>
 
     <button
-      class="w-[400px] h-[60px] rounded-[30px] text-[25px]"
+      class="w-[400px] h-[60px] rounded-[30px] text-[22px]"
       :class="buttonStyle"
+      :disabled="!authStore.loginUser"
       @click="!props.isUserInClub && props.clubId ? moveToClub() : toggleModal()"
     >
       {{ buttonText }}
