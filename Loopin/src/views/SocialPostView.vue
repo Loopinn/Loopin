@@ -79,7 +79,7 @@ onMounted(async () => {
 watchEffect(async () => {
   if (currentPost.value && currentPost.value?.creator) {
     fetchData();
-    
+
     if (currentPost.value.for_club) {
       const { data, error } = await supabase.from("club_posts").select().eq("id", currentPost.value.for_club);
       if (data) {
@@ -189,6 +189,11 @@ const resizeProfile = () => {
 const openKakaoMap = () => {
   const kakaoMapUrl = `https://map.kakao.com/link/map/${JSON.parse(currentPost.value.place).id}`;
   window.open(kakaoMapUrl, "_blank");
+};
+const isLiked = ref(false);
+
+const updateLikeStatus = (isLikedNow) => {
+  isLiked.value = isLikedNow;
 };
 </script>
 
@@ -305,10 +310,13 @@ const openKakaoMap = () => {
           </div>
           <!-- 댓글 -->
           <Comment
-            :likes="currentPost.likes"
             :comment="currentPost.comments || []"
             :postId="currentPost.id"
             :pageType="'socialing'"
+            :currentPost="currentPost"
+            :userId="userId"
+            :isLiked="isLiked"
+            @updateLike="updateLikeStatus"
           />
         </div>
       </div>
@@ -321,7 +329,9 @@ const openKakaoMap = () => {
         :action="joinSocialing"
         :isUserInClub="isUserInClub"
         :clubId="currentPost?.for_club"
+        :isLiked="isLiked"
         @updateParticipants="handleUpdateParticipants"
+        @updateLike="updateLikeStatus"
       />
     </div>
   </div>

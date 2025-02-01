@@ -147,6 +147,12 @@ const formatFeeInfo = (fee) => {
       return "다과비";
   }
 };
+
+const isLiked = ref(false);
+
+const updateLikeStatus = (isLikedNow) => {
+  isLiked.value = isLikedNow;
+};
 </script>
 <template>
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
@@ -249,10 +255,13 @@ const formatFeeInfo = (fee) => {
           </div>
           <!-- 댓글 -->
           <Comment
-            :likes="currentPost.likes"
             :comments="currentPost.comments"
             :postId="currentPost.id"
             :pageType="'challenge'"
+            :currentPost="currentPost"
+            :userId="userId"
+            :isLiked="isLiked"
+            @updateLike="updateLikeStatus"
           />
         </div>
       </div>
@@ -263,7 +272,9 @@ const formatFeeInfo = (fee) => {
         :pageType="'challenge'"
         :userId="userId"
         :action="joinChallenge"
+        :isLiked="isLiked"
         @updateParticipants="handleUpdateParticipants"
+        @updateLike="updateLikeStatus"
       />
     </div>
   </div>

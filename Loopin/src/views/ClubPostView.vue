@@ -134,6 +134,12 @@ const openKakaoMap = () => {
   const kakaoMapUrl = `https://map.kakao.com/link/map/${JSON.parse(currentPost.value.place).id}`;
   window.open(kakaoMapUrl, "_blank");
 };
+
+const isLiked = ref(false);
+
+const updateLikeStatus = (isLikedNow) => {
+  isLiked.value = isLikedNow;
+};
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
@@ -241,10 +247,13 @@ const openKakaoMap = () => {
           </div>
           <!-- 댓글 -->
           <Comment
-            :likes="currentPost.likes"
             :comments="currentPost.comments || []"
             :postId="currentPost.id"
             :pageType="'club'"
+            :currentPost="currentPost"
+            :userId="userId"
+            :isLiked="isLiked"
+            @updateLike="updateLikeStatus"
           />
         </div>
       </div>
@@ -257,7 +266,9 @@ const openKakaoMap = () => {
       :pageType="'club'"
       :userId="userId"
       :action="joinClub"
+      :isLiked="isLiked"
       @updateParticipants="handleUpdateParticipants"
+      @updateLike="updateLikeStatus"
     />
   </div>
 </template>

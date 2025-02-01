@@ -1,7 +1,12 @@
 <script setup>
-import { defineProps, ref, computed, defineEmits } from "vue";
-
+import { defineProps, ref, computed, defineEmits, onBeforeMount } from "vue";
 import ChoiceModal from "../modal/ChoiceModal.vue";
+import ConfirmModal from "../modal/ConfirmModal.vue";
+import like from "@/assets/images/likered_full.svg";
+import unlike from "@/assets/images/likered.svg";
+import supabase from "@/config/supabase";
+import { debounce } from "lodash";
+import { channelLike } from "@/utils/channelLike";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -30,11 +35,14 @@ const props = defineProps({
   clubId: {
     type: String,
   },
+  isLiked: {
+    type: Boolean,
+  },
 });
 
 const router = useRouter();
 
-const emit = defineEmits(["updateParticipants"]);
+const emit = defineEmits(["updateParticipants", "updateLike"]);
 
 const isModalOpen = ref(false);
 const participants = ref(props.currentPost?.participants || []);
@@ -110,14 +118,65 @@ const handleConfirm = async () => {
     toggleModal();
   }
 };
+// 좋아요
+const likeLogin = ref(false);
+const toggleLikeLogin = () => {
+  likeLogin.value = !likeLogin.value;
+};
+const tables = {
+  socialing: "socialing_posts",
+  club: "club_posts",
+  challenge: "challenge_posts",
+};
+
+const table = (channel) => tables[channel] || null;
+
+const likeCheck = async () => {
+  if (!authStore.loginUser) {
+    return;
+  }
+
+  const { data: userData, error: userDataError } = await supabase
+    .from("userinfo")
+    .select("postLikes")
+    .eq("id", authStore.loginUser.id)
+    .single();
+
+  console.log(userData);
+
+  if (userDataError) {
+    console.error(userDataError);
+    return;
+  }
+
+  const likedPosts = userData?.postLikes ? userData.postLikes.map((item) => JSON.parse(item)) : [];
+  const isLikedNow = likedPosts.some((post) => post.id === props.currentPost.id);
+  emit("updateLike", isLikedNow);
+};
+
+const handleLike = debounce(async () => {
+  if (!authStore.loginUser) {
+    toggleLikeLogin();
+    return;
+  }
+  const tableName = table(props.pageType);
+  if (props.userId) {
+    await channelLike(props.currentPost, props.userId, tableName);
+    emit("updateLike", !props.isLiked);
+  }
+}, 300);
+
+onBeforeMount(() => {
+  likeCheck();
+});
 </script>
 <template>
   <div class="bg-white fixed bottom-[60px] w-[600px] h-[80px] flex gap-[65px] items-center justify-center">
     <div class="flex flex-col">
-      <button>
-        <img src="@/assets/images/likered.svg" alt="like" />
+      <button @click="handleLike">
+        <img :src="props.isLiked ? like : unlike" alt="like" />
       </button>
-      <span class="text-center text-[#FF0000]">00</span>
+      <span class="text-center text-[#FF0000]">{{ props.currentPost.likes }}</span>
     </div>
 
     <button
@@ -136,6 +195,12 @@ const handleConfirm = async () => {
     :pageType="props.pageType"
     @confirm="handleConfirm"
     @close="toggleModal"
+  />
+  <ConfirmModal
+    :isOpen="likeLogin"
+    :message="'로그인이 필요합니다.'"
+    :buttonMessage="'확인'"
+    @close="toggleLikeLogin"
   />
 </template>
 <style scoped></style>

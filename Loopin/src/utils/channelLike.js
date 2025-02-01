@@ -18,17 +18,20 @@ export const channelLike = async (post, userId, tableName) => {
       return info.id === post.id;
     });
 
-    const currentLikes = post.likes || 0;
+    let currentLikes = post.likes || 0;
 
     if (isPostData) {
-      await updateLikes(post.id, currentLikes - 1, tableName);
+      const unlike = currentLikes - 1;
+      await updateLikes(post.id, unlike, tableName);
       await updateUserData(post.id, userId, tableName);
+      post.likes = unlike;
       console.log("좋아요 취소");
       return;
     }
-
-    await updateLikes(post.id, currentLikes + 1, tableName);
+    const like = currentLikes + 1;
+    await updateLikes(post.id, like, tableName);
     await updateUserData(post.id, userId, tableName);
+    post.likes = like;
     console.log("좋아요");
   } catch (error) {
     console.error("channelLike error", error);
