@@ -1,4 +1,5 @@
 <script setup>
+import { twMerge } from "tailwind-merge";
 import { defineProps, defineEmits } from "vue";
 
 defineProps({
@@ -22,6 +23,9 @@ defineProps({
     type: String,
     required: true,
   },
+  error: {
+    type: Boolean,
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -40,7 +44,12 @@ const handleInput = (e) => {
       :placeholder="placeholder"
       :value="modelValue"
       @input="handleInput"
-      class="h-[48px] border border-gray-300 rounded-[10px] pl-4 placeholder:text-sm"
+      :class="
+        twMerge(
+          `h-[48px] border border-gray-300 rounded-[10px] outline-black pl-4 placeholder:text-sm 
+            ${error && 'border-red-500 border-2 outline-red-500'}`,
+        )
+      "
     />
   </div>
 </template>

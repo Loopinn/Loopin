@@ -1,25 +1,45 @@
 <script setup>
-import { ref, defineProps, defineEmits, onBeforeMount, computed } from "vue";
+import { ref, defineProps, defineEmits, onBeforeMount, computed, onMounted } from "vue";
 import CommentList from "./CommentList.vue";
 import like from "@/assets/images/likeblack_full.svg";
 import unlike from "@/assets/images/likeblack.svg";
+import supabase from "@/config/supabase";
 import { debounce } from "lodash";
 import { channelLike } from "@/utils/channelLike";
 import ConfirmModal from "../modal/ConfirmModal.vue";
-import supabase from "@/config/supabase";
+import noProfile from "@/assets/images/no-profile.svg";
+
+import { storeToRefs } from "pinia";
+import { useCommentStore } from "@/stores/commetStore";
 import { useAuthStore } from "@/stores/authStore";
+import { usePostStore } from "@/stores/postStore";
 
-const text = ref("");
+const authStore = useAuthStore();
+const commentStore = useCommentStore();
+const postStore = usePostStore();
 
+const { loginUser } = authStore;
+const { socialComments } = storeToRefs(commentStore);
+const { socialingPosts } = storeToRefs(postStore);
+const { clubComments } = storeToRefs(commentStore);
+const { clubPosts } = storeToRefs(postStore);
+const { challengeComments } = storeToRefs(commentStore);
+const { challengePosts } = storeToRefs(postStore);
+
+const emit = defineEmits(["updateLike"]);
 const props = defineProps({
-  comments: {
+  comment: {
     type: Array,
   },
   currentPost: {
     type: Object,
   },
+  postId: {
+    type: String,
+  },
   pageType: {
     type: String,
+    required: true,
   },
   userId: {
     type: String,
@@ -28,8 +48,63 @@ const props = defineProps({
     type: Boolean,
   },
 });
-const authStore = useAuthStore();
-const emit = defineEmits(["updateLike"]);
+
+const text = ref("");
+const userInfo = ref([]);
+const userId = ref(null);
+const profile = ref(null);
+
+const {
+  loadSocialComments,
+  createSocialComment,
+  deleteSocialComment,
+  updateSocialComment,
+  socialCommentLike,
+  socialCommentUnLike,
+
+  loadClubComments,
+  createClubComment,
+  deleteClubComment,
+  updateClubComment,
+  clubCommentLike,
+  clubCommentUnLike,
+
+  loadChallengeComments,
+  createChallengeComment,
+  deleteChallengeComment,
+  updateChallengeComment,
+} = commentStore;
+
+// 어디서 왔는지에 따라 다른 함수 지정
+const postMap = {
+  socialing: socialingPosts,
+  club: clubPosts,
+  challenge: challengePosts,
+};
+
+const commentMap = {
+  socialing: socialComments,
+  club: clubComments,
+  challenge: challengeComments,
+};
+
+const createCommentMap = {
+  socialing: createSocialComment,
+  club: createClubComment,
+  challenge: createChallengeComment,
+};
+
+const loadCommentsMap = {
+  socialing: loadSocialComments,
+  club: loadClubComments,
+  challenge: loadChallengeComments,
+};
+
+const currentPost = computed(() => {
+  const posts = postMap[props.pageType];
+  // return socialingPosts.value.find((post) => post.id === props.postId);
+  return posts ? posts.value.find((post) => post.id === props.postId) : null;
+});
 
 const textColor = computed(() => {
   switch (props.pageType) {
@@ -43,6 +118,7 @@ const textColor = computed(() => {
   }
 });
 
+const isHovering = ref(false);
 // 댓글 등록 버튼
 const isButtonVisible = ref(false);
 
@@ -65,6 +141,10 @@ const tables = {
 const table = (channel) => tables[channel] || null;
 
 const likeCheck = async () => {
+  if (!authStore.loginUser) {
+    return;
+  }
+
   const { data: userData, error: userDataError } = await supabase
     .from("userinfo")
     .select("postLikes")
@@ -110,6 +190,60 @@ const commentModalOpen = () => {
 const commentModalClose = () => {
   commentModal.value = false;
 };
+
+const getUserId = async () => {
+  const mapComments = commentMap[props.pageType];
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  // socialComments.value.map(async (i, index) => {
+  mapComments.value.map(async (i, index) => {
+    const { data: userData, error: userError } = await supabase
+      .from("userinfo")
+      .select("nickname, profile_img")
+      .eq("id", i.creator)
+      .single();
+
+    userInfo.value[index] = userData;
+  });
+  userId.value = sessionData?.session?.user?.id || "";
+  profile.value = sessionData?.session?.user.profile_img;
+  return sessionData?.session?.user?.id;
+};
+
+const handleSubmit = async () => {
+  try {
+    const userId = await getUserId();
+    if (userId) {
+      const createComment = createCommentMap[props.pageType];
+      const loadComments = loadCommentsMap[props.pageType];
+      console.log("댓글 등록 시도:", text.value);
+      // await createSocialComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
+      await createComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
+      text.value = "";
+      // await loadSocialComments(props.postId);
+      await loadComments(props.postId);
+      await getUserId();
+      // 등록 버튼 안보이게 하기
+      hideButton();
+      console.log("댓글 등록 성공!");
+    }
+  } catch (error) {
+    console.log("댓글 등록 실패:", error);
+  }
+};
+
+// 댓글 추가 시 호출될 함수
+const handleCommentAdded = async (postId) => {
+  const loadComments = loadCommentsMap[props.pageType];
+  // await loadSocialComments(postId);
+  await loadComments(postId);
+};
+
+onMounted(async () => {
+  const loadComments = loadCommentsMap[props.pageType];
+  // await loadSocialComments(props.postId), await getUserId();
+  await loadComments(props.postId), await getUserId();
+});
 </script>
 <template>
   <div class="mt-5">
@@ -125,17 +259,29 @@ const commentModalClose = () => {
       <div class="flex gap-2">
         <button>
           <img src="@/assets/images/comment.svg" alt="comment" @click="commentModalOpen" />
-          <CommentList :isOpen="commentModal" @close="commentModalClose" />
+          <CommentList
+            :comments="
+              props.pageType === 'socialing'
+                ? socialComments || []
+                : props.pageType === 'club'
+                  ? clubComments || []
+                  : challengeComments || []
+            "
+            :userInfo="userInfo"
+            :postId="props.postId"
+            :pageType="props.pageType"
+            :isOpen="commentModal"
+            @close="commentModalClose"
+            @commentAdded="handleCommentAdded"
+          />
         </button>
-        <span>{{ props.comments ? props.comments.length : 0 }}</span>
+        <span v-if="props.pageType === 'socialing'">{{ socialComments.length || 0 }}</span>
+        <span v-else-if="props.pageType === 'club'">{{ clubComments.length || 0 }}</span>
+        <span v-else>{{ challengeComments.length || 0 }}</span>
       </div>
     </div>
-    <div class="mt-3 flex gap-4">
-      <img
-        src="https://i.pinimg.com/474x/2e/36/de/2e36dee43874ca143efb4c6323188be6.jpg"
-        alt="userProfile"
-        class="rounded-full w-7 h-7"
-      />
+    <form @submit.prevent="handleSubmit" class="mt-3 flex gap-4">
+      <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-7 h-7" />
       <input
         v-model="text"
         type="text"
@@ -144,8 +290,17 @@ const commentModalClose = () => {
         @focus="showButton"
         @blur="hideButton"
       />
-      <button v-if="isButtonVisible" :disabled="!text.trim()" class="text-[#B1B1B1] hover:text-[#FF0000]">등록</button>
-    </div>
+      <button
+        type="submit"
+        v-if="isButtonVisible || isHovering"
+        :disabled="!text.trim()"
+        class="text-[#B1B1B1] hover:text-[#FF0000]"
+        @mouseover="isHovering = true"
+        @mouseleave="isHovering = false"
+      >
+        등록
+      </button>
+    </form>
   </div>
   <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal" />
 </template>

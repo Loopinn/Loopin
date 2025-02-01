@@ -119,6 +119,10 @@ const handleConfirm = async () => {
   }
 };
 // 좋아요
+const likeLogin = ref(false);
+const toggleLikeLogin = () => {
+  likeLogin.value = !likeLogin.value;
+};
 const tables = {
   socialing: "socialing_posts",
   club: "club_posts",
@@ -128,6 +132,10 @@ const tables = {
 const table = (channel) => tables[channel] || null;
 
 const likeCheck = async () => {
+  if (!authStore.loginUser) {
+    return;
+  }
+
   const { data: userData, error: userDataError } = await supabase
     .from("userinfo")
     .select("postLikes")
@@ -147,12 +155,14 @@ const likeCheck = async () => {
 };
 
 const handleLike = debounce(async () => {
+  if (!authStore.loginUser) {
+    toggleLikeLogin();
+    return;
+  }
   const tableName = table(props.pageType);
   if (props.userId) {
     await channelLike(props.currentPost, props.userId, tableName);
     emit("updateLike", !props.isLiked);
-  } else {
-    toggleModal();
   }
 }, 300);
 
@@ -186,6 +196,11 @@ onBeforeMount(() => {
     @confirm="handleConfirm"
     @close="toggleModal"
   />
-  <ConfirmModal :isOpen="isModalOpen" :message="'로그인이 필요합니다.'" :buttonMessage="'확인'" @close="toggleModal" />
+  <ConfirmModal
+    :isOpen="likeLogin"
+    :message="'로그인이 필요합니다.'"
+    :buttonMessage="'확인'"
+    @close="toggleLikeLogin"
+  />
 </template>
 <style scoped></style>

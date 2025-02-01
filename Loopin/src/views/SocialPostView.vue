@@ -32,6 +32,7 @@ const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
   console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
+  return sessionData?.session?.user?.id;
 };
 
 const currentPost = computed(() => {
@@ -71,6 +72,7 @@ const fetchData = async () => {
 onMounted(async () => {
   console.log("현재 게시글", currentPost.value);
   await getUserId();
+  await fetchData();
 });
 
 // currentPost가 변경될 때마다 자동으로 실행
@@ -308,10 +310,11 @@ const updateLikeStatus = (isLikedNow) => {
           </div>
           <!-- 댓글 -->
           <Comment
+            :comment="currentPost.comments || []"
+            :postId="currentPost.id"
+            :pageType="'socialing'"
             :currentPost="currentPost"
             :userId="userId"
-            :pageType="'socialing'"
-            :comments="currentPost.comments"
             :isLiked="isLiked"
             @updateLike="updateLikeStatus"
           />
