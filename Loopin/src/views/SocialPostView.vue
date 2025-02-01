@@ -32,6 +32,7 @@ const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
   console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
+  return sessionData?.session?.user?.id;
 };
 
 const currentPost = computed(() => {
@@ -71,6 +72,7 @@ const fetchData = async () => {
 onMounted(async () => {
   console.log("현재 게시글", currentPost.value);
   await getUserId();
+  await fetchData();
 });
 
 // currentPost가 변경될 때마다 자동으로 실행
@@ -302,7 +304,12 @@ const openKakaoMap = () => {
             </div>
           </div>
           <!-- 댓글 -->
-          <Comment :likes="currentPost.likes" :comment="currentPost.comments" :pageType="'socialing'" />
+          <Comment
+            :likes="currentPost.likes"
+            :comment="currentPost.comments || []"
+            :postId="currentPost.id"
+            :pageType="'socialing'"
+          />
         </div>
       </div>
       <!-- 참여하기 -->
