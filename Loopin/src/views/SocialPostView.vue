@@ -77,10 +77,14 @@ onMounted(async () => {
 watchEffect(async () => {
   if (currentPost.value && currentPost.value?.creator) {
     fetchData();
-
-    const { data, error } = await supabase.from("club_posts").select().eq("id", currentPost.value.for_club);
-    const clubParticipants = data[0].participants;
-    isUserInClub.value = clubParticipants.includes(userId.value);
+    
+    if (currentPost.value.for_club) {
+      const { data, error } = await supabase.from("club_posts").select().eq("id", currentPost.value.for_club);
+      if (data) {
+        const clubParticipants = data[0].participants;
+        isUserInClub.value = clubParticipants.includes(userId.value);
+      }
+    }
   }
 });
 

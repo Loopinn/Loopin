@@ -90,6 +90,11 @@ const resizeProfile = (imgUrl, index) => {
     return;
   }
 
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    participantsInfo.value[index].profile_img = imgUrl;
+    return;
+  }
+
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => {

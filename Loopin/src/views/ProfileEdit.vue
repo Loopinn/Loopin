@@ -36,7 +36,7 @@ onBeforeMount(async () => {
 });
 onMounted(() => {
   if (loginUser.profile_img) {
-    resizeProfile();
+    resizeProfile(loginUser.profile_img);
   }
 });
 
@@ -69,14 +69,18 @@ const handleImgSelect = (e) => {
 };
 //외부 이미지 리사이즈
 //이미지를 로드할 때 CORS 설정을 추가하면 브라우저가 이미지에 대한 올바른 리소스 접근 권한을 처리할 수 있습니다.
-const resizeProfile = () => {
+const resizeProfile = (imgUrl) => {
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
   const img = new Image();
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
     // 리사이징된 이미지 URL 얻기
     resizedProfile.value = resizeImage(img, 400, 400);
   };
-  img.src = loginUser.profile_img; // 외부 URL에서 이미지 로드
+  img.src = imgUrl; // 외부 URL에서 이미지 로드
 };
 
 // 닉네임 중복 체크

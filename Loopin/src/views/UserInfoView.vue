@@ -34,7 +34,8 @@ watch(
     }
     isLoading.value = true;
     await fetchData();
-    resizeProfile();
+    if (isMyPage.value) resizeProfile(loginUser.value.profile_img);
+    else resizeProfile(userData.value.profile_img);
   },
 );
 
@@ -177,7 +178,8 @@ onBeforeMount(() => {
 
 onMounted(async () => {
   await fetchData();
-  resizeProfile();
+  if (isMyPage.value) resizeProfile(loginUser.value.profile_img);
+  else resizeProfile(userData.value.profile_img);
 });
 
 const shortDesc = computed(() => {
@@ -199,7 +201,11 @@ const handleShare = () => {
 
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
-const resizeProfile = () => {
+const resizeProfile = (imgUrl) => {
+  if (imgUrl.includes("kakaocdn")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
   const img = new Image();
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
@@ -208,11 +214,9 @@ const resizeProfile = () => {
     resizedProfile.value = resizeImage(img, 200, 200);
   };
   console.log(resizedProfile.value);
-  resizedProfile.value = isMyPage.value ? loginUser.value.profile_img : userData.value.profile_img;
+  // resizedProfile.value = isMyPage.value ? loginUser.value.profile_img : userData.value.profile_img;
   // 외부 URL에서 이미지 로드
-  // if (isMyPage.value) img.src = loginUser.value.profile_img;
-  // else img.src = userData.value.profile_img;
-  img.src = resizedProfile.value;
+  img.src = imgUrl;
 };
 </script>
 <template>

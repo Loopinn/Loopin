@@ -238,6 +238,7 @@ const categoryList = ref([
   {
     name: "푸드·드링크",
     description: "맛집투어·카페·티저트·티룸·와인·비건",
+    image: "/categories/restaurant.jpg",
     list: [
       "맛집투어",
       "카페",
@@ -258,11 +259,13 @@ const categoryList = ref([
   {
     name: "자기계발",
     description: "독서·스터디·커리어·스피치",
+    image: "/categories/reading.jpg",
     list: ["독서", "스터디", "대화", "스피치", "사이드프로젝트", "커리어", "브랜딩", "창작"],
   },
   {
     name: "취미",
     description: "사진·공예·드로잉·뷰티·댄스·글쓰기",
+    image: "/categories/photo.jpg",
     list: [
       "사진",
       "드로잉",
@@ -286,6 +289,7 @@ const categoryList = ref([
   {
     name: "파티·게임",
     description: "컨셉파티·생일파티·보드게임·방탈출",
+    image: "/categories/concept-party.jpg",
     list: [
       "컨셉파티",
       "포틀럭파티",
@@ -307,16 +311,19 @@ const categoryList = ref([
   {
     name: "문화·예술",
     description: "전시·영화·페스티벌·연극·뮤지컬·공연",
+    image: "/categories/exhibition.jpg",
     list: ["전시", "영화", "뮤지컬", "공연", "연극", "페스티벌", "팝업", "연주회"],
   },
   {
     name: "연애·사랑",
     description: "소개팅·미팅·연애탐구",
+    image: "/categories/rotation-dating.jpg",
     list: ["로테이션소개팅", "컨셉소개팅", "대화형소개팅", "연애탐구생활", "콘텐츠소개팅", "와인미팅"],
   },
   {
     name: "동네·또래",
     description: "취향친구·동네친구·또래친구",
+    image: "/categories/preference-friends.jpg",
     list: ["또래친구", "동네친구", "취향친구"],
   },
 ]);
@@ -906,6 +913,13 @@ const resizeProfile = () => {
 onMounted(() => {
   resizeProfile();
 });
+
+const convertType = () => {
+  if (stateFields.selectedActivity === "소셜링") return "socialing";
+  else if (stateFields.selectedActivity === "클럽") return "club";
+  else if (stateFields.selectedActivity === "챌린지") return "challenge";
+  else return null;
+};
 </script>
 
 <template>
@@ -917,6 +931,7 @@ onMounted(() => {
       :isOpen="isModalOpen"
       :message="modalMessage"
       :buttonMessage="buttonMessage"
+      :pageType="convertType()"
       @confirm="handleConfirm"
       @close="closeModal"
     />
@@ -1201,7 +1216,7 @@ onMounted(() => {
           <h2 class="text-[30px] mb-[43px]">{{ stateFields.selectedActivity }} 주제를 선택해볼까요?</h2>
           <div
             v-for="(subject, index) in categoryList"
-            class="border p-[15px] rounded-[16px] mb-[15px]"
+            class="border p-[15px] rounded-[16px] mb-[15px] cursor-pointer"
             :class="stateFields.activeIndex === index ? 'bg-[#f9f9f9]' : 'h-[80px]'"
             @click="
               stateFields.activeIndex === index ? (stateFields.activeIndex = null) : (stateFields.activeIndex = index)
@@ -1211,7 +1226,7 @@ onMounted(() => {
             <div class="flex justify-between items-center mb-[24px]">
               <div class="flex">
                 <div class="w-[50px] h-[50px] border flex items-center justify-center rounded-full mr-[10px]">
-                  <img src="@/assets/images/star.svg" alt="" />
+                  <img :src="subject.image" alt="subject-img" />
                 </div>
                 <div>
                   <p>{{ subject.name }}</p>
