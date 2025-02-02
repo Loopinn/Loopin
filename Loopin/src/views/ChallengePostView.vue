@@ -187,7 +187,7 @@ const updateLikeStatus = (isLikedNow) => {
       />
       <div class="text-center mt-[30px]">
         <p class="text-[12px] mb-1">{{ userData.nickname }}</p>
-        <p class="text-[20px] font-bold">{{ currentPost.title }}</p>
+        <p class="text-[20px] font-bold px-[15px] line-clamp-1">{{ currentPost.title }}</p>
       </div>
     </div>
     <div class="flex items-center gap-2 absolute right-[40px]">
