@@ -166,6 +166,7 @@ const closeModal = () => {
 const likes = ref({});
 
 const initiallizeLikes = () => {
+  if (!loginUser) return;
   console.log("이니셜");
   props.comments.forEach((comment) => {
     if (comment.likes && comment.likes.includes(loginUser.id)) {
