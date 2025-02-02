@@ -159,7 +159,7 @@ const updateLikeStatus = (isLikedNow) => {
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <img
-      class="w-full h-[260px] object-cover will-change-transform"
+      class="w-full h-[260px] object-cover"
       :src="currentPost.images ? currentPost.images[0] : ' '"
       alt="thumbnail"
     />
@@ -172,7 +172,7 @@ const updateLikeStatus = (isLikedNow) => {
         @click="router.push(`/user/${userData.nickname}`)"
         :src="resizedProfile"
         alt="hostprofile"
-        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover will-change-transform cursor-pointer"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover cursor-pointer"
       />
       <img
         v-else

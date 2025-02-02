@@ -1498,11 +1498,7 @@ const convertType = () => {
                   :key="index"
                   class="flex-shrink-0 w-[128px] h-[128px] relative"
                 >
-                  <img
-                    :src="image"
-                    alt="Selected Image"
-                    class="w-full h-full object-cover will-change-transform border rounded-lg"
-                  />
+                  <img :src="image" alt="Selected Image" class="w-full h-full object-cover border rounded-lg" />
                   <!-- 삭제 버튼 -->
                   <img
                     src="@/assets/images/delete.svg"
@@ -1541,11 +1537,7 @@ const convertType = () => {
               class="w-full h-[260px]"
             >
               <SwiperSlide v-for="(image, index) in previewImages" :key="index">
-                <img
-                  :src="image || noImage"
-                  alt="게시물 이미지"
-                  class="w-full h-full object-cover will-change-transform"
-                />
+                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
               </SwiperSlide>
             </Swiper>
           </div>
@@ -1660,11 +1652,7 @@ const convertType = () => {
               class="w-full h-[260px]"
             >
               <SwiperSlide v-for="(image, index) in previewImages" :key="index">
-                <img
-                  :src="image || noImage"
-                  alt="게시물 이미지"
-                  class="w-full h-full object-cover will-change-transform"
-                />
+                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
               </SwiperSlide>
             </Swiper>
           </div>

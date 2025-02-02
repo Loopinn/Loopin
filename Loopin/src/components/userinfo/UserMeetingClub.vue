@@ -37,7 +37,7 @@ onMounted(() => {
         v-if="resizedProfile"
         :src="resizedProfile"
         alt="배너이미지"
-        class="w-full h-full rounded-[10px] object-cover will-change-transform"
+        class="w-full h-full rounded-[10px] object-cover"
       />
     </div>
     <p class="text-[13px] text-[#6e6e6e] line-clamp-2 text-center">

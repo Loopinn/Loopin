@@ -144,11 +144,7 @@ const updateLikeStatus = (isLikedNow) => {
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
-    <img
-      class="w-full h-[260px] object-cover will-change-transform"
-      :src="currentPost.images ? currentPost.images[0] : ''"
-      alt="thumbnail"
-    />
+    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="absolute top-3 left-3 flex gap-2">
       <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
     </div>
@@ -160,7 +156,7 @@ const updateLikeStatus = (isLikedNow) => {
               v-if="resizedProfile"
               :src="resizedProfile"
               alt="hostprofile"
-              class="w-[60px] h-[60px] rounded-full object-cover will-change-transform"
+              class="w-[60px] h-[60px] rounded-full object-cover"
             />
             <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
           </div>

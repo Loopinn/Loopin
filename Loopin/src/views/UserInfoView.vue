@@ -233,13 +233,13 @@ const resizeProfile = (imgUrl) => {
           :src="resizedProfile"
           :key="resizedProfile"
           alt="프로필 사진"
-          class="w-[75px] h-[75px] rounded-full shadow-md object-cover will-change-transform"
+          class="w-[75px] h-[75px] rounded-full shadow-md object-cover"
         />
         <img
           v-else
           src="@/assets/images/no-profile.svg"
           alt="프로필 사진"
-          class="w-[75px] h-[75px] rounded-full shadow-md object-cover will-change-transform"
+          class="w-[75px] h-[75px] rounded-full shadow-md object-cover"
         />
         <h1 class="font-extrabold text-[18px] my-3">{{ isMyPage ? loginUser.nickname : userData?.nickname }}</h1>
         <p class="w-[350px] text-[#383535] break-words">

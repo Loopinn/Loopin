@@ -201,11 +201,7 @@ const updateLikeStatus = (isLikedNow) => {
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img
-      class="w-full h-[260px] object-cover will-change-transform"
-      :src="currentPost.images ? currentPost.images[0] : ''"
-      alt="thumbnail"
-    />
+    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="absolute top-3 left-3 flex gap-2">
       <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
       <div v-if="currentPost.for_club" class="text-[14px] text-white rounded-[16px] bg-[#1C8A6A] px-2 py-1">
@@ -218,7 +214,7 @@ const updateLikeStatus = (isLikedNow) => {
         @click="router.push(`/user/${userData.nickname}`)"
         :src="resizedProfile"
         alt="hostprofile"
-        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover will-change-transform cursor-pointer"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover cursor-pointer"
       />
       <img
         v-else

@@ -230,19 +230,19 @@ const cancelUpdate = () => {
                   v-if="resizedProfile && !preImg"
                   :src="resizedProfile"
                   alt="프로필 사진"
-                  class="w-32 h-32 rounded-full object-cover will-change-transform border-4 border-white shadow-md"
+                  class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
                 />
                 <img
                   v-else-if="preImg"
                   :src="preImg"
                   alt="프로필 사진"
-                  class="w-32 h-32 rounded-full object-cover will-change-transform border-4 border-white shadow-md"
+                  class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
                 />
                 <img
                   v-else
                   src="@/assets/images/no-profile.svg"
                   alt="프로필 사진"
-                  class="w-32 h-32 rounded-full shadow-md object-cover will-change-transform"
+                  class="w-32 h-32 rounded-full shadow-md object-cover"
                 />
                 <label
                   for="profile_img"

@@ -115,7 +115,7 @@ onBeforeMount(async () => {
               @click="router.push(`/user/${userData.nickname}`)"
               :src="profileImage || userProfile"
               alt="프로필 이미지"
-              class="w-14 h-14 rounded-full shadow-md object-cover will-change-transform cursor-pointer"
+              class="w-14 h-14 rounded-full shadow-md object-cover cursor-pointer"
             />
           </div>
           <span class="font-bold">{{ nickname }}</span>
@@ -137,7 +137,7 @@ onBeforeMount(async () => {
           class="h-full w-full"
         >
           <SwiperSlide v-for="(image, index) in currentPost?.images" :key="index" class="aspect-square">
-            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover will-change-transform" />
+            <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
           </SwiperSlide>
         </Swiper>
       </div>

@@ -80,10 +80,7 @@ onBeforeMount(() => {
       </div>
       <div v-for="feed in loungePosts" :key="feed.id" class="relative">
         <RouterLink :to="{ path: `/lounge/${feed.id}` }">
-          <img
-            :src="feed.images[0] || noImage"
-            class="w-full rounded-2xl aspect-square object-cover will-change-transform"
-          />
+          <img :src="feed.images[0] || noImage" class="w-full rounded-2xl aspect-square object-cover" />
         </RouterLink>
 
         <div class="absolute bottom-14 left-3">
