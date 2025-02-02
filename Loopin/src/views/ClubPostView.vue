@@ -62,7 +62,7 @@ const fetchData = async () => {
 
       if (userDataFromDB) {
         userData.value = userDataFromDB;
-        resizeProfile();
+        resizeProfile(userData.value.profile_img);
       }
     } catch (error) {
       console.log("알 수 없는 오류 발생: ", error);
@@ -102,7 +102,11 @@ onBeforeMount(() => {
 
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
-const resizeProfile = () => {
+const resizeProfile = (imgUrl) => {
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
   const img = new Image();
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
@@ -110,7 +114,7 @@ const resizeProfile = () => {
     resizedProfile.value = resizeImage(img, 200, 200);
   };
   // 외부 URL에서 이미지 로드
-  img.src = userData.value.profile_img;
+  img.src = imgUrl;
 };
 
 const formatFeeInfo = (fee) => {
@@ -161,7 +165,7 @@ const updateLikeStatus = (isLikedNow) => {
             <img v-else src="@/assets/images/no-profile.svg" alt="hostprofile" class="w-[60px] h-[60px] rounded-full" />
           </div>
           <div class="mt-1 flex flex-col justify-center">
-            <p class="text-[20px] font-bold mb-1">{{ currentPost.title }}</p>
+            <p class="text-[20px] font-bold mb-1 max-w-[420px] line-clamp-2">{{ currentPost.title }}</p>
             <p class="text-[12px]">
               호스트 <b>{{ userData.nickname }}</b>
             </p>

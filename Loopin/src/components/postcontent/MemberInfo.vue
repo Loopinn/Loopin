@@ -128,11 +128,11 @@ const resizeProfile = (imgUrl, index) => {
       />
       <div v-if="props.pageType === 'club'" class="flex flex-col">
         <span class="text-[15px]">{{ userData?.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1]">{{ userData?.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{ userData?.description || "자기소개가 없습니다." }}</span>
       </div>
       <div v-else class="flex flex-col">
-        <span class="text-[15px]">{{ participant?.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1]">{{ participants?.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[15px]">{{ participants?.nickname }}</span>
+        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{ participants?.description || "자기소개가 없습니다." }}</span>
       </div>
     </div>
 
@@ -180,7 +180,7 @@ const resizeProfile = (imgUrl, index) => {
       />
       <div class="flex flex-col">
         <span class="text-[15px]">{{ participant?.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1]">{{ participant?.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{ participant?.description || "자기소개가 없습니다." }}</span>
       </div>
     </div>
 

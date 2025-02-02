@@ -47,8 +47,9 @@ const emit = defineEmits(["updateParticipants", "updateLike"]);
 const isModalOpen = ref(false);
 const participants = ref(props.currentPost?.participants || []);
 const isJoined = computed(() => participants.value.includes(props.userId));
-const maxPeople = ref(props.currentPost?.max_people);
-const isFull = computed(() => participants.value.length >= maxPeople.value);
+const isFull = computed(() => {
+  return props.currentPost?.max_people <= participants.value.length && !isJoined.value;
+});
 const modalMessage = computed(() => {
   const pageType = props.pageType;
   const activityType = pageType === "socialing" ? "소셜링" : pageType === "club" ? "클럽" : "챌린지";
@@ -63,14 +64,18 @@ const getButtonMessage = computed(() => {
   return isJoined.value ? "확인" : activityType;
 });
 const buttonText = computed(() => {
+  console.log("isFull:", isFull.value);
   if (!authStore.loginUser) return "로그인 후 이용가능합니다";
   if (!props.isUserInClub && props.clubId) return "클럽 참여하러 가기";
-  if (isFull.value) return "신청 불가";
+  if (isFull.value) return "참여 인원 마감";
   const activityType = props.pageType === "socialing" || props.pageType === "challenge" ? "참여" : "신청";
   return isJoined.value ? `${activityType} 취소` : `${activityType}하기`;
 });
 const buttonStyle = computed(() => {
-  if (!authStore.loginUser || isFull.value) {
+  if (!authStore.loginUser) {
+    return "bg-gray-400 text-white";
+  }
+  if (isFull.value) {
     return "bg-gray-400 text-white";
   }
   return isJoined.value

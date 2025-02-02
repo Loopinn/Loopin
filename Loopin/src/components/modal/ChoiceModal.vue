@@ -28,6 +28,8 @@ const closeModal = () => {
   emit("close");
 };
 
+console.log(props.pageType)
+
 const bgColor = computed(() => {
   switch (props.pageType) {
     case "socialing":
@@ -46,7 +48,7 @@ const bgColor = computed(() => {
     <div class="fixed inset-0 bg-black bg-opacity-50" @click="closeModal"></div>
 
     <div
-      class="relative z-10 w-[400px] h-[200px] bg-white rounded-lg shadow-lg flex flex-col items-center justify-between py-8 px-[15px]"
+      class="relative z-10 w-[400px] min-h-[200px] bg-white rounded-lg shadow-lg flex flex-col items-center justify-between py-8 px-[15px]"
     >
       <!-- 모달 내용 -->
       <p class="text-center text-gray-700 text-lg mt-4" v-html="message"></p>

@@ -900,7 +900,11 @@ watch(
 
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
-const resizeProfile = () => {
+const resizeProfile = (imgUrl) => {
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
   const img = new Image();
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
@@ -908,10 +912,10 @@ const resizeProfile = () => {
     resizedProfile.value = resizeImage(img, 200, 200);
   };
   // 외부 URL에서 이미지 로드
-  img.src = userInfo.value.profile_img;
+  img.src = imgUrl;
 };
 onMounted(() => {
-  resizeProfile();
+  resizeProfile(userInfo.value.profile_img);
 });
 
 const convertType = () => {
@@ -1559,7 +1563,7 @@ const convertType = () => {
                   />
                 </div>
                 <div class="mt-1 flex flex-col justify-center">
-                  <p class="text-[20px] font-bold mb-1">{{ stateFields.title }}</p>
+                  <p class="text-[20px] font-bold mb-1 max-w-[420px] line-clamp-2">{{ stateFields.title }}</p>
                   <p class="text-[12px]">호스트 {{ userInfo.nickname }}</p>
                 </div>
               </div>
@@ -1572,7 +1576,7 @@ const convertType = () => {
               </div>
 
               <div class="mt-[30px]">
-                <pre>{{ stateFields.description }}</pre>
+                <pre class="break-words whitespace-pre-wrap">{{ stateFields.description }}</pre>
                 <!-- 안내사항 -->
                 <div class="mt-5">
                   <p class="text-[#1C8A6A]">안내사항</p>
@@ -1669,9 +1673,9 @@ const convertType = () => {
               alt="hostprofile"
               class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
             />
-            <div class="text-center mt-[30px]">
+            <div class="text-center mt-[30px] px-[15px]">
               <p class="text-[12px] mb-1">{{ userInfo.nickname }}</p>
-              <p class="text-[20px] font-bold">{{ stateFields.title }}</p>
+              <p class="text-[20px] font-bold line-clamp-1">{{ stateFields.title }}</p>
             </div>
           </div>
           <!-- 한줄 요약 -->
@@ -1723,7 +1727,7 @@ const convertType = () => {
                 </div>
               </div>
               <div class="ml-[40px] mt-[70px] w-[520px]">
-                <pre class="">{{ stateFields.description }}</pre>
+                <pre class="break-words whitespace-pre-wrap">{{ stateFields.description }}</pre>
                 <!-- 안내사항 -->
                 <div class="mt-5">
                   <div

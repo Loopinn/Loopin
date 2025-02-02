@@ -57,7 +57,7 @@ const fetchData = async () => {
 
       if (userDataFromDB) {
         userData.value = userDataFromDB;
-        resizeProfile();
+        resizeProfile(userData.value.profile_img);
       }
     } catch (error) {
       console.log("알 수 없는 오류 발생: ", error);
@@ -175,7 +175,11 @@ const formatFeeInfo = (fee) => {
 
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
-const resizeProfile = () => {
+const resizeProfile = (imgUrl) => {
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
   const img = new Image();
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
@@ -183,7 +187,7 @@ const resizeProfile = () => {
     resizedProfile.value = resizeImage(img, 200, 200);
   };
   // 외부 URL에서 이미지 로드
-  img.src = userData.value.profile_img;
+  img.src = imgUrl;
 };
 
 const openKakaoMap = () => {
@@ -223,9 +227,9 @@ const updateLikeStatus = (isLikedNow) => {
         alt="hostprofile"
         class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] cursor-pointer"
       />
-      <div class="text-center mt-[30px]">
+      <div class="text-center mt-[30px] px-[15px]">
         <p class="text-[12px] mb-1">{{ userData.nickname }}</p>
-        <p class="text-[20px] font-bold">{{ currentPost.title }}</p>
+        <p class="text-[20px] font-bold line-clamp-1">{{ currentPost.title }}</p>
       </div>
     </div>
     <div class="flex items-center gap-2 absolute right-[40px]">
