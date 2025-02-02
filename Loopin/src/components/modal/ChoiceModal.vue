@@ -28,17 +28,17 @@ const closeModal = () => {
   emit("close");
 };
 
-console.log(props.pageType)
+console.log(props.pageType);
 
 const bgColor = computed(() => {
   switch (props.pageType) {
-    case "socialing":
-      return "bg-[#FF0000] hover:bg-[#CC0000]";
     case "challenge":
-      return "bg-[#46A7CD] hover:bg-[#3B8FB3]";
+      return "bg-[#3498D0] hover:bg-[#3B8FB3]";
     case "club":
-    default:
       return "bg-[#1C8A6A] hover:bg-[#176E55]";
+    case "socialing":
+    default:
+      return "bg-[#F43630] hover:bg-[#CC0000]";
   }
 });
 </script>
@@ -63,7 +63,7 @@ const bgColor = computed(() => {
 
         <!-- 취소 버튼 -->
         <button
-          class="w-[120px] px-4 py-2.5 bg-white text-black border border-[#1C8A6A] rounded-md hover:bg-gray-400 text-[#1C8A6A]"
+          class="w-[120px] px-4 py-2.5 bg-white text-black border border-[#ababab] rounded-md hover:bg-gray-400"
           @click="closeModal"
         >
           취소
