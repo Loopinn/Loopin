@@ -173,11 +173,7 @@ onBeforeMount(() => {
 <template>
   <div class="h-[200px] flex rounded-2xl bg-white mb-6 cursor-pointer">
     <div class="relative">
-      <img
-        :src="post.images ? post.images[0] : ''"
-        alt="thumbnail"
-        class="w-40 h-40 rounded-2xl m-5 object-cover will-change-transform"
-      />
+      <img :src="post.images ? post.images[0] : ''" alt="thumbnail" class="w-40 h-40 rounded-2xl m-5 object-cover" />
       <button v-if="loginUser" @click.stop.prevent="(event) => handleLike(event)">
         <img :src="isLiked ? like : unlike" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
       </button>
@@ -217,7 +213,7 @@ onBeforeMount(() => {
               <img
                 :src="img || noProfile"
                 alt="memberprofile"
-                class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
+                class="w-9 h-9 rounded-full border-2 border-white object-cover"
               />
               <!-- '더보기(more)' 이미지 오버레이 -->
               <img
@@ -230,7 +226,7 @@ onBeforeMount(() => {
               v-else
               :src="img || noProfile"
               alt="memberprofile"
-              class="w-9 h-9 rounded-full border-2 border-white object-cover will-change-transform"
+              class="w-9 h-9 rounded-full border-2 border-white object-cover"
             />
           </template>
         </div>

@@ -61,7 +61,7 @@ const modalMessage = computed(() => {
 const getButtonMessage = computed(() => {
   const activityType =
     props.pageType === (props.pageType === "socialing" || props.pageType === "challenge") ? "참여" : "신청";
-  return isJoined.value ? "취소" : activityType;
+  return isJoined.value ? "확인" : activityType;
 });
 const buttonText = computed(() => {
   console.log("isFull:", isFull.value);

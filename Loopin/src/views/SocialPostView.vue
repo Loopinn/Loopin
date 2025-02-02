@@ -57,7 +57,7 @@ const fetchData = async () => {
 
       if (userDataFromDB) {
         userData.value = userDataFromDB;
-        resizeProfile();
+        resizeProfile(userData.value.profile_img);
       }
     } catch (error) {
       console.log("알 수 없는 오류 발생: ", error);
@@ -175,7 +175,11 @@ const formatFeeInfo = (fee) => {
 
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
-const resizeProfile = () => {
+const resizeProfile = (imgUrl) => {
+  if (imgUrl.includes("k.kakaocdn.net")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
   const img = new Image();
   img.crossOrigin = "anonymous"; // CORS 설정 추가
   img.onload = () => {
@@ -183,7 +187,7 @@ const resizeProfile = () => {
     resizedProfile.value = resizeImage(img, 200, 200);
   };
   // 외부 URL에서 이미지 로드
-  img.src = userData.value.profile_img;
+  img.src = imgUrl;
 };
 
 const openKakaoMap = () => {
@@ -201,11 +205,7 @@ const updateLikeStatus = (isLikedNow) => {
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img
-      class="w-full h-[260px] object-cover will-change-transform"
-      :src="currentPost.images ? currentPost.images[0] : ''"
-      alt="thumbnail"
-    />
+    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
     <div class="absolute top-3 left-3 flex gap-2">
       <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
       <div v-if="currentPost.for_club" class="text-[14px] text-white rounded-[16px] bg-[#1C8A6A] px-2 py-1">
@@ -218,7 +218,7 @@ const updateLikeStatus = (isLikedNow) => {
         @click="router.push(`/user/${userData.nickname}`)"
         :src="resizedProfile"
         alt="hostprofile"
-        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover will-change-transform cursor-pointer"
+        class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover cursor-pointer"
       />
       <img
         v-else
@@ -227,9 +227,9 @@ const updateLikeStatus = (isLikedNow) => {
         alt="hostprofile"
         class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] cursor-pointer"
       />
-      <div class="text-center mt-[30px]">
+      <div class="text-center mt-[30px] px-[15px]">
         <p class="text-[12px] mb-1">{{ userData.nickname }}</p>
-        <p class="text-[20px] font-bold">{{ currentPost.title }}</p>
+        <p class="text-[20px] font-bold line-clamp-1">{{ currentPost.title }}</p>
       </div>
     </div>
     <div class="flex items-center gap-2 absolute right-[40px]">

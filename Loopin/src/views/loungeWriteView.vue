@@ -211,11 +211,7 @@ onBeforeMount(async () => {
                 :key="index"
                 class="flex-shrink-0 w-[128px] h-[128px] relative"
               >
-                <img
-                  :src="image"
-                  alt="Selected Image"
-                  class="w-full h-full object-cover will-change-transform border rounded-lg"
-                />
+                <img :src="image" alt="Selected Image" class="w-full h-full object-cover border rounded-lg" />
                 <!-- 삭제 버튼 -->
                 <img
                   src="@/assets/images/delete.svg"

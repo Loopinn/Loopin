@@ -252,13 +252,13 @@ onMounted(async () => {
     <div class="mt-2 flex gap-3">
       <div class="flex gap-2">
         <button @click="handleLike">
-          <img :src="props.isLiked ? like : unlike" alt="like" class="w-[30px] h-[30px]" />
+          <img :src="props.isLiked ? like : unlike" alt="like" class="h-[24px]" />
         </button>
         <span>{{ props.currentPost.likes }}</span>
       </div>
       <div class="flex gap-2">
         <button>
-          <img src="@/assets/images/comment.svg" alt="comment" @click="commentModalOpen" />
+          <img src="@/assets/images/comment.svg" alt="comment" class="h-[20px]" @click="commentModalOpen" />
           <CommentList
             :comments="
               props.pageType === 'socialing'

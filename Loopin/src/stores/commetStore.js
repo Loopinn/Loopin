@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 
 export const useCommentStore = defineStore("commentStore", () => {
-  const challengeComments = reactive({});
+  const challengeComments = ref([]);
   const clubComments = ref([]);
   const loungeComments = ref([]);
   const socialComments = ref([]);
