@@ -90,7 +90,7 @@ const resizeProfile = (imgUrl, index) => {
     return;
   }
 
-  if (imgUrl.includes("k.kakaocdn.net")) {
+  if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
     participantsInfo.value[index].profile_img = imgUrl;
     return;
   }

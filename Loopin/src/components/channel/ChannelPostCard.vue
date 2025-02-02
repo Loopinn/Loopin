@@ -66,7 +66,7 @@ const resizeProfile = (imgUrl, index) => {
     return;
   }
 
-  if (imgUrl.includes("k.kakaocdn.net")) {
+  if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
     participantImages.value[index] = imgUrl;
     return;
   }

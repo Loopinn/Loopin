@@ -70,7 +70,7 @@ const handleImgSelect = (e) => {
 //외부 이미지 리사이즈
 //이미지를 로드할 때 CORS 설정을 추가하면 브라우저가 이미지에 대한 올바른 리소스 접근 권한을 처리할 수 있습니다.
 const resizeProfile = (imgUrl) => {
-  if (imgUrl.includes("k.kakaocdn.net")) {
+  if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
     resizedProfile.value = imgUrl;
     return;
   }
