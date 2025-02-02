@@ -26,6 +26,7 @@ import { nextTick } from "vue";
 import { resizeImage } from "@/utils/resizeImage";
 import { toast } from "vue3-toastify";
 
+
 const userInfo = ref(null);
 
 const router = useRouter();
@@ -1059,7 +1060,7 @@ const convertType = () => {
             >
               <img :src="club.image" class="w-[80px] h-[80px] object-cover rounded-[16px]" alt="club-image" />
               <div class="mx-[10px]">
-                <p>{{ club.title }}</p>
+                <p class="line-clamp-2 max-w-[423px]">{{ club.title }}</p>
                 <p class="line-clamp-1 min-h-[24px] max-w-[423px] text-[#999996]">{{ club.description }}</p>
               </div>
               <div class="absolute right-[10px]">

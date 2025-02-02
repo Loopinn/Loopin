@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { debounce } from "lodash";
 
 const emits = defineEmits(["getPlace"]);
 const props = defineProps(["selectedPlace"]);
@@ -13,17 +14,12 @@ const pagination = ref({ last: 0, current: 0 }); // 페이지네이션 정보
 let ps = null; // 카카오 지도 검색 객체 (초기화 필요)
 
 // const selectedPlace = ref({});
-
-// 장소 검색 함수
-const searchPlaces = () => {
-  if (!keyword.value.trim()) {
-    alert("키워드를 입력해주세요!");
-    return;
-  }
-
-  // 카카오 API를 사용해 장소 검색
+let searchTimeout = null; // 타이머 변수
+// 장소 검색 함수 (디바운스 적용)
+const searchPlaces = debounce(() => {
+  if (!keyword.value.trim()) return;
   ps.keywordSearch(keyword.value, placesSearchCB);
-};
+}, 300);
 
 // 장소 검색 콜백 함수
 const placesSearchCB = (data, status, paginationObj) => {
@@ -39,6 +35,18 @@ const placesSearchCB = (data, status, paginationObj) => {
   } else if (status === window.kakao.maps.services.Status.ERROR) {
     alert("검색 중 오류가 발생했습니다.");
   }
+};
+
+const handleInput = (event) => {
+  const newValue = event.target.value;
+  // 기존 타이머가 있으면 제거
+  if (searchTimeout) clearTimeout(searchTimeout);
+  // 입력 값 업데이트
+  keyword.value = newValue;
+  // IME 조합이 끝났을 때만 실행 (300ms 후 실행)
+  searchTimeout = setTimeout(() => {
+    searchPlaces();
+  }, 300);
 };
 
 // 페이지 이동 함수
@@ -128,8 +136,8 @@ onMounted(async () => {
         </div>
         <input
           type="text"
-          v-model="keyword"
-          @keyup.enter="searchPlaces"
+          :value="keyword"
+          @input="handleInput"
           placeholder="어디에서 만나나요?"
           class="w-full border border-[#999996] h-[40px] rounded-[16px] px-3"
         />
