@@ -236,13 +236,13 @@ watchEffect(() => {
       </div>
 
       <!-- 댓글 -->
-      <div class="border-t border-gray-300 w-[80%] h-[80%] overflow-y-scroll scrollbar-hide">
+      <div class="border-t border-gray-300 w-[80%] h-[90%] overflow-y-scroll scrollbar-hide">
         <div v-for="(comment, idx) in comments" :key="idx" class="flex justify-center gap-[10px] py-3">
           <img
             v-if="userInfo[idx]?.profile_img"
             :src="userInfo[idx].profile_img"
             alt="userprofile"
-            class="w-7 h-7 rounded-full"
+            class="w-10 h-10 rounded-full"
             @click="router.push(`/user/${userInfo[idx].nickname}`)"
           />
 
@@ -250,16 +250,16 @@ watchEffect(() => {
             v-else
             src="@/assets/images/defaultprofile.svg"
             alt="userprofile"
-            class="w-7 h-7 rounded-full"
+            class="w-10 h-10 rounded-full"
             @click="router.push(`/user/${userInfo[idx].nickname}`)"
           />
 
           <div class="flex flex-col items-start">
-            <div class="mb-2 font-semibold text-[11px]">{{ userInfo[idx]?.nickname }}</div>
-            <p class="mb-2 w-[300px] text-[10px] text-left">
+            <div class="mb-2 font-semibold text-[14px]">{{ userInfo[idx]?.nickname }}</div>
+            <p class="mb-2 w-[300px] text-[12px] text-left">
               {{ comment.comment }}
             </p>
-            <div class="font-semibold text-[9px] text-[#909090]">
+            <div class="font-semibold text-[11px] text-[#909090]">
               {{ formatDate(comment.created_at) }} 좋아요 {{ comment.likes?.length || 0 }}개
             </div>
           </div>
@@ -308,11 +308,18 @@ watchEffect(() => {
         />
         <input
           v-model="text"
+          :disabled="!loginUser"
           type="text"
           placeholder="댓글 달기 ..."
           class="w-[78%] resize-none placeholder-[#B1B1B1] outline-none"
         />
-        <button type="submit" class="text-[#B1B1B1] hover:text-[#FF0000]" :disabled="!text.trim()">등록</button>
+        <button
+          type="submit"
+          class="text-[#B1B1B1] hover:text-[#FF0000] disabled:hover:text-[#b1b1b1]"
+          :disabled="!text.trim() && !loginUser"
+        >
+          등록
+        </button>
       </form>
     </div>
   </div>

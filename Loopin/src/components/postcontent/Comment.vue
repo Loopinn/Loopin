@@ -206,7 +206,7 @@ const getUserId = async () => {
     userInfo.value[index] = userData;
   });
   userId.value = sessionData?.session?.user?.id || "";
-  profile.value = sessionData?.session?.user.profile_img;
+  profile.value = loginUser?.profile_img;
   return sessionData?.session?.user?.id;
 };
 
@@ -280,7 +280,7 @@ onMounted(async () => {
         <span v-else>{{ challengeComments.length || 0 }}</span>
       </div>
     </div>
-    <form @submit.prevent="handleSubmit" class="mt-3 flex gap-4">
+    <form @submit.prevent="handleSubmit" class="mt-3 flex gap-4" v-if="loginUser">
       <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-7 h-7" />
       <input
         v-model="text"
