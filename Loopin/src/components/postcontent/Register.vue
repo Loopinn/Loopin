@@ -64,7 +64,6 @@ const getButtonMessage = computed(() => {
   return isJoined.value ? "확인" : activityType;
 });
 const buttonText = computed(() => {
-  console.log("isFull:", isFull.value);
   if (!authStore.loginUser) return "로그인 후 이용가능합니다";
   if (!props.isUserInClub && props.clubId) return "클럽 참여하러 가기";
   if (isFull.value) return "참여 인원 마감";

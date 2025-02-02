@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, ref, reactive, defineEmits, onBeforeMount, onMounted, watch, watchEffect } from "vue";
+import { defineProps, ref, reactive, defineEmits, onBeforeMount, onMounted, watch, watchEffect, computed } from "vue";
 import supabase from "@/config/supabase";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
@@ -85,6 +85,11 @@ const loadCommentsMap = {
   club: loadClubComments,
   challenge: loadChallengeComments,
 };
+const deleteCommentsMap = {
+  socialing: deleteSocialComment,
+  club: deleteClubComment,
+  challenge: deleteChallengeComment,
+};
 
 const emit = defineEmits(["close", "commentAdded"]);
 
@@ -94,10 +99,9 @@ const text = ref("");
 const userInfo = ref(props.userInfo);
 const userId = ref(null);
 const profile = ref(null);
+const isHovering = ref(false);
 
 // 작성자 확인
-const isAuth = ref(false);
-
 const getUserId = async () => {
   const mapComments = commentMap[props.pageType];
 
@@ -132,6 +136,19 @@ const handleSubmit = async () => {
   } catch (error) {
     console.log("댓글 등록 실패:", error);
   }
+};
+
+const currentPost = computed(() => {
+  const posts = postMap[props.pageType];
+  return posts ? posts.value.find((post) => post.id === props.postId) : null;
+});
+
+const handleCommentDelete = async (commentId) => {
+  const deleteComments = deleteCommentsMap[props.pageType];
+  const loadComments = loadCommentsMap[props.pageType];
+  await deleteComments(currentPost.value, commentId);
+  await getUserId();
+  await loadComments(props.postId);
 };
 
 const formatDate = (dateString) => {
@@ -259,16 +276,16 @@ watchEffect(() => {
           </div>
 
           <div class="flex flex-col -ml-9">
-            <div class="flex gap-2 mr-2">
+            <div
+              v-if="authStore.loginUser.id === comment.creator"
+              class="flex gap-2 mr-2"
+              @mouseover="!isHovering"
+              @mouseleave="isHovering"
+            >
+              <button class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]">수정</button>
               <button
                 class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]"
-                :class="{ invisible: isAuth }"
-              >
-                수정
-              </button>
-              <button
-                class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]"
-                :class="{ invisible: isAuth }"
+                @click="handleCommentDelete(comment.id)"
               >
                 삭제
               </button>

@@ -247,7 +247,7 @@ const updateLikeStatus = (isLikedNow) => {
           </div>
           <!-- 댓글 -->
           <Comment
-            :comments="currentPost.comments || []"
+            :comment="currentPost.comments || []"
             :postId="currentPost.id"
             :pageType="'club'"
             :currentPost="currentPost"
