@@ -264,7 +264,7 @@ watchEffect(() => {
             </div>
           </div>
 
-          <div class="flex flex-col -ml-9">
+          <div class="flex flex-col -ml-9" v-if="authStore.loginUser">
             <div
               v-if="authStore.loginUser.id === comment.creator"
               class="flex gap-2 mr-2"
