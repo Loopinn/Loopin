@@ -59,6 +59,8 @@ const {
   createChallengeComment,
   deleteChallengeComment,
   updateChallengeComment,
+  challengeCommentLike,
+  challengeCommentUnLike,
 } = commentStore;
 
 // 어디서 왔는지에 따라 다른 함수 지정
@@ -166,7 +168,6 @@ const likes = ref({});
 const initiallizeLikes = () => {
   console.log("이니셜");
   props.comments.forEach((comment) => {
-    console.log(comment.likes);
     if (comment.likes && comment.likes.includes(loginUser.id)) {
       likes.value[comment.id] = true;
     } else {
@@ -176,46 +177,33 @@ const initiallizeLikes = () => {
   console.log("likes", likes.value);
 };
 
+// 소셜링, 클럽, 챌린지 댓글 좋아요, 좋아요취소 함수 설정
+const commentLikeActions = {
+  socialing: { like: socialCommentLike, unlike: socialCommentUnLike },
+  club: { like: clubCommentLike, unlike: clubCommentUnLike },
+  challenge: { like: challengeCommentLike, unlike: challengeCommentUnLike },
+};
+
 const handleCommentLike = async (commentInfo) => {
-  if (props.pageType === "socialing") {
-    // 소셜링 댓글 좋아요
-    if (commentInfo.likes && commentInfo.likes.includes(loginUser.id)) {
-      // 좋아요 취소
-      await socialCommentUnLike(commentInfo, loginUser.id);
-      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+  const { like, unlike } = commentLikeActions[props.pageType] || {};
+  if (!like || !unlike) return;
 
-      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
-      props.comments[index].likes = props.comments[index].likes.filter((id) => id !== loginUser.id);
-    } else {
-      // 좋아요~
-      await socialCommentLike(commentInfo, loginUser.id);
-      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
-      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
-      if (props.comments[index].likes) {
-        props.comments[index].likes.push(loginUser.id);
-      } else {
-        props.comments[index].likes = [`${loginUser.id}`];
-      }
-    }
-  } else if (props.pageType === "club") {
-    // 클럽 댓글 좋아요
-    if (commentInfo.likes && commentInfo.likes.includes(loginUser.id)) {
-      // 좋아요 취소
-      await clubCommentUnLike(commentInfo, loginUser.id);
-      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+  if (commentInfo.likes && commentInfo.likes.includes(loginUser.id)) {
+    // 좋아요 취소
+    await unlike(commentInfo, loginUser.id);
+    likes.value[commentInfo.id] = !likes.value[commentInfo.id];
 
-      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
-      props.comments[index].likes = props.comments[index].likes.filter((id) => id !== loginUser.id);
+    const index = props.comments.findIndex((c) => c.id === commentInfo.id);
+    props.comments[index].likes = props.comments[index].likes.filter((id) => id !== loginUser.id);
+  } else {
+    // 좋아요~
+    await like(commentInfo, loginUser.id);
+    likes.value[commentInfo.id] = !likes.value[commentInfo.id];
+    const index = props.comments.findIndex((c) => c.id === commentInfo.id);
+    if (props.comments[index].likes) {
+      props.comments[index].likes.push(loginUser.id);
     } else {
-      // 좋아요~
-      await clubCommentLike(commentInfo, loginUser.id);
-      likes.value[commentInfo.id] = !likes.value[commentInfo.id];
-      const index = props.comments.findIndex((c) => c.id === commentInfo.id);
-      if (props.comments[index].likes) {
-        props.comments[index].likes.push(loginUser.id);
-      } else {
-        props.comments[index].likes = [`${loginUser.id}`];
-      }
+      props.comments[index].likes = [`${loginUser.id}`];
     }
   }
 };
@@ -292,6 +280,7 @@ watchEffect(() => {
             </div>
 
             <button
+              v-if="loginUser"
               class="ml-7"
               @click="
                 async () => {

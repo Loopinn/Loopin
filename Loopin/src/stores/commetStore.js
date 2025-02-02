@@ -9,18 +9,28 @@ export const useCommentStore = defineStore("commentStore", () => {
   const socialComments = ref([]);
 
   const loadChallengeComments = async (postId) => {
-    if (!challengeComments[postId]) {
-      // 댓글이 로드되지 않았을 경우만 요청
-      const { data, error } = await supabase.from("challenge_comments").select("*").eq("post_id", postId); // postId로 필터링
+    // if (!challengeComments[postId]) {
+    //   // 댓글이 로드되지 않았을 경우만 요청
+    //   const { data, error } = await supabase.from("challenge_comments").select("*").eq("post_id", postId); // postId로 필터링
 
-      if (error) {
-        console.error("Error loading comments:", error.message);
-        return;
-      }
+    //   if (error) {
+    //     console.error("Error loading comments:", error.message);
+    //     return;
+    //   }
 
-      challengeComments[postId] = data || []; // 댓글 저장
-      subscribeChallengeComments(postId);
+    //   challengeComments[postId] = data || []; // 댓글 저장
+    //   // subscribeChallengeComments(postId);
+    // }
+    const { data: challengeCommentsData, error: challengeCommentsError } = await supabase
+      .from("challenge_comments")
+      .select()
+      .eq("post_id", postId);
+
+    if (challengeCommentsError) {
+      throw new Error("클럽 댓글 가져오기 오류" + challengeCommentsError);
     }
+    console.log("클럽 댓글 불러옴", challengeCommentsData);
+    challengeComments.value = challengeCommentsData;
   };
   const subscribeChallengeComments = (postId) => {
     // INSERT 이벤트에 필터 적용
@@ -65,38 +75,108 @@ export const useCommentStore = defineStore("commentStore", () => {
       .subscribe();
   };
 
-  const createChallengeComment = async (createCommentForm) => {
-    const newComment = Object.assign({}, createCommentForm);
+  const createChallengeComment = async (commentInfo) => {
+    try {
+      const { data: challengeCommentData, error: challengeCommentError } = await supabase
+        .from("challenge_comments")
+        .insert({ ...commentInfo })
+        .select();
+      if (challengeCommentError) throw new Error(challengeCommentError);
+      console.log("댓글 달기 성공", challengeCommentData);
 
-    const { error } = await supabase.from("challenge_comments").insert([newComment]).select();
-    if (error) {
-      //오류 발생 시 로직
+      // 피드 정보 가져옴
+      const { data: challengeData, error: clubError } = await supabase
+        .from("challenge_posts")
+        .select("comments")
+        .eq("id", challengeCommentData[0].post_id)
+        .single();
+
+      const currentComments = challengeData.comments || [];
+      const updateComments = [...currentComments, challengeCommentData[0].id];
+      // 피드 DB에 댓글 추가
+      const response = await supabase
+        .from("challenge_posts")
+        .update({ comments: updateComments })
+        .eq("id", challengeCommentData[0].post_id)
+        .select();
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteChallengeComment = async (postInfo, commentId) => {
+    try {
+      if (!postInfo.comments || !postInfo.comments.length) return;
+
+      const currentComments = postInfo.comments;
+      const deletedComments = currentComments.filter((curComment) => curComment !== commentId);
+      const response = await supabase.from("challenge_comments").delete().eq("id", commentId).select();
+      console.log("삭제완료!", response);
+
+      const { data, error } = await supabase
+        .from("challenge_posts")
+        .update({ comments: deletedComments })
+        .eq("id", postInfo.id);
+      if (error) console.error(error);
+      console.log("게시판에 있는 댓글 내역도 삭제완료!", data);
+
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateChallengeComment = async (newCommentInfo, commentId) => {
+    try {
+      const response = await supabase
+        .from("challenge_comments")
+        .update({ comment: newCommentInfo })
+        .eq("id", commentId);
+
+      console.log("수정완료!", response);
+      return response;
+    } catch (error) {
       console.log(error);
     }
   };
-  const deleteChallengeComment = async (commentId) => {
-    const { error } = await supabase.from("challenge_comments").delete().eq("id", commentId);
-    if (error) {
-      //오류 발생 시 로직
-      console.log(error);
+
+  const challengeCommentLike = async (commentInfo, userId) => {
+    try {
+      const currentLikes = commentInfo.likes || [];
+      const updatedLikes = [...currentLikes, userId];
+
+      const { data, error } = await supabase
+        .from("challenge_comments")
+        .update({ likes: updatedLikes })
+        .eq("id", commentInfo.id)
+        .select();
+      if (error) throw new Error("댓글 좋아요 추가 오류!", error);
+      console.log("챌린지 댓글 좋아요 추가 완료!", data);
+      return data;
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const updateChallengeComment = async (postId, commentId, updates) => {
-    const index = challengeComments[postId].findIndex((comment) => comment.id === commentId);
-    if (index === -1) {
-      console.log("Comment not found.");
-      return;
-    }
-    //반응형으로 복사히지 않기 위해//useNonReactiveCopy훅으로 빼기
-    const oldComment = JSON.parse(JSON.stringify(challengeComments[postId][index]));
+  const challengeCommentUnLike = async (commentInfo, userId) => {
+    try {
+      if (!commentInfo.likes || !commentInfo.likes.length) return;
 
-    Object.assign(challengeComments[postId][index], updates);
+      const currentLikes = commentInfo.likes;
+      const updatedLikes = currentLikes.filter((like) => like !== userId);
+      const { data, error } = await supabase
+        .from("challenge_comments")
+        .update({ likes: updatedLikes })
+        .eq("id", commentInfo.id)
+        .select();
 
-    const { error } = await supabase.from("challenge_comments").update(updates).eq("id", commentId).select();
-    if (error) {
-      console.log("failed to update", error);
-      Object.assign(challengeComments[postId][index], oldComment);
+      if (error) throw new Error("챌린지 댓글 좋아요 취소 오류!", error);
+      console.log("챌린지 댓글 좋아요 취소 완료!", data);
+      return data;
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -464,6 +544,8 @@ export const useCommentStore = defineStore("commentStore", () => {
     createChallengeComment,
     deleteChallengeComment,
     updateChallengeComment,
+    challengeCommentLike,
+    challengeCommentUnLike,
     loungeComments,
     loadLoungeComments,
     createLoungeComment,
