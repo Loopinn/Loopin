@@ -902,7 +902,7 @@ watch(
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
 const resizeProfile = (imgUrl) => {
-  if (imgUrl.includes("k.kakaocdn.net")) {
+  if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
     resizedProfile.value = imgUrl;
     return;
   }
