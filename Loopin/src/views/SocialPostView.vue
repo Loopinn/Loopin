@@ -14,7 +14,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 
 const postStore = usePostStore();
 const { socialingPosts } = storeToRefs(postStore);
@@ -203,10 +203,14 @@ const updateLikeStatus = (isLikedNow) => {
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <div class="w-full relative z-0 bg-white rounded-xl">
       <Swiper
-        :modules="[Navigation, Pagination]"
+        :modules="[Navigation, Pagination, Autoplay]"
+        :loop="true"
         :slides-per-view="1"
         :navigation="true"
         :pagination="{ clickable: true }"
+        :autoplay="{
+          delay: 4000,
+        }"
         class="w-full h-[260px]"
       >
         <SwiperSlide v-for="(image, index) in currentPost.images" :key="index">
@@ -340,4 +344,24 @@ const updateLikeStatus = (isLikedNow) => {
     </div>
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  background-color: #ffffffcc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 11px;
+  color: #f43630 !important;
+}
+
+:deep(.swiper-button-prev::after),
+:deep(.swiper-button-next::after) {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  background-color: #f43630 !important;
+}
+</style>

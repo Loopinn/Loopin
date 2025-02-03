@@ -14,7 +14,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
 const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
@@ -149,10 +149,14 @@ const updateLikeStatus = (isLikedNow) => {
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <div class="w-full relative z-0 bg-white rounded-xl">
       <Swiper
-        :modules="[Navigation, Pagination]"
+        :loop="true"
+        :modules="[Navigation, Pagination, Autoplay]"
         :slides-per-view="1"
         :navigation="true"
         :pagination="{ clickable: true }"
+        :autoplay="{
+          delay: 4000,
+        }"
         class="w-full h-[260px]"
       >
         <SwiperSlide v-for="(image, index) in currentPost.images" :key="index">
@@ -206,9 +210,7 @@ const updateLikeStatus = (isLikedNow) => {
             <div class="mt-2">
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />
-                <p>
-                  {{ currentPost.max_people }}명
-                </p>
+                <p>{{ currentPost.max_people }}명</p>
               </div>
               <div v-if="currentPost.fee !== 0" class="flex gap-1 mb-1">
                 <img src="@/assets/images/won.svg" alt="fee" />
@@ -277,4 +279,24 @@ const updateLikeStatus = (isLikedNow) => {
     />
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  background-color: #ffffffcc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 11px;
+  color: #1c8a6a !important;
+}
+
+:deep(.swiper-button-prev::after),
+:deep(.swiper-button-next::after) {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  background-color: #1c8a6a !important;
+}
+</style>
