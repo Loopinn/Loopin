@@ -26,7 +26,6 @@ import { nextTick } from "vue";
 import { resizeImage } from "@/utils/resizeImage";
 import { toast } from "vue3-toastify";
 
-
 const userInfo = ref(null);
 
 const router = useRouter();
@@ -902,6 +901,10 @@ watch(
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
 const resizeProfile = (imgUrl) => {
+  if (!imgUrl) {
+    resizedProfile.value = null;
+    return;
+  }
   if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
     resizedProfile.value = imgUrl;
     return;

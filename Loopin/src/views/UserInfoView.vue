@@ -202,7 +202,11 @@ const handleShare = () => {
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
 const resizeProfile = (imgUrl) => {
-  if (imgUrl.includes("kakaocdn")) {
+  if (!imgUrl) {
+    resizedProfile.value = null;
+    return;
+  }
+  if (imgUrl && imgUrl.includes("kakaocdn")) {
     resizedProfile.value = imgUrl;
     return;
   }
@@ -213,7 +217,6 @@ const resizeProfile = (imgUrl) => {
     resizedProfile.value = null;
     resizedProfile.value = resizeImage(img, 200, 200);
   };
-  console.log(resizedProfile.value);
   // resizedProfile.value = isMyPage.value ? loginUser.value.profile_img : userData.value.profile_img;
   // 외부 URL에서 이미지 로드
   img.src = imgUrl;
