@@ -81,7 +81,7 @@ onBeforeMount(async () => {
 });
 </script>
 <template>
-  <div v-if="!isLoading">
+  <div v-if="!isLoading" class="pb-10">
     <ul class="flex gap-2">
       <li
         :class="
@@ -120,7 +120,7 @@ onBeforeMount(async () => {
       >
         <ChannelPostCard :post="clubpost" channelName="클럽" />
       </RouterLink>
-      <div v-else class="flex flex-col items-center justify-center gap-2 mt-[200px]">
+      <div v-else class="flex flex-col items-center justify-center gap-2 mt-[50px]">
         <NoPosts text="참가한 클럽이 없습니다." css="text-[20px]" />
         <div
           class="flex items-center justify-center gap-2 bg-[#1c8a6a] text-white w-[150px] h-[50px] rounded-[15px] hover:bg-[#1c8a6be7] cursor-pointer"
@@ -140,7 +140,7 @@ onBeforeMount(async () => {
       >
         <ChannelPostCard :post="socialingPost" channelName="소셜링" />
       </RouterLink>
-      <div v-else class="flex flex-col items-center justify-center gap-2 mt-[200px]">
+      <div v-else class="flex flex-col items-center justify-center gap-2 mt-[50px]">
         <NoPosts text="참가한 소셜링이 없습니다." css="text-[20px]" />
         <div
           class="flex items-center justify-center gap-2 bg-[#f43630] text-white w-[160px] h-[50px] rounded-[15px] hover:bg-[#f43630e7] cursor-pointer"
@@ -160,7 +160,7 @@ onBeforeMount(async () => {
       >
         <ChannelPostCard :post="challengePost" channelName="챌린지" />
       </RouterLink>
-      <div v-else class="flex flex-col items-center justify-center gap-2 mt-[200px]">
+      <div v-else class="flex flex-col items-center justify-center gap-2 mt-[50px]">
         <NoPosts text="참가한 챌린지가 없습니다." css="text-[20px]" />
         <div
           class="flex items-center justify-center gap-2 bg-[#3498D0] text-white w-[160px] h-[50px] rounded-[15px] hover:bg-[#3498D0e7] cursor-pointer"
