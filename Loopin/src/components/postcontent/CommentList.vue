@@ -195,7 +195,6 @@ const likes = ref({});
 
 const initiallizeLikes = () => {
   if (!loginUser) return;
-  console.log("이니셜");
   props.comments.forEach((comment) => {
     if (comment.likes && comment.likes.includes(loginUser.id)) {
       likes.value[comment.id] = true;
@@ -203,7 +202,6 @@ const initiallizeLikes = () => {
       likes.value[comment.id] = false;
     }
   });
-  console.log("likes", likes.value);
 };
 
 // 소셜링, 클럽, 챌린지 댓글 좋아요, 좋아요취소 함수 설정
@@ -237,12 +235,10 @@ const handleCommentLike = async (commentInfo) => {
   }
 };
 
-onBeforeMount(async() => {
-  console.log("props  ", props);
+onBeforeMount(async () => {
   initiallizeLikes();
 
   const { data: sessionData } = await supabase.auth.getSession();
-  console.log(sessionData)
   profile.value = sessionData?.session?.user.user_metadata.profile_img;
 });
 

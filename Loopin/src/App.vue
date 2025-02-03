@@ -92,8 +92,6 @@ watch(
 supabase.auth.onAuthStateChange((event, session) => {
   setTimeout(async () => {
     if (event === "SIGNED_IN") {
-      console.log(session);
-
       const { data: userData, error: userError } = await supabase
         .from("userinfo")
         .select()
@@ -105,7 +103,6 @@ supabase.auth.onAuthStateChange((event, session) => {
         return;
       }
 
-      console.log(userData);
       authStore.setUser({ ...userData, provider: session.user.app_metadata.provider });
     } else if (event === "SIGNED_OUT") {
       authStore.clearUser();

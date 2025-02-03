@@ -41,11 +41,9 @@ const handleSubmit = async (e) => {
     const response = await login(email.value, password.value);
     if (response && response.error) {
       if (response.error.message === "Invalid login credentials") {
-        console.log("로그인 중 에러 발생: Invalid login credentials");
         throw new Error(response.error.message);
       }
     }
-    console.log("로그인 성공: ", response);
     modalSuccess.value = `<b style='font-size: 18px; color: #000;'>로그인에 성공했습니다.</b>`;
     loginSuccess.value = true;
   } catch (error) {
@@ -66,13 +64,9 @@ const kakaoLoginHandler = async () => {
 
     if (kakaoError) {
       // OAuth 호출 자체 실패
-      console.log("카카오 로그인 실패: ", kakaoError);
       modalMessage.value = `<b style='font-size: 18px; color: #000;'>카카오 로그인 중 문제가 발생했습니다.<br />다시 시도해주세요.</b>`;
       return;
     }
-
-    // OAuth 리디렉션 정상 작동
-    console.log("카카오 로그인 성공: ", kakaoData);
 
     if (!kakaoData) {
       isLoading.value = true;

@@ -88,7 +88,6 @@ const formatDate = (date) => {
   const day = newDate.getDate();
 
   const dayName = dayNames[newDate.getDay()];
-  console.log(`${month}.${day}(${dayName})`);
   return `${month}.${day}(${dayName})`;
 };
 
@@ -98,7 +97,6 @@ const diffDay = (startDate, endDate) => {
   const end = new Date(endDate);
 
   const diff = (end - start) / (1000 * 60 * 60 * 24 * 7);
-  console.log(diff.toFixed(0));
 
   return `${diff.toFixed(0)}주 간`;
 };
@@ -138,8 +136,6 @@ const likeCheck = async () => {
       .select("postLikes")
       .eq("id", loginUser.value.id)
       .single();
-
-    console.log(userData);
 
     if (userDataError) {
       console.error(userDataError);

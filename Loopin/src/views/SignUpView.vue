@@ -71,7 +71,6 @@ const handleSubmit = async () => {
   if (emailError.value || passwordError.value || verifyPasswordError.value || nameError.value) {
     return;
   }
-  console.log("회원가입 진행");
 
   try {
     const response = await register(email.value, password.value, name.value);
@@ -82,12 +81,6 @@ const handleSubmit = async () => {
     } else {
       modalMessage.value = "<b style='font-size: 22px; color: #000;'>회원가입이 완료되었습니다</b>";
       isModalOpen.value = true;
-      console.log({
-        email: email.value,
-        password: password.value,
-        verifyPassword: verifyPassword.value,
-        name: name.value,
-      });
     }
   } catch (error) {
     console.log("회원가입 중 오류 발생", error.message);
