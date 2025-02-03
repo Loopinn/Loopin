@@ -119,7 +119,9 @@ const handleSubmit = async () => {
           images: images ? selectedImage.value : imageUrls,
         });
         toast("피드가 수정되었습니다.");
-        router.push(`/lounge/${postId.value}`);
+        router.push(`/lounge/${postId.value}`).then(() => {
+          loadLoungePosts();
+        });
       } else {
         // 새로운 포스트 생성
         const submitResponse = await createLoungePost(
