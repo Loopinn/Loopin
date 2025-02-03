@@ -281,7 +281,7 @@ onMounted(async () => {
       </div>
     </div>
     <form @submit.prevent="handleSubmit" class="mt-3 flex gap-4" v-if="loginUser">
-      <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-7 h-7" />
+      <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-7 h-7 object-cover" />
       <input
         v-model="text"
         type="text"
