@@ -56,7 +56,6 @@ onMounted(async () => {
         .eq("id", postId)
         .single();
       if (error) console.log("불러오기 실패", error.message);
-      console.log(socialingPost);
       if (socialingPost) {
         stateFields.socialingType = socialingPost.type;
         stateFields.range = socialingPost.age_limit;
@@ -91,7 +90,6 @@ onMounted(async () => {
       updateSteps(updateClubSteps);
       const { data: clubPost, error } = await supabase.from("club_posts").select("*").eq("id", postId).single();
       if (error) console.log("불러오기 실패", error.message);
-      console.log(clubPost);
       if (clubPost) {
         stateFields.range = clubPost.age_limit;
         stateFields.category = clubPost.category;
@@ -125,7 +123,6 @@ onMounted(async () => {
         .eq("id", postId)
         .single();
       if (error) console.log("불러오기 실패", error.message);
-      console.log(challengePost);
       if (challengePost) {
         stateFields.category = challengePost.category;
         stateFields.description = challengePost.description;
@@ -558,14 +555,12 @@ const handleFileChange = (event) => {
     }
   }
   event.target.value = "";
-  console.log(selectedImage.value);
 };
 //이미지 제거
 const removeImage = (index) => {
   previewImages.value.splice(index, 1); // 해당 인덱스의 이미지를 배열에서 제거
   selectedImage.value.splice(index, 1);
   fileCount.value = selectedImage.value.length;
-  console.log(selectedImage.value);
 };
 
 // 완료 버튼 액션
@@ -817,7 +812,6 @@ watch(
   () => stateFields.selectedClub,
   (newValue) => {
     setState({ ...state.value, selectedClub: newValue });
-    console.log(state.value);
   },
 );
 

@@ -29,7 +29,6 @@ export const useCommentStore = defineStore("commentStore", () => {
     if (challengeCommentsError) {
       throw new Error("클럽 댓글 가져오기 오류" + challengeCommentsError);
     }
-    console.log("클럽 댓글 불러옴", challengeCommentsData);
     challengeComments.value = challengeCommentsData;
   };
   const subscribeChallengeComments = (postId) => {
@@ -40,7 +39,6 @@ export const useCommentStore = defineStore("commentStore", () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "challenge_comments", filter: `post_id=eq.${postId}` },
         (payload) => {
-          console.log(payload);
           challengeComments[postId].push(payload.new); // 새 댓글 추가
         },
       )
@@ -49,7 +47,6 @@ export const useCommentStore = defineStore("commentStore", () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "challenge_comments", filter: `post_id=eq.${postId}` },
         (payload) => {
-          console.log(payload);
           const index = challengeComments[postId].findIndex((comment) => comment.id === payload.new.id);
           if (index !== -1) {
             Object.assign(challengeComments[postId][index], payload.new); // 댓글 업데이트
@@ -65,7 +62,6 @@ export const useCommentStore = defineStore("commentStore", () => {
         "postgres_changes",
         { event: "DELETE", schema: "public", table: "challenge_comments" }, // filter 없이
         (payload) => {
-          console.log(payload);
           const index = challengeComments[postId].findIndex((comment) => comment.id === payload.old.id);
           if (index !== -1) {
             challengeComments[postId].splice(index, 1); // 댓글 삭제
@@ -82,7 +78,6 @@ export const useCommentStore = defineStore("commentStore", () => {
         .insert({ ...commentInfo })
         .select();
       if (challengeCommentError) throw new Error(challengeCommentError);
-      console.log("댓글 달기 성공", challengeCommentData);
 
       // 피드 정보 가져옴
       const { data: challengeData, error: clubError } = await supabase

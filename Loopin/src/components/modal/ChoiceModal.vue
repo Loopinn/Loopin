@@ -28,8 +28,6 @@ const closeModal = () => {
   emit("close");
 };
 
-console.log(props.pageType);
-
 const bgColor = computed(() => {
   switch (props.pageType) {
     case "challenge":
