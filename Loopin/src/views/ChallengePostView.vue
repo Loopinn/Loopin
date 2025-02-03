@@ -15,7 +15,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 
 const postStore = usePostStore();
 const { challengePosts } = storeToRefs(postStore);
@@ -31,7 +31,7 @@ const isLoading = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
-  
+
   userId.value = sessionData?.session?.user?.id || "";
   return sessionData?.session?.user?.id;
 };
@@ -63,7 +63,7 @@ const fetchData = async () => {
     } finally {
       isLoading.value = false;
     }
-  } 
+  }
 };
 
 const handleUpdateParticipants = (updatedParticipants) => {
@@ -162,8 +162,12 @@ const updateLikeStatus = (isLikedNow) => {
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <div class="w-full relative z-0 bg-white rounded-xl">
       <Swiper
-        :modules="[Navigation, Pagination]"
+        :loop="true"
+        :modules="[Navigation, Pagination, Autoplay]"
         :slides-per-view="1"
+        :autoplay="{
+          delay: 4000,
+        }"
         :navigation="true"
         :pagination="{ clickable: true }"
         class="w-full h-[260px]"
@@ -285,4 +289,24 @@ const updateLikeStatus = (isLikedNow) => {
     </div>
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  background-color: #ffffffcc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 11px;
+  color: #3498d0 !important;
+}
+
+:deep(.swiper-button-prev::after),
+:deep(.swiper-button-next::after) {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  background-color: #3498d0 !important;
+}
+</style>
