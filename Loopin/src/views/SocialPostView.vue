@@ -255,7 +255,7 @@ const updateLikeStatus = (isLikedNow) => {
           <span class="text-[#909090]">(44)</span>
         </div>
         <div class="ml-[40px] mt-[70px] w-[520px]">
-          <div>{{ currentPost.description }}</div>
+          <div class="break-words whitespace-pre-wrap">{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
           <MemberInfo :participants="currentPost.participants || []" :pageType="'socialing'" />
           <!-- 안내사항 -->

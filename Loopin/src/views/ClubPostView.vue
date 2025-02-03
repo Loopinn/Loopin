@@ -195,7 +195,7 @@ const updateLikeStatus = (isLikedNow) => {
         </div>
 
         <div class="mt-[30px]">
-          <div>{{ currentPost.description }}</div>
+          <div class="break-words whitespace-pre-wrap">{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
           <MemberInfo
             v-if="userData"

@@ -222,7 +222,7 @@ const updateLikeStatus = (isLikedNow) => {
           <span>{{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}</span>
         </div>
         <div class="ml-[40px] mt-[70px] w-[520px]">
-          <div>{{ currentPost.description }}</div>
+          <div class="break-words whitespace-pre-wrap">{{ currentPost.description }}</div>
           <!-- 멤버 소개 -->
           <MemberInfo :participants="currentPost.participants || []" :pageType="'challenge'" />
           <!-- 안내사항 -->
