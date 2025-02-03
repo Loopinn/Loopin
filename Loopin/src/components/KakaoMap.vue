@@ -29,7 +29,7 @@ const placesSearchCB = (data, status, paginationObj) => {
       gotoPage: paginationObj.gotoPage,
     };
   } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
-    alert("검색 결과가 존재하지 않습니다.");
+    return;
   } else if (status === window.kakao.maps.services.Status.ERROR) {
     alert("검색 중 오류가 발생했습니다.");
   }
@@ -49,6 +49,12 @@ const handleInput = (event) => {
 // 페이지 이동 함수
 const goToPage = (page) => {
   pagination.value.gotoPage(page);
+
+  // 스크롤을 최상단으로 이동
+  const listWrap = document.querySelector(".location-list-wrap");
+  if (listWrap) {
+    listWrap.scrollTop = 0;
+  }
 };
 
 const handlePlaceClick = (place) => {
@@ -139,7 +145,7 @@ onMounted(async () => {
       </div>
 
       <!-- 리스트 -->
-      <div class="location-list-wrap h-[365px] overflow-y-auto">
+      <div class="location-list-wrap h-[365px] overflow-y-auto relative">
         <ul id="placesList" class="divide-y">
           <li v-for="(place, index) in places" :key="index">
             <div class="info py-2" @click="handlePlaceClick(place)">
@@ -151,12 +157,16 @@ onMounted(async () => {
             </div>
           </li>
         </ul>
-        <div id="pagination">
+        <div
+          id="pagination"
+          class="sticky bottom-0 left-0 w-full bg-white p-2 border-t flex justify-center space-x-2 mt-4"
+        >
           <a
             v-for="page in Array.from({ length: pagination.last }, (_, i) => i + 1)"
             :key="page"
             href="#"
-            :class="{ on: page === pagination.current }"
+            class="px-3 py-1 rounded-md transition-colors duration-200"
+            :class="page === pagination.current ? 'text-black font-bold' : 'text-gray-500 hover:text-gray-700'"
             @click.prevent="goToPage(page)"
           >
             {{ page }}
