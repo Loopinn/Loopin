@@ -102,7 +102,6 @@ const loadCommentsMap = {
 
 const currentPost = computed(() => {
   const posts = postMap[props.pageType];
-  // return socialingPosts.value.find((post) => post.id === props.postId);
   return posts ? posts.value.find((post) => post.id === props.postId) : null;
 });
 
@@ -193,7 +192,6 @@ const getUserId = async () => {
   const mapComments = commentMap[props.pageType];
 
   const { data: sessionData } = await supabase.auth.getSession();
-  // socialComments.value.map(async (i, index) => {
   mapComments.value.map(async (i, index) => {
     const { data: userData, error: userError } = await supabase
       .from("userinfo")
@@ -214,10 +212,8 @@ const handleSubmit = async () => {
     if (userId) {
       const createComment = createCommentMap[props.pageType];
       const loadComments = loadCommentsMap[props.pageType];
-      // await createSocialComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
       await createComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
       text.value = "";
-      // await loadSocialComments(props.postId);
       await loadComments(props.postId);
       await getUserId();
       // 등록 버튼 안보이게 하기
@@ -231,13 +227,11 @@ const handleSubmit = async () => {
 // 댓글 추가 시 호출될 함수
 const handleCommentAdded = async (postId) => {
   const loadComments = loadCommentsMap[props.pageType];
-  // await loadSocialComments(postId);
   await loadComments(postId);
 };
 
 onMounted(async () => {
   const loadComments = loadCommentsMap[props.pageType];
-  // await loadSocialComments(props.postId), await getUserId();
   await loadComments(props.postId), await getUserId();
 });
 </script>

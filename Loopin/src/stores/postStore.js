@@ -22,31 +22,8 @@ export const usePostStore = defineStore("postStore", () => {
     }
     if (data) {
       clubPosts.value = data;
-      // subscribeClubPosts();
     }
   };
-  // const subscribeClubPosts = () => {
-  //   supabase
-  //     .channel("club-posts-channel")
-  //     .on("postgres_changes", { event: "*", schema: "public", table: "club_posts" }, (payload) => {
-  //       if (payload.eventType === "INSERT") {
-  //         clubPosts.value.push(payload.new);
-  //       }
-  //       if (payload.eventType === "DELETE") {
-  //         const index = getClubPostIndexById(payload.old.id);
-  //         clubPosts.value.splice(index, 1);
-  //       }
-  //       if (payload.eventType === "UPDATE") {
-  //         const index = getClubPostIndexById(payload.new.id);
-  //         Object.assign(clubPosts.value[index], payload.new);
-  //       }
-  //     })
-  //     .subscribe();
-  // };
-
-  // const getClubPostIndexById = (postId) => {
-  //   return clubPosts.value.findIndex((post) => post.id === postId);
-  // };
 
   const deleteClubPost = async (postId, userId) => {
     //클럽 포스트 테이블에서 삭제
@@ -153,29 +130,6 @@ export const usePostStore = defineStore("postStore", () => {
       // subscribeChallengePosts();
     }
   };
-
-  // const subscribeChallengePosts = () => {
-  //   supabase
-  //     .channel("challenge-posts-channel")
-  //     .on("postgres_changes", { event: "*", schema: "public", table: "challenge_posts" }, (payload) => {
-  //       if (payload.eventType === "INSERT") {
-  //         challengePosts.value.push(payload.new);
-  //       }
-  //       if (payload.eventType === "DELETE") {
-  //         const index = getChallengePostIndexById(payload.old.id);
-  //         challengePosts.value.splice(index, 1);
-  //       }
-  //       if (payload.eventType === "UPDATE") {
-  //         const index = getChallengePostIndexById(payload.new.id);
-  //         Object.assign(challengePosts.value[index], payload.new);
-  //       }
-  //     })
-  //     .subscribe();
-  // };
-
-  // const getChallengePostIndexById = (postId) => {
-  //   return challengePosts.value.findIndex((post) => post.id === postId);
-  // };
 
   const deleteChallengePost = async (postId, userId) => {
     // 챌린지 포스트 테이블에서 삭제

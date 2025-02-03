@@ -12,7 +12,6 @@ const places = ref([]); // 장소 검색 결과
 const pagination = ref({ last: 0, current: 0 }); // 페이지네이션 정보
 let ps = null; // 카카오 지도 검색 객체 (초기화 필요)
 
-// const selectedPlace = ref({});
 let searchTimeout = null; // 타이머 변수
 // 장소 검색 함수 (디바운스 적용)
 const searchPlaces = debounce(() => {
@@ -42,7 +41,6 @@ const handleInput = (event) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   // 입력 값 업데이트
   keyword.value = newValue;
-  // IME 조합이 끝났을 때만 실행 (300ms 후 실행)
   searchTimeout = setTimeout(() => {
     searchPlaces();
   }, 300);

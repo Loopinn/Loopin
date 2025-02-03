@@ -740,10 +740,7 @@ const period = computed(() => {
 
   return (end - start) / (1000 * 60 * 60 * 24) + 1;
 });
-// const formatPlace = (place) => {
-//   const placeName = place.road_address_name || place.address_name;
-//   return placeName.split(" ")[1];
-// };
+
 const formatFeeInfo = (fee) => {
   switch (fee) {
     case "contentFee":
@@ -863,16 +860,6 @@ watch(
     if (newValue !== null) setState({ ...state.value, endDate: newValue });
   },
 );
-// //startDate 변경 시 endDate 초기화
-// watch(
-//   () => stateFields.startDate,
-//   () => {
-//     stateFields.endDate = null;
-//     nextTick(() => {
-//       stateFields.endDate = null; // VueDatePicker에 상태 강제 반영
-//     });
-//   },
-// );
 watch(
   () => stateFields.tpw,
   (newValue) => {
