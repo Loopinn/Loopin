@@ -100,7 +100,7 @@ const resizeProfile = (imgUrl, index) => {
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => {
-    participantsInfo.value[index].profile_img = resizeImage(img, 100, 100);
+    if(participantsInfo.value[index])participantsInfo.value[index].profile_img = resizeImage(img, 100, 100);
   };
   img.src = imgUrl;
 };

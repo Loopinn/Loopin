@@ -8,7 +8,7 @@ import { storeToRefs } from "pinia";
 import supabase from "@/config/supabase";
 import { useRoute, useRouter } from "vue-router";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
-import MoreModal from "@/components/lounge/MoreModal.vue";
+// import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
 
 import "swiper/css";
@@ -29,7 +29,7 @@ const userData = ref(null);
 const userId = ref("");
 const isLoading = ref(false);
 
-const isModalOpen = ref(false);
+// const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -83,9 +83,9 @@ const handleUpdateParticipants = (updatedParticipants) => {
   currentPost.value.participants = updatedParticipants;
 };
 
-const openModal = () => {
-  isModalOpen.value = true;
-};
+// const openModal = () => {
+//   isModalOpen.value = true;
+// };
 
 onMounted(async () => {
   await getUserId();
@@ -154,7 +154,7 @@ const updateLikeStatus = (isLikedNow) => {
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
+    <!-- <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" /> -->
     <div class="w-full relative z-0 bg-white rounded-xl">
       <Swiper
         :modules="[Navigation, Pagination]"
@@ -189,11 +189,11 @@ const updateLikeStatus = (isLikedNow) => {
               호스트 <b>{{ userData.nickname }}</b>
             </p>
           </div>
-          <div class="flex items-center gap-2 absolute right-0">
+          <!-- <div class="flex items-center gap-2 absolute right-0">
             <button v-if="currentPost.creator === userId" @click="openModal">
               <img src="@/assets/images/more-black.svg" alt="더보기" />
             </button>
-          </div>
+          </div> -->
         </div>
 
         <div class="mt-2">
@@ -286,6 +286,7 @@ const updateLikeStatus = (isLikedNow) => {
       :userId="userId"
       :action="joinClub"
       :isLiked="isLiked"
+      :creator="currentPost?.creator"
       @updateParticipants="handleUpdateParticipants"
       @updateLike="updateLikeStatus"
     />

@@ -301,7 +301,7 @@ watchEffect(() => {
           </div>
 
           <div class="flex flex-col -ml-9" v-if="loginUser">
-            <div v-if="loginUser.id === comment.creator && editingCommentId !== comment.id" class="flex gap-2 mr-2">
+            <div v-if="loginUser.id === comment.creator && editingCommentId !== comment.id" class="flex gap-2">
               <button
                 class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]"
                 @click="handleEdit(comment)"

@@ -118,7 +118,6 @@ export const usePostStore = defineStore("postStore", () => {
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
-      console.log("updateResponse", updateResponse);
 
       updateUser({ posts: updatePosts });
 
@@ -134,7 +133,6 @@ export const usePostStore = defineStore("postStore", () => {
         .update(newPostInfo)
         .eq("id", postId)
         .select();
-      console.log(updateData);
       return updateData;
     } catch (error) {
       console.error(error);
@@ -256,7 +254,6 @@ export const usePostStore = defineStore("postStore", () => {
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
-      console.log("updateResponse", updateResponse);
 
       updateUser({ posts: updatePosts });
 
@@ -273,7 +270,6 @@ export const usePostStore = defineStore("postStore", () => {
         .update(newPostInfo)
         .eq("id", postId)
         .select();
-      console.log(updateData);
       return updateData;
     } catch (error) {
       console.error(error);
@@ -288,7 +284,6 @@ export const usePostStore = defineStore("postStore", () => {
         error: createError,
         status: createStatus,
       } = await supabase.from("lounge_posts").insert([postInfo]).select();
-      console.log("생성 데이터", createData);
 
       if (createError && createStatus !== 201) {
         throw createError;
@@ -311,7 +306,6 @@ export const usePostStore = defineStore("postStore", () => {
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
-      console.log("updateResponse", updateResponse);
 
       return createData;
     } catch (error) {
@@ -325,7 +319,6 @@ export const usePostStore = defineStore("postStore", () => {
       if (error) {
         console.error(error);
       }
-      console.log(data);
       loungePosts.value = data;
       return data;
     } catch (error) {
@@ -336,8 +329,6 @@ export const usePostStore = defineStore("postStore", () => {
   const deleteLoungePost = async (postId) => {
     try {
       const response = await supabase.from("lounge_posts").delete().eq("id", postId).select();
-
-      console.log(response);
     } catch (error) {
       console.log(error);
     }
@@ -365,16 +356,13 @@ export const usePostStore = defineStore("postStore", () => {
   const loadSocialPosts = async () => {
     try {
       const { data: socialData, error: socialError } = await supabase.from("socialing_posts").select();
-      console.log("소셜링 게시글 정보", socialData);
       socialingPosts.value = socialData;
-      console.log(socialingPosts.value);
     } catch (error) {
       console.error("loadSocialData error");
     }
   };
 
   const createSocialPost = async (postInfo, userId) => {
-    console.log(postInfo.time);
     const post = {
       age_limit: Array.from(postInfo.age_limit) || [], // Proxy(Array) -> 일반 배열
       fee_info: Array.from(postInfo.fee_info) || [], // Proxy(Array) -> 일반 배열
@@ -396,7 +384,6 @@ export const usePostStore = defineStore("postStore", () => {
 
     try {
       const { data: socialPost, error: socialError } = await supabase.from("socialing_posts").insert([post]).select();
-      console.log(socialPost);
       if (socialError) throw new Error("소셜링 업로드 에러", socialError);
 
       const postId = socialPost[0].id;
@@ -416,7 +403,6 @@ export const usePostStore = defineStore("postStore", () => {
 
       // 유저 정보 업데이트
       const updateResponse = await supabase.from("userinfo").update({ posts: updatePosts }).eq("id", userId).select();
-      console.log("updateResponse", updateResponse);
 
       updateUser({ posts: updatePosts });
 
@@ -474,7 +460,6 @@ export const usePostStore = defineStore("postStore", () => {
         .update(newPostInfo)
         .eq("id", postId)
         .select();
-      console.log(updateData);
       return updateData;
     } catch (error) {
       console.error(error);

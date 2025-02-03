@@ -9,7 +9,7 @@ import supabase from "@/config/supabase";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Loading from "@/components/Loading.vue";
-import MoreModal from "@/components/lounge/MoreModal.vue";
+// import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -29,7 +29,7 @@ const userData = ref(null);
 const userId = ref("");
 const isLoading = ref(false);
 
-const isModalOpen = ref(false);
+// const isModalOpen = ref(false);
 
 const isUserInClub = ref(false);
 
@@ -144,9 +144,9 @@ const formattedTime = computed(() => {
 const handleUpdateParticipants = (updatedParticipants) => {
   currentPost.value.participants = updatedParticipants;
 };
-const openModal = () => {
-  isModalOpen.value = true;
-};
+// const openModal = () => {
+//   isModalOpen.value = true;
+// };
 
 const formatPlace = (place) => {
   if (place === "온라인") return place;
@@ -205,7 +205,7 @@ const updateLikeStatus = (isLikedNow) => {
 </script>
 
 <template>
-  <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
+  <!-- <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" /> -->
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <div class="w-full relative z-0 bg-white rounded-xl">
@@ -247,11 +247,11 @@ const updateLikeStatus = (isLikedNow) => {
         <p class="text-[20px] font-bold line-clamp-1">{{ currentPost.title }}</p>
       </div>
     </div>
-    <div class="flex items-center gap-2 absolute right-[40px]">
+    <!-- <div class="flex items-center gap-2 absolute right-[40px]">
       <button v-if="currentPost.creator === userId" @click="openModal">
         <img src="@/assets/images/more-black.svg" alt="더보기" />
       </button>
-    </div>
+    </div> -->
     <!-- 한줄 요약 -->
     <div class="bg-[#f1f1f1] min-h-[calc(100vh - 193px)] pb-[120px]">
       <div class="pt-[50px]">
@@ -345,6 +345,7 @@ const updateLikeStatus = (isLikedNow) => {
         :isUserInClub="isUserInClub"
         :clubId="currentPost?.for_club"
         :isLiked="isLiked"
+        :creator="currentPost?.creator"
         @updateParticipants="handleUpdateParticipants"
         @updateLike="updateLikeStatus"
       />
