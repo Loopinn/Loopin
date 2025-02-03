@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { usePostStore } from "@/stores/postStore";
 import likeBlackIcon from "@/assets/images/likeblack.svg";
 import likeBlackFullIcon from "@/assets/images/likeblack_full.svg";
+import noProfile from "@/assets/images/no-profile.svg";
 
 const authStore = useAuthStore();
 const commentStore = useCommentStore();
@@ -92,6 +93,11 @@ const deleteCommentsMap = {
   club: deleteClubComment,
   challenge: deleteChallengeComment,
 };
+const updateCommentsMap = {
+  socialing: updateSocialComment,
+  club: updateClubComment,
+  challenge: updateChallengeComment,
+};
 
 const emit = defineEmits(["close", "commentAdded"]);
 
@@ -101,7 +107,6 @@ const text = ref("");
 const userInfo = ref(props.userInfo);
 const userId = ref(null);
 const profile = ref(null);
-const isHovering = ref(false);
 
 // 작성자 확인
 const getUserId = async () => {
@@ -145,6 +150,28 @@ const currentPost = computed(() => {
   return posts ? posts.value.find((post) => post.id === props.postId) : null;
 });
 
+// 댓글 수정
+const editingCommentId = ref(null);
+const editedContent = ref("");
+const handleEdit = (comment) => {
+  editingCommentId.value = comment.id;
+  editedContent.value = comment.comment;
+};
+
+const handleUpdateComment = async (commentId) => {
+  const updateComment = updateCommentsMap[props.pageType];
+  const loadComment = loadCommentsMap[props.pageType];
+  await updateComment(editedContent.value, commentId);
+  await loadComment(props.postId);
+  editingCommentId.value = null;
+};
+
+const handleCancelEdit = () => {
+  editingCommentId.value = null;
+  editedContent.value = "";
+};
+
+// 댓글 삭제
 const handleCommentDelete = async (commentId) => {
   const deleteComments = deleteCommentsMap[props.pageType];
   const loadComments = loadCommentsMap[props.pageType];
@@ -160,6 +187,7 @@ const formatDate = (dateString) => {
 
 const closeModal = () => {
   emit("close");
+  handleCancelEdit();
 };
 
 // 좋아요 버튼
@@ -236,7 +264,7 @@ watchEffect(() => {
       </div>
 
       <!-- 댓글 -->
-      <div class="border-t border-gray-300 w-[80%] h-[90%] overflow-y-scroll scrollbar-hide">
+      <div class="border-t border-gray-300 w-[80%] h-[80%] overflow-y-scroll scrollbar-hide">
         <div v-for="(comment, idx) in comments" :key="idx" class="flex justify-center gap-[10px] py-3">
           <img
             v-if="userInfo[idx]?.profile_img"
@@ -248,7 +276,7 @@ watchEffect(() => {
 
           <img
             v-else
-            src="@/assets/images/defaultprofile.svg"
+            src="@/assets/images/no-profile.svg"
             alt="userprofile"
             class="w-10 h-10 rounded-full"
             @click="router.push(`/user/${userInfo[idx].nickname}`)"
@@ -256,22 +284,30 @@ watchEffect(() => {
 
           <div class="flex flex-col items-start">
             <div class="mb-2 font-semibold text-[14px]">{{ userInfo[idx]?.nickname }}</div>
-            <p class="mb-2 w-[300px] text-[12px] text-left">
-              {{ comment.comment }}
-            </p>
+            <div class="mb-2 w-[300px] text-[12px] text-left whitespace-normal break-all">
+              <span v-if="editingCommentId !== comment.id">{{ comment.comment }}</span>
+              <div v-else>
+                <textarea
+                  v-model="editedContent"
+                  type="text"
+                  class="w-[300px] resize-none outline-none rounded border-2 border-black"
+                />
+              </div>
+            </div>
+
             <div class="font-semibold text-[11px] text-[#909090]">
               {{ formatDate(comment.created_at) }} 좋아요 {{ comment.likes?.length || 0 }}개
             </div>
           </div>
 
-          <div class="flex flex-col -ml-9" v-if="authStore.loginUser">
-            <div
-              v-if="authStore.loginUser.id === comment.creator"
-              class="flex gap-2 mr-2"
-              @mouseover="!isHovering"
-              @mouseleave="isHovering"
-            >
-              <button class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]">수정</button>
+          <div class="flex flex-col -ml-9" v-if="loginUser">
+            <div v-if="loginUser.id === comment.creator && editingCommentId !== comment.id" class="flex gap-2 mr-2">
+              <button
+                class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]"
+                @click="handleEdit(comment)"
+              >
+                수정
+              </button>
               <button
                 class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]"
                 @click="handleCommentDelete(comment.id)"
@@ -279,7 +315,18 @@ watchEffect(() => {
                 삭제
               </button>
             </div>
-
+            <div v-else-if="loginUser.id === comment.creator" class="flex gap-2 mr-2">
+              <button
+                class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]"
+                @click="handleUpdateComment(comment.id)"
+              >
+                등록
+              </button>
+              <button class="text-[10px] text-[#909090] underline mb-2 hover:text-[#FF0000]" @click="handleCancelEdit">
+                취소
+              </button>
+            </div>
+            <div v-else></div>
             <button
               v-if="loginUser"
               class="ml-7"
@@ -301,11 +348,7 @@ watchEffect(() => {
         @submit.prevent="handleSubmit"
         class="absolute bottom-0 pb-3 flex justify-center w-[80%] gap-4 py-2 border-t border-gray-300 bg-white"
       >
-        <img
-          :src="profile || 'https://i.pinimg.com/474x/2e/36/de/2e36dee43874ca143efb4c6323188be6.jpg'"
-          alt="userProfile"
-          class="rounded-full w-7 h-7"
-        />
+        <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-8 h-8" />
         <input
           v-model="text"
           :disabled="!loginUser"
