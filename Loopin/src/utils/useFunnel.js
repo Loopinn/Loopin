@@ -44,7 +44,6 @@ export function useFunnel(initialSteps, handleReset) {
       // 데이터 불러오기
       const savedData = localStorage.getItem(`${state.value.selectedActivity}`);
       if (savedData) {
-        console.log("불러온 데이터:", JSON.parse(savedData));
         setState(JSON.parse(savedData));
       }
     }
