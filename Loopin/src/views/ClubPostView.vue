@@ -8,7 +8,6 @@ import { storeToRefs } from "pinia";
 import supabase from "@/config/supabase";
 import { useRoute, useRouter } from "vue-router";
 import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
-// import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
 
 import "swiper/css";
@@ -28,8 +27,6 @@ const postId = route.params.id;
 const userData = ref(null);
 const userId = ref("");
 const isLoading = ref(false);
-
-// const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -82,10 +79,6 @@ const fetchData = async () => {
 const handleUpdateParticipants = (updatedParticipants) => {
   currentPost.value.participants = updatedParticipants;
 };
-
-// const openModal = () => {
-//   isModalOpen.value = true;
-// };
 
 onMounted(async () => {
   await getUserId();
@@ -154,7 +147,6 @@ const updateLikeStatus = (isLikedNow) => {
 </script>
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <!-- <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" /> -->
     <div class="w-full relative z-0 bg-white rounded-xl">
       <Swiper
         :modules="[Navigation, Pagination]"
@@ -189,11 +181,6 @@ const updateLikeStatus = (isLikedNow) => {
               호스트 <b>{{ userData.nickname }}</b>
             </p>
           </div>
-          <!-- <div class="flex items-center gap-2 absolute right-0">
-            <button v-if="currentPost.creator === userId" @click="openModal">
-              <img src="@/assets/images/more-black.svg" alt="더보기" />
-            </button>
-          </div> -->
         </div>
 
         <div class="mt-2">
@@ -220,8 +207,6 @@ const updateLikeStatus = (isLikedNow) => {
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />
                 <p>
-                  <!-- {{ currentPost.participants ? currentPost.participants.length : 1 }}/{{ currentPost.max_people }}명
-                  선착순 -->
                   {{ currentPost.max_people }}명
                 </p>
               </div>

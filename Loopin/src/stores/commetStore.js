@@ -1,6 +1,6 @@
 import supabase from "@/config/supabase";
 import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 
 export const useCommentStore = defineStore("commentStore", () => {
   const challengeComments = ref([]);
@@ -9,18 +9,6 @@ export const useCommentStore = defineStore("commentStore", () => {
   const socialComments = ref([]);
 
   const loadChallengeComments = async (postId) => {
-    // if (!challengeComments[postId]) {
-    //   // 댓글이 로드되지 않았을 경우만 요청
-    //   const { data, error } = await supabase.from("challenge_comments").select("*").eq("post_id", postId); // postId로 필터링
-
-    //   if (error) {
-    //     console.error("Error loading comments:", error.message);
-    //     return;
-    //   }
-
-    //   challengeComments[postId] = data || []; // 댓글 저장
-    //   // subscribeChallengeComments(postId);
-    // }
     const { data: challengeCommentsData, error: challengeCommentsError } = await supabase
       .from("challenge_comments")
       .select()
