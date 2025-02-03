@@ -34,7 +34,7 @@ const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
-  console.log("내 아이디: ", sessionData?.session?.user?.id);
+
   userId.value = sessionData?.session?.user?.id || "";
   return sessionData?.session?.user?.id;
 };
@@ -55,7 +55,6 @@ const fetchData = async () => {
         .single();
 
       if (userError) {
-        console.log("유저 데이터를 가져오는 중 에러 발생", userError);
         return;
       }
 
@@ -64,12 +63,10 @@ const fetchData = async () => {
         resizeProfile(userData.value.profile_img);
       }
     } catch (error) {
-      console.log("알 수 없는 오류 발생: ", error);
     } finally {
       isLoading.value = false;
     }
   } else {
-    console.log("작성자 ID가 없습니다.");
   }
 };
 
@@ -78,7 +75,6 @@ const handleUpdateParticipants = (updatedParticipants) => {
 };
 
 onMounted(async () => {
-  console.log("현재 게시글", currentPost.value);
   await getUserId();
   await fetchData();
 });
@@ -214,7 +210,7 @@ const updateLikeStatus = (isLikedNow) => {
       </button>
     </div>
     <!-- 한줄 요약 -->
-    <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
+    <div class="bg-[#f1f1f1] min-h-[calc(100vh - 193px)] pb-[120px]">
       <div class="pt-[50px]">
         <div class="text-center text-[#403F3F] mt-2">
           <img src="@/assets/images/calendar.svg" alt="calendar" class="inline-block" />
