@@ -11,6 +11,11 @@ import { useRoute, useRouter } from "vue-router";
 import Loading from "@/components/Loading.vue";
 import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
 
 const postStore = usePostStore();
 const { socialingPosts } = storeToRefs(postStore);
@@ -205,7 +210,19 @@ const updateLikeStatus = (isLikedNow) => {
   <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
   <Loading v-if="isLoading" />
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
-    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
+    <div class="w-full relative z-0 bg-white rounded-xl">
+      <Swiper
+        :modules="[Navigation, Pagination]"
+        :slides-per-view="1"
+        :navigation="true"
+        :pagination="{ clickable: true }"
+        class="w-full h-[260px]"
+      >
+        <SwiperSlide v-for="(image, index) in currentPost.images" :key="index">
+          <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+        </SwiperSlide>
+      </Swiper>
+    </div>
     <div class="absolute top-3 left-3 flex gap-2">
       <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
       <div v-if="currentPost.for_club" class="text-[14px] text-white rounded-[16px] bg-[#1C8A6A] px-2 py-1">

@@ -11,6 +11,12 @@ import { ref, computed, onBeforeMount, onMounted, watchEffect } from "vue";
 import MoreModal from "@/components/lounge/MoreModal.vue";
 import { resizeImage } from "@/utils/resizeImage";
 
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
+
 const postStore = usePostStore();
 const { clubPosts } = storeToRefs(postStore);
 const { loadClubPosts } = postStore;
@@ -103,7 +109,7 @@ onBeforeMount(() => {
 //프로필 이미지 리사이즈
 const resizedProfile = ref(null);
 const resizeProfile = (imgUrl) => {
-  if (imgUrl &&  imgUrl.includes("k.kakaocdn.net")) {
+  if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
     resizedProfile.value = imgUrl;
     return;
   }
@@ -148,7 +154,19 @@ const updateLikeStatus = (isLikedNow) => {
 <template>
   <div v-if="currentPost" class="mx-auto w-[600px] relative">
     <MoreModal :isModalOpen="isModalOpen" :postId="postId" @close="isModalOpen = false" />
-    <img class="w-full h-[260px] object-cover" :src="currentPost.images ? currentPost.images[0] : ''" alt="thumbnail" />
+    <div class="w-full relative z-0 bg-white rounded-xl">
+      <Swiper
+        :modules="[Navigation, Pagination]"
+        :slides-per-view="1"
+        :navigation="true"
+        :pagination="{ clickable: true }"
+        class="w-full h-[260px]"
+      >
+        <SwiperSlide v-for="(image, index) in currentPost.images" :key="index">
+          <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+        </SwiperSlide>
+      </Swiper>
+    </div>
     <div class="absolute top-3 left-3 flex gap-2">
       <div class="text-[14px] rounded-[16px] bg-[#D9D9D9] px-2 py-1">{{ currentPost.category }}</div>
     </div>
