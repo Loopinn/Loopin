@@ -168,7 +168,7 @@ onBeforeMount(() => {
 });
 </script>
 <template>
-  <div class="h-[200px] flex rounded-2xl bg-white mb-6 cursor-pointer">
+  <div class="h-[200px] flex rounded-2xl bg-white cursor-pointer">
     <div class="relative">
       <img :src="post.images[0] || noImage" alt="thumbnail" class="w-40 h-40 rounded-2xl m-5 object-cover" />
       <button v-if="loginUser" @click.stop.prevent="(event) => handleLike(event)">
@@ -176,7 +176,7 @@ onBeforeMount(() => {
       </button>
     </div>
 
-    <div class="w-[340px] h-[200px] mt-5 space-y-[6px]">
+    <div class="w-[340px] h-[200px] py-5 space-y-[6px]">
       <!-- 카테고리 태그 -->
       <div class="bg-[#F4F4F4] text-[#666060] rounded-3xl inline-block text-center text-4 px-2 py-1 mr-[6px]">
         {{ post.category }}

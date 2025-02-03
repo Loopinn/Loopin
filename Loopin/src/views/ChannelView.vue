@@ -236,7 +236,9 @@ const handleWheel = (event) => {
   <div class="mx-auto min-h-[calc(100vh-195px)] w-[600px] bg-[#F4F4F4]">
     <div class="mx-[15px]">
       <!-- categories -->
-      <div class="sticky z-[5] top-0 bg-[#f4f4f4] before:block before:h-[15px] before:w-full before:bg-[#f4f4f4] after:block after:h-[15px] after:w-full after:bg-[#f4f4f4]">
+      <div
+        class="sticky z-[5] top-0 bg-[#f4f4f4] before:block before:h-[15px] before:w-full before:bg-[#f4f4f4] after:block after:h-[15px] after:w-full after:bg-[#f4f4f4]"
+      >
         <div class="mb-7 pl-1">
           <div
             v-for="(maincategory, index) in categories"
@@ -276,17 +278,16 @@ const handleWheel = (event) => {
         </div>
       </div>
       <!-- 게시글 목록 -->
-      <div>
-        <template v-if="filteredPosts?.length">
-          <div v-for="post in filteredPosts" :key="post.id">
-            <RouterLink :to="{ path: `/${currentChannel.name}/${post.id}` }">
-              <ChannelPostCard :post="post" :channelName="currentChannel.title" />
-            </RouterLink>
-          </div>
-        </template>
-        <!-- 게시물이 없을 경우 -->
-        <ChannelEmpty v-else />
+
+      <div v-if="filteredPosts?.length" class="flex flex-col gap-6 pb-6">
+        <div v-for="post in filteredPosts" :key="post.id">
+          <RouterLink :to="{ path: `/${currentChannel.name}/${post.id}` }">
+            <ChannelPostCard :post="post" :channelName="currentChannel.title" />
+          </RouterLink>
+        </div>
       </div>
+      <!-- 게시물이 없을 경우 -->
+      <ChannelEmpty v-else />
     </div>
   </div>
 </template>

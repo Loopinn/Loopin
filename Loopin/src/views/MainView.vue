@@ -63,7 +63,7 @@ onMounted(() => {
       <p class="text-[20px] text-white">우리의 이야기가 시작되는 곳, 루핀</p>
     </div>
     <div class="bg-[#F4F4F4] px-7 py-[72px]">
-      <div v-for="(channelview, index) in channelviews" :key="index" class="mb-[144px]">
+      <div v-for="(channelview, index) in channelviews" :key="index" class="mb-[144px] flex flex-col gap-[24px]">
         <PageInfoSection
           :icon="channelview.icon"
           :title="channelview.title"
