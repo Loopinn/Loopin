@@ -69,10 +69,7 @@ const feedNav = ref("피드");
 const isLoading = ref(true);
 
 const fetchData = async () => {
-  console.log(route.fullPath);
-
   if (isMyPage.value) {
-    console.log(loginUser.value);
     try {
       if (loginUser.value.posts) {
         // 모임 게시글 불러오기
@@ -80,7 +77,6 @@ const fetchData = async () => {
           const info = JSON.parse(postInfo);
           return info.type !== "lounge_posts";
         });
-        console.log(filterMeetingId);
 
         const meeting = filterMeetingId.map(async (meetingId) => {
           const info = JSON.parse(meetingId);
@@ -90,7 +86,7 @@ const fetchData = async () => {
         });
 
         userMeetingPosts.value = await Promise.all(meeting);
-        console.log("모임 게시글", userMeetingPosts.value);
+
         // 피드 게시글 불러오기
         const filterFeedId = loginUser.value.posts.filter((postInfo) => {
           const info = JSON.parse(postInfo);
@@ -105,7 +101,6 @@ const fetchData = async () => {
           return data[0];
         });
         userFeedPosts.value = await Promise.all(feed);
-        console.log("피드 게시글", userFeedPosts.value);
       }
     } catch (error) {
       console.error(error);
@@ -115,16 +110,14 @@ const fetchData = async () => {
   } else {
     try {
       const { data, error } = await supabase.from("userinfo").select().eq("nickname", userNickName.value);
-      console.log(userNickName);
-      console.log(data, error);
+
       if (!data.length) {
         noUser.value = true;
-        console.log(noUser.value);
+
         return;
       }
 
       userData.value = data[0];
-      console.log("유저정보", userData.value);
 
       // 모임 게시글 불러오기
       const filterMeetingId = userData.value.posts.filter((postInfo) => {
@@ -138,10 +131,9 @@ const fetchData = async () => {
         if (error) throw new Error("모임 게시글 정보 불러오기 실패", error);
         return { data: data[0], type: info.type };
       });
-      console.log("meeting", meeting);
 
       userMeetingPosts.value = await Promise.all(meeting);
-      console.log("모임 게시글", userMeetingPosts.value);
+
       // 피드 게시글 불러오기
       const filterFeedId = userData.value.posts.filter((postInfo) => {
         const info = JSON.parse(postInfo);
@@ -156,7 +148,6 @@ const fetchData = async () => {
         return data[0];
       });
       userFeedPosts.value = await Promise.all(feed);
-      console.log("피드 게시글", userFeedPosts.value);
     } catch (error) {
       console.error(error);
     } finally {
@@ -166,7 +157,6 @@ const fetchData = async () => {
 };
 
 onBeforeMount(() => {
-  console.log(loginUser);
   if (loginUser.value && decodeURIComponent(route.path.split("/")[2]) === loginUser.value.nickname) {
     router.replace("/profile");
   }
@@ -195,7 +185,7 @@ const moreDesc = ref(false);
 
 const handleShare = () => {
   navigator.clipboard
-    .writeText(`http://localhost:5173/user/${loginUser.value.nickname}`)
+    .writeText(`https://loopinn.netlify.app/user/${loginUser.value.nickname}`)
     .then(() => toast("프로필 주소가 복사되었습니다!"));
 };
 

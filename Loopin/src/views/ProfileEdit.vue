@@ -27,12 +27,8 @@ onBeforeMount(async () => {
   if (authStore.loginUser.provider === "kakao") {
     isKakao.value = true;
   }
-  console.log(isKakao.value);
 
-  // newNickname.value = loginUser.nickname;
   newDesc.value = loginUser.description;
-
-  console.log(authStore.loginUser.profile_img);
 });
 onMounted(() => {
   if (loginUser.profile_img) {
@@ -162,7 +158,6 @@ const updateProfile = async () => {
         throw new Error("비밀번호 변경 에러" + response.error);
       }
 
-      console.log(response);
       toast("비밀번호 변경 완료");
     } else {
       isCheckPw.value = false;
@@ -171,7 +166,7 @@ const updateProfile = async () => {
   }
 
   let imageUrl = currentUser?.value?.profile_img;
-  console.log(preImg.value);
+
   if (preImg.value) {
     const fileName = `${Date.now()}-${image.value.name}`;
     const { data: imageData, error: imageError } = await supabase.storage
@@ -179,7 +174,6 @@ const updateProfile = async () => {
       .upload(`images/${fileName}`, image.value);
 
     if (imageError) throw new Error(imageError);
-    console.log(imageData);
 
     const { data: imagePath } = supabase.storage.from("profile-images").getPublicUrl(`images/${fileName}`);
     imageUrl = imagePath.publicUrl;
@@ -200,7 +194,7 @@ const updateProfile = async () => {
     throw new Error("유저 업데이트 오류" + error);
   }
   const userUpdate = data.user.user_metadata;
-  console.log(data);
+
   updateUser({
     nickname: userUpdate.nickname,
     description: userUpdate.description,

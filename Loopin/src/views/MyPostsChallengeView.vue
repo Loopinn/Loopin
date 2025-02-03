@@ -17,11 +17,10 @@ const myChallengePosts = ref(null);
 
 onBeforeMount(async () => {
   await loadChallengePosts();
-  console.log(challengePosts.value);
+
   if (challengePosts.value) {
     myChallengePosts.value = challengePosts.value.filter((post) => post.creator === loginUser.id);
   }
-  console.log("MyChallengePosts", myChallengePosts.value);
 });
 </script>
 <template>

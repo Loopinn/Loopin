@@ -17,11 +17,10 @@ const myClubPosts = ref(null);
 
 onBeforeMount(async () => {
   await loadClubPosts();
-  console.log(clubPosts.value);
+
   if (clubPosts) {
     myClubPosts.value = clubPosts.value.filter((post) => post.creator === loginUser.id);
   }
-  console.log("myClubPosts", myClubPosts.value);
 });
 </script>
 <template>

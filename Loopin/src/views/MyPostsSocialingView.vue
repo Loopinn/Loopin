@@ -17,11 +17,10 @@ const mySocialingPosts = ref(null);
 
 onBeforeMount(async () => {
   await loadSocialPosts();
-  console.log(socialingPosts.value);
+
   if (socialingPosts.value) {
     mySocialingPosts.value = socialingPosts.value.filter((post) => post.creator === loginUser.id);
   }
-  console.log("mySocialingPosts", mySocialingPosts.value);
 });
 </script>
 <template>
