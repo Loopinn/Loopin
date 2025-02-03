@@ -5,11 +5,12 @@ import calendar from "@/assets/images/calendar.svg";
 import checkIcon from "@/assets/images/check.svg";
 import like from "@/assets/images/likewhite_full.svg";
 import unlike from "@/assets/images/likewhite.svg";
+import noProfile from "@/assets/images/no-profile.svg";
+import noImage from "@/assets/images/noImage.svg";
 import { channelLike } from "@/utils/channelLike";
 import { debounce } from "lodash";
 import ConfirmModal from "../modal/ConfirmModal.vue";
 import supabase from "@/config/supabase";
-import noProfile from "@/assets/images/no-profile.svg";
 import { resizeImage } from "@/utils/resizeImage";
 import { useAuthStore } from "@/stores/authStore";
 import { storeToRefs } from "pinia";
@@ -173,7 +174,7 @@ onBeforeMount(() => {
 <template>
   <div class="h-[200px] flex rounded-2xl bg-white mb-6 cursor-pointer">
     <div class="relative">
-      <img :src="post.images ? post.images[0] : ''" alt="thumbnail" class="w-40 h-40 rounded-2xl m-5 object-cover" />
+      <img :src="post.images[0] || noImage" alt="thumbnail" class="w-40 h-40 rounded-2xl m-5 object-cover" />
       <button v-if="loginUser" @click.stop.prevent="(event) => handleLike(event)">
         <img :src="isLiked ? like : unlike" alt="like" class="absolute left-7 bottom-7 w-10 h-10" />
       </button>
