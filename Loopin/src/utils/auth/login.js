@@ -6,7 +6,7 @@ export const login = async (uemail, upassword) => {
       email: uemail,
       password: upassword,
     });
-    console.log(response);
+
     return response;
   } catch (error) {
     console.error(error);

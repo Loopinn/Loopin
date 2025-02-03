@@ -10,14 +10,14 @@ export const feedLike = async (post, userId) => {
         currentLikes.filter((like) => like !== userId),
       );
       await updateUserData(post.id, userId);
-      console.log("좋아요 취소");
+
       return;
     }
 
     await updateLikes(post.id, [...currentLikes, userId]);
 
     await updateUserData(post.id, userId);
-    console.log("좋아요");
+
   } catch (error) {
     console.error(error);
   }
@@ -75,5 +75,5 @@ const updateUserData = async (postId, userId) => {
   if (userUpdateError) {
     console.error(userUpdateError);
   }
-  console.log(userUpdateData);
+
 };

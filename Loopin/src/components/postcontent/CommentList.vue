@@ -113,7 +113,6 @@ const getUserId = async () => {
   const mapComments = commentMap[props.pageType];
 
   const { data: sessionData } = await supabase.auth.getSession();
-  // socialComments.value.map(async (i, index) => {
   mapComments.value.map(async (i, index) => {
     const { data: userData, error: userError } = await supabase
       .from("userinfo")

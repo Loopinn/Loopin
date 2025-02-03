@@ -71,8 +71,6 @@ const getButtonMessage = computed(() => {
   return isJoined.value ? "확인" : activityType;
 });
 const buttonText = computed(() => {
-  console.log(props.creator)
-  console.log(props.userId)
   if (!authStore.loginUser) return "로그인 후 이용가능합니다";
   if (props.creator === props.userId) return "게시글 관리하기";
   if (!props.isUserInClub && props.clubId) return "클럽 참여하러 가기";
@@ -104,7 +102,6 @@ const buttonStyle = computed(() => {
         : "bg-[#1C8A6A] text-white";
 });
 const managePost = () => {
-  console.log("hi");
   isMoreModalOpen.value = true;
 };
 const moveToClub = () => {

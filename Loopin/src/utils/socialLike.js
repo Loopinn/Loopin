@@ -15,7 +15,7 @@ export const socialLike = async (postInfo, userId) => {
       .eq("id", postInfo.id)
       .select();
 
-    console.log(likeResult);
+
     if (likeError) console.log(isLike ? "좋아요 취소 오류" : "좋아요 오류!", likeError);
     return likeResult;
   } catch (error) {

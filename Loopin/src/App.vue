@@ -22,8 +22,8 @@ const modalMessage = ref("<b style='font-size: 22px; color: #000;'>로그아웃 
 
 const isActive = (path) => {
   if (path === "/")
-    return route.path === path; //    /
-  else return route.path.includes(path); // /socialing /club
+    return route.path === path;
+  else return route.path.includes(path);
 };
 
 const fetchSession = async () => {

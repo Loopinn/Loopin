@@ -25,14 +25,14 @@ export const channelLike = async (post, userId, tableName) => {
       await updateLikes(post.id, unlike, tableName);
       await updateUserData(post.id, userId, tableName);
       post.likes = unlike;
-      console.log("좋아요 취소");
+
       return;
     }
     const like = currentLikes + 1;
     await updateLikes(post.id, like, tableName);
     await updateUserData(post.id, userId, tableName);
     post.likes = like;
-    console.log("좋아요");
+
   } catch (error) {
     console.error("channelLike error", error);
   }
@@ -90,5 +90,5 @@ const updateUserData = async (postId, userId, tableName) => {
   if (userUpdateError) {
     console.error(userUpdateError);
   }
-  console.log(userUpdateData);
+
 };
