@@ -33,7 +33,6 @@ const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
-  console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
   return sessionData?.session?.user?.id;
 };
@@ -89,7 +88,6 @@ const openModal = () => {
 };
 
 onMounted(async () => {
-  console.log("현재 게시글", currentPost.value);
   await getUserId();
   await fetchData();
 });
@@ -103,7 +101,6 @@ watchEffect(() => {
 
 onBeforeMount(() => {
   loadClubPosts();
-  console.log(currentPost.value); // 현재 게시물 출력
 });
 
 //프로필 이미지 리사이즈

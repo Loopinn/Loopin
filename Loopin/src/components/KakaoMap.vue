@@ -4,7 +4,6 @@ import { debounce } from "lodash";
 
 const emits = defineEmits(["getPlace"]);
 const props = defineProps(["selectedPlace"]);
-console.log(props.selectedPlace);
 
 const isModalOpen = ref(false);
 
@@ -74,7 +73,6 @@ const loadKakaoMapsScript = () => {
       // kakao.maps.load 콜백을 사용하여 카카오 API 객체 접근
       kakao.maps.load(() => {
         if (window.kakao?.maps) {
-          console.log("Kakao Maps and services loaded.");
           resolve("Kakao Maps script loaded successfully.");
         } else {
           reject(new Error("Failed to load Kakao Maps API and services."));
@@ -89,7 +87,6 @@ const loadKakaoMapsScript = () => {
 onMounted(async () => {
   try {
     await loadKakaoMapsScript();
-    console.log(window);
 
     if (window.kakao?.maps?.services) {
       ps = new window.kakao.maps.services.Places();

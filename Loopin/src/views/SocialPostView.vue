@@ -35,7 +35,6 @@ const isUserInClub = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
-  console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
   return sessionData?.session?.user?.id;
 };
@@ -56,7 +55,6 @@ const fetchData = async () => {
         .single();
 
       if (userError) {
-        console.log("유저 데이터를 가져오는 중 에러 발생", userError);
         return;
       }
 
@@ -69,13 +67,10 @@ const fetchData = async () => {
     } finally {
       isLoading.value = false;
     }
-  } else {
-    console.log("작성자 ID가 없습니다.");
   }
 };
 
 onMounted(async () => {
-  console.log("현재 게시글", currentPost.value);
   await getUserId();
   await fetchData();
 });
@@ -97,7 +92,6 @@ watchEffect(async () => {
 
 onBeforeMount(() => {
   loadSocialPosts();
-  console.log(currentPost.value); // 현재 게시물 출력
 });
 
 const formattedDate = computed(() => {

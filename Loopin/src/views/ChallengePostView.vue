@@ -34,7 +34,7 @@ const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
-
+  
   userId.value = sessionData?.session?.user?.id || "";
   return sessionData?.session?.user?.id;
 };
@@ -66,8 +66,7 @@ const fetchData = async () => {
     } finally {
       isLoading.value = false;
     }
-  } else {
-  }
+  } 
 };
 
 const handleUpdateParticipants = (updatedParticipants) => {

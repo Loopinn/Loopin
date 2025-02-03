@@ -172,15 +172,11 @@ const filteredPosts = computed(() => {
       );
     }
   }
-
-  console.log("카테고리 오류");
 });
 
 // 컴포넌트 초기화
 onBeforeMount(() => {
   currentChannel.value = channels.find((channel) => channel.name === route.path.split("/")[1]);
-  console.log(currentChannel.value);
-  console.log(route.path);
 
   if (currentChannel.value) {
     currentChannel.value.load();

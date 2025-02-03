@@ -47,7 +47,6 @@ const channelviews = ref([
 onMounted(() => {
   channelviews.value.forEach((channel) => {
     channel.load();
-    console.log(channel.posts);
   });
   loadLoungePosts();
 });

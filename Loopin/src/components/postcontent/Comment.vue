@@ -151,8 +151,6 @@ const likeCheck = async () => {
     .eq("id", authStore.loginUser.id)
     .single();
 
-  console.log(userData);
-
   if (userDataError) {
     console.error(userDataError);
   }
@@ -216,7 +214,6 @@ const handleSubmit = async () => {
     if (userId) {
       const createComment = createCommentMap[props.pageType];
       const loadComments = loadCommentsMap[props.pageType];
-      console.log("댓글 등록 시도:", text.value);
       // await createSocialComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
       await createComment({ comment: text.value, post_id: props.postId, creator: loginUser.id });
       text.value = "";
@@ -225,7 +222,6 @@ const handleSubmit = async () => {
       await getUserId();
       // 등록 버튼 안보이게 하기
       hideButton();
-      console.log("댓글 등록 성공!");
     }
   } catch (error) {
     console.log("댓글 등록 실패:", error);
