@@ -233,10 +233,10 @@ const handleWheel = (event) => {
 };
 </script>
 <template>
-  <div class="mx-auto py-3 min-h-[calc(100vh-195px)] w-[600px] bg-[#F4F4F4]">
+  <div class="mx-auto min-h-[calc(100vh-195px)] w-[600px] bg-[#F4F4F4]">
     <div class="mx-[15px]">
       <!-- categories -->
-      <div class="sticky z-9 top-0 bg-[#f4f4f4]">
+      <div class="sticky z-[5] top-0 bg-[#f4f4f4] before:block before:h-[15px] before:w-full before:bg-[#f4f4f4] after:block after:h-[15px] after:w-full after:bg-[#f4f4f4]">
         <div class="mb-7 pl-1">
           <div
             v-for="(maincategory, index) in categories"
@@ -252,7 +252,7 @@ const handleWheel = (event) => {
             {{ maincategory.main }}
           </div>
         </div>
-        <div ref="scrollContainer" class="mb-[60px] flex overflow-x-scroll scrollbar-hide" @wheel="handleWheel">
+        <div ref="scrollContainer" class="flex overflow-x-scroll scrollbar-hide" @wheel="handleWheel">
           <div
             v-for="(subcategory, subIndex) in getSubCategories(selectedMainCategory)"
             :key="subcategory.id"
