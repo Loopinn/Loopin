@@ -17,7 +17,6 @@ const { loginUser, updateUser } = authStore;
 
 const isFollowing = ref(false);
 onBeforeMount(() => {
-  console.log(userData.value);
   if (loginUser && loginUser.following?.includes(props.userData.id)) {
     isFollowing.value = true;
   } else {
@@ -46,14 +45,12 @@ const toggleFollow = async (userData) => {
     .eq("id", loginUser.id)
     .select()
     .single();
-  console.log("loginUserUpdate", loginUserUpdate);
   if (loginUserError) {
     console.error("팔로잉 오류", loginUserError.message);
     return;
   }
 
   updateUser({ following: updatedFollowing });
-  console.log(loginUser);
 
   // 팔로잉한 유저 팔로우db 업데이트
   let updatedFollwer = userData.followers || [];
@@ -71,7 +68,6 @@ const toggleFollow = async (userData) => {
     .select()
     .single();
 
-  console.log(followerUserUpdate);
   if (followerUserError) {
     console.error("상대방 팔로워 오류", followerUserError.message);
   }

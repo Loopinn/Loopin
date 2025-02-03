@@ -34,7 +34,6 @@ const isModalOpen = ref(false);
 
 const getUserId = async () => {
   const { data: sessionData } = await supabase.auth.getSession();
-  console.log("내 아이디: ", sessionData?.session?.user?.id);
   userId.value = sessionData?.session?.user?.id || "";
   return sessionData?.session?.user?.id;
 };
@@ -68,8 +67,6 @@ const fetchData = async () => {
     } finally {
       isLoading.value = false;
     }
-  } else {
-    console.log("작성자 ID가 없습니다.");
   }
 };
 
@@ -78,7 +75,6 @@ const handleUpdateParticipants = (updatedParticipants) => {
 };
 
 onMounted(async () => {
-  console.log("현재 게시글", currentPost.value);
   await getUserId();
   await fetchData();
 });
