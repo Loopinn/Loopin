@@ -334,7 +334,7 @@ const resizeProfile = (imgUrl) => {
             <NoPosts text="피드가 없네요!" css="text-[20px]" />
           </div>
         </div>
-        <div v-else-if="feedNav === '내 게시글'" class="px-4 mt-4">
+        <div v-else-if="feedNav === '내 게시글'" class="px-4 mt-4 pb-3">
           <UserInfoMeeting :meeting-data="userMeetingPosts" :isMyPage="isMyPage" :userNickName="userNickName" />
         </div>
         <div v-else class="px-4 mt-4">
