@@ -26,7 +26,7 @@ export const register = async (uemail, upassword, unickname) => {
         data: { nickname: unickname, description: "안녕하세요.", profile_img: null },
       },
     });
-    console.log(response);
+
 
     return response;
   } catch (error) {

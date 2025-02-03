@@ -22,12 +22,12 @@ export const joinChallenge = async (postInfo, userId) => {
       .eq("id", postInfo.id)
       .select();
 
-    console.log(data);
+
     if (error) console.log(isJoin ? "참여하기 취소 오류" : "참여하기 오류!", error);
 
     // 유저 DB 업데이트
     const { data: userData, error: userError } = await supabase.from("userinfo").select().eq("id", userId).single();
-    console.log(userData);
+
     const currentUserJoinPosts = userData.joinPosts;
 
     const updateJoinClub = isJoin
@@ -37,7 +37,7 @@ export const joinChallenge = async (postInfo, userId) => {
         })
       : [...currentUserJoinPosts, { id: postInfo.id, type: "challenge_posts" }];
 
-    console.log(updateJoinClub);
+
 
     const { data: userJoinPost, error: userJoinPostError } = await supabase
       .from("userinfo")
@@ -50,7 +50,7 @@ export const joinChallenge = async (postInfo, userId) => {
       console.error(userJoinPost);
     }
     updateUser(userJoinPost);
-    console.log("userJoinPost", userJoinPost);
+
     return data;
   } catch (error) {
     console.error(error);
