@@ -1576,7 +1576,7 @@ const convertType = () => {
                     </div>
                     <div class="flex gap-1 mb-1">
                       <img src="@/assets/images/members.svg" alt="members" />
-                      <p>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}명 선착순</p>
+                      <p>{{ stateFields.maxPeople }}명</p>
                     </div>
                     <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
                       <img src="@/assets/images/won.svg" alt="fee" />
