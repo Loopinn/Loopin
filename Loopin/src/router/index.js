@@ -61,12 +61,6 @@ const router = createRouter({
       component: () => import("@/views/PostCreateView.vue"),
     },
     {
-      path: "/uploadfeed",
-      name: "uploadfeed",
-      component: () => import("@/components/EXLoungePosts.vue"),
-      meta: { layout: "CenteredHeader" },
-    },
-    {
       path: "/lounge",
       name: "lounge",
       component: () => import("@/views/LoungeView.vue"),
@@ -100,12 +94,6 @@ const router = createRouter({
       path: "/signUp",
       name: "signUp",
       component: () => import("@/views/SignUpView.vue"),
-      meta: { layout: "CenteredHeader" },
-    },
-    {
-      path: "/user",
-      name: "user",
-      component: () => import("@/views/UserView.vue"),
       meta: { layout: "CenteredHeader" },
     },
     {

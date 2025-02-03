@@ -87,13 +87,11 @@ const buttonStyle = computed(() => {
 });
 
 const moveToClub = () => {
-  console.log(props.clubId);
-  console.log(props.isUserInClub);
   if (!props.clubId) {
     console.error("clubId가 없습니다!");
     return;
   }
-  console.log(props.clubId);
+
   router.push(`/club/${props.clubId}`);
 };
 
@@ -104,11 +102,9 @@ const toggleModal = () => {
 const handleConfirm = async () => {
   try {
     if (!props.userId) {
-      console.log("userId가 없습니다.");
       return;
     }
     const response = await props.action(props.currentPost, props.userId);
-    console.log("참여 결과:", response);
 
     if (isJoined.value) {
       const index = participants.value.indexOf(props.userId);
@@ -148,8 +144,6 @@ const likeCheck = async () => {
     .select("postLikes")
     .eq("id", authStore.loginUser.id)
     .single();
-
-  console.log(userData);
 
   if (userDataError) {
     console.error(userDataError);

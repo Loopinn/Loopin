@@ -10,8 +10,6 @@ const router = useRouter();
 const route = useRoute();
 
 const props = defineProps(["meetingData", "isMyPage", "userNickName"]);
-console.log("meetingData", props.meetingData);
-console.log("userNickName", props.userNickName);
 
 const clubPosts = ref(null);
 const socialingPosts = ref(null);

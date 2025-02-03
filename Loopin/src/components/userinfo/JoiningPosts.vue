@@ -29,14 +29,11 @@ const isLoading = ref(true);
 const getJoinPost = async (postId, type) => {
   const { data, error } = await supabase.from(type).select().eq("id", postId).single();
   if (error) throw new Error("게시글 불러오기 실패" + error);
-  console.log("joinPostData", data, type);
+
   return data;
 };
 
 onBeforeMount(async () => {
-  console.log("props.userJoinPosts", props.userJoinPosts);
-  console.log("loginUser", loginUser);
-
   if (props.isMyPage) {
     await Promise.all(
       loginUser.joinPosts.map(async (joinPost) => {
@@ -74,10 +71,6 @@ onBeforeMount(async () => {
     );
     isLoading.value = false;
   }
-
-  console.log(joiningClub.value);
-  console.log(joiningSocialing.value);
-  console.log(joiningChallenge.value);
 });
 </script>
 <template>
