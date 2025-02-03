@@ -147,8 +147,8 @@ const resizeProfile = (imgUrl, index) => {
       첫 참여자가 되어보세요!
     </div>
     <!-- 참여자가 있는 경우 (클럽) -->
-    <div v-if="props.pageType === 'club'" class="flex gap-4 mt-2">
-      <div v-for="participant in displayParticipants" class="gap-1 mt-2">
+    <div v-if="props.pageType === 'club'" class="flex flex-wrap gap-4 mt-2">
+      <div v-for="participant in displayParticipants" class=" flex flex-col items-center gap-1 mt-2">
         <img
           v-if="participant?.profile_img"
           :src="participant?.profile_img"
