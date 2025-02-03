@@ -15,13 +15,11 @@ const { loadSocialPosts } = postStore;
 const { socialingPosts } = storeToRefs(postStore);
 
 onBeforeMount(async () => {
-  console.log(route.params.id);
   const { data: getUserId, error: getUserIdError } = await supabase
     .from("userinfo")
     .select("id")
     .eq("nickname", route.params.id)
     .single();
-  console.log(getUserId);
 
   if (getUserIdError) {
     console.error(getUserIdError);
@@ -31,7 +29,6 @@ onBeforeMount(async () => {
   if (socialingPosts.value) {
     userSocialingPosts.value = socialingPosts.value.filter((post) => post.creator === getUserId.id);
   }
-  console.log("userSocialingPosts", userSocialingPosts.value);
 });
 </script>
 <template>

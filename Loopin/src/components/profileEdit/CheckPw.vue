@@ -9,7 +9,6 @@ const props = defineProps(["uemail", "checkPW", "isKakao"]);
 
 const emit = defineEmits(["update:checkPW"]);
 
-console.log(props.uemail);
 const handleSubmit = async () => {
   if (props.isKakao) {
     if (ucheck.value.trim().length === 0) return alert("카카오 이메일을 다시 확인해주세요");
@@ -30,7 +29,6 @@ const handleSubmit = async () => {
         toast.error("비밀번호가 일치하지 않습니다!");
         throw new Error("비밀번호 에러" + error);
       }
-      console.log(data);
     } catch (error) {
       console.error(error);
     }
