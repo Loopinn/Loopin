@@ -124,7 +124,7 @@ const getUserId = async () => {
     userInfo.value[index] = userData;
   });
   userId.value = sessionData?.session?.user?.id || "";
-  profile.value = sessionData?.session?.user.profile_img;
+  profile.value = sessionData?.session?.user.user_metadata.profile_img;
   return sessionData?.session?.user?.id || "";
 };
 
@@ -237,9 +237,13 @@ const handleCommentLike = async (commentInfo) => {
   }
 };
 
-onBeforeMount(() => {
+onBeforeMount(async() => {
   console.log("props  ", props);
   initiallizeLikes();
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.log(sessionData)
+  profile.value = sessionData?.session?.user.user_metadata.profile_img;
 });
 
 watchEffect(() => {
@@ -270,7 +274,7 @@ watchEffect(() => {
             v-if="userInfo[idx]?.profile_img"
             :src="userInfo[idx].profile_img"
             alt="userprofile"
-            class="w-10 h-10 rounded-full"
+            class="w-10 h-10 rounded-full object-cover"
             @click="router.push(`/user/${userInfo[idx].nickname}`)"
           />
 
@@ -348,7 +352,7 @@ watchEffect(() => {
         @submit.prevent="handleSubmit"
         class="absolute bottom-0 pb-3 flex justify-center w-[80%] gap-4 py-2 border-t border-gray-300 bg-white"
       >
-        <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-8 h-8" />
+        <img :src="profile || noProfile" alt="userProfile" class="rounded-full w-8 h-8 object-cover" />
         <input
           v-model="text"
           :disabled="!loginUser"
