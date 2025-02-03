@@ -4,6 +4,10 @@ import supabase from "@/config/supabase";
 import { usePostStore } from "@/stores/postStore";
 import { useFunnel } from "@/utils/useFunnel";
 import { ref, computed, reactive, watch, onMounted } from "vue";
+import checkActiveSocial from "@/assets/images/check-active-social.svg";
+import checkActiveChallenge from "@/assets/images/check-active-challenge.svg";
+import checkActiveClub from "@/assets/images/check-active-club.svg";
+import check from "@/assets/images/check.svg";
 
 import { VueScrollPicker } from "vue-scroll-picker";
 
@@ -341,14 +345,14 @@ const handleCategoryClick = (subjectName, cate) => {
 const getCheckboxImage = (fee) => {
   if (stateFields.feeInfo.includes(fee)) {
     if (stateFields.selectedActivity === "소셜링") {
-      return "/src/assets/images/check-active-social.svg";
+      return checkActiveSocial;
     } else if (stateFields.selectedActivity === "클럽") {
-      return "/src/assets/images/check-active-club.svg";
+      return checkActiveClub;
     } else {
-      return "/src/assets/images/check-active-challenge.svg";
+      return checkActiveChallenge;
     }
   } else {
-    return "/src/assets/images/check.svg";
+    return check;
   }
 };
 //kakaomap emits
