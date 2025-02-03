@@ -104,7 +104,7 @@ onBeforeMount(async () => {
         챌린지
       </li>
     </ul>
-    <div v-if="categoryName === '클럽'" class="mt-4">
+    <div v-if="categoryName === '클럽'" class="mt-4 flex flex-col gap-3">
       <RouterLink
         v-if="joiningClub.length > 0"
         v-for="clubpost in joiningClub"
@@ -124,7 +124,7 @@ onBeforeMount(async () => {
         </div>
       </div>
     </div>
-    <div v-else-if="categoryName === '소셜링'" class="mt-4">
+    <div v-else-if="categoryName === '소셜링'" class="mt-4 flex flex-col gap-3">
       <RouterLink
         v-if="joiningSocialing.length > 0"
         v-for="socialingPost in joiningSocialing"
@@ -144,7 +144,7 @@ onBeforeMount(async () => {
         </div>
       </div>
     </div>
-    <div v-else class="mt-4">
+    <div v-else class="mt-4 flex flex-col gap-3">
       <RouterLink
         v-if="joiningChallenge.length > 0"
         v-for="challengePost in joiningChallenge"

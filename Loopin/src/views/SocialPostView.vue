@@ -266,9 +266,13 @@ const updateLikeStatus = (isLikedNow) => {
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/category.svg" alt="category" />
 
-                <router-link to="#" class="underline">{{ currentPost.subject }}</router-link>
+                <router-link :to="`/socialing/${currentPost.subject}/전체`" class="underline">{{
+                  currentPost.subject
+                }}</router-link>
                 <span> > </span>
-                <router-link to="#" class="underline">{{ currentPost.category }}</router-link>
+                <router-link :to="`/socialing/${currentPost.subject}/${currentPost.category}`" class="underline">{{
+                  currentPost.category
+                }}</router-link>
               </div>
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/members.svg" alt="members" />

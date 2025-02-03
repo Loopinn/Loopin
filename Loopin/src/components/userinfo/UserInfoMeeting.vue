@@ -45,7 +45,7 @@ onBeforeMount(() => {
     </div>
     <div>
       <p class="text-[18px] font-medium mb-5">진행한 소셜링</p>
-      <div :class="`flex flex-col justify-center ${!socialingPosts.length && 'items-center'}`">
+      <div :class="`flex flex-col justify-center gap-3 ${!socialingPosts.length && 'items-center'}`">
         <RouterLink
           v-if="socialingPosts.length"
           v-for="{ data, type } in socialingPosts.slice(-3)"
@@ -63,7 +63,7 @@ onBeforeMount(() => {
     </div>
     <div class="">
       <p class="text-[18px] font-medium mb-5">진행한 챌린지</p>
-      <div :class="`flex flex-col justify-center ${!socialingPosts.length && 'items-center'}`">
+      <div :class="`flex flex-col justify-center gap-3 ${!socialingPosts.length && 'items-center'}`">
         <RouterLink
           v-if="challengePosts.length"
           v-for="{ data, type } in challengePosts.slice(-3)"

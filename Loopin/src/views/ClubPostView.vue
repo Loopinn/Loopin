@@ -232,9 +232,13 @@ const updateLikeStatus = (isLikedNow) => {
               <div class="flex gap-1 mb-1">
                 <img src="@/assets/images/category.svg" alt="category" />
 
-                <router-link to="#" class="underline">{{ currentPost.subject }}</router-link>
+                <router-link :to="`/club/${currentPost.subject}/전체`" class="underline">{{
+                  currentPost.subject
+                }}</router-link>
                 <span v-if="currentPost.subject"> > </span>
-                <router-link to="#" class="underline">{{ currentPost.category }}</router-link>
+                <router-link :to="`/club/${currentPost.subject}/${currentPost.category}`" class="underline">{{
+                  currentPost.category
+                }}</router-link>
               </div>
               <div
                 v-if="currentPost.place !== '온라인'"
