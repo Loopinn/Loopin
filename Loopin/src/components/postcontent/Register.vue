@@ -7,8 +7,9 @@ import unlike from "@/assets/images/likered.svg";
 import supabase from "@/config/supabase";
 import { debounce } from "lodash";
 import { channelLike } from "@/utils/channelLike";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
+import MoreModal from "../lounge/MoreModal.vue";
 
 const authStore = useAuthStore();
 
@@ -38,13 +39,19 @@ const props = defineProps({
   isLiked: {
     type: Boolean,
   },
+  creator: {
+    type: String,
+  },
 });
 
 const router = useRouter();
+const route = useRoute();
 
 const emit = defineEmits(["updateParticipants", "updateLike"]);
 
+const postId = route.params.id;
 const isModalOpen = ref(false);
+const isMoreModalOpen = ref(false);
 const participants = ref(props.currentPost?.participants || []);
 const isJoined = computed(() => participants.value.includes(props.userId));
 const isFull = computed(() => {
@@ -64,7 +71,10 @@ const getButtonMessage = computed(() => {
   return isJoined.value ? "확인" : activityType;
 });
 const buttonText = computed(() => {
+  console.log(props.creator)
+  console.log(props.userId)
   if (!authStore.loginUser) return "로그인 후 이용가능합니다";
+  if (props.creator === props.userId) return "게시글 관리하기";
   if (!props.isUserInClub && props.clubId) return "클럽 참여하러 가기";
   if (isFull.value) return "참여 인원 마감";
   const activityType = props.pageType === "socialing" || props.pageType === "challenge" ? "참여" : "신청";
@@ -77,6 +87,14 @@ const buttonStyle = computed(() => {
   if (isFull.value) {
     return "bg-gray-400 text-white";
   }
+  // 작성자인 경우 색상 설정
+  if (props.creator === props.userId) {
+    return props.pageType === "socialing"
+      ? "bg-[#FF0000] text-white"
+      : props.pageType === "challenge"
+        ? "bg-[#46A7CD] text-white"
+        : "bg-[#1C8A6A] text-white";
+  }
   return isJoined.value
     ? "bg-gray-400 text-white"
     : props.pageType === "socialing"
@@ -85,7 +103,10 @@ const buttonStyle = computed(() => {
         ? "bg-[#46A7CD] text-white"
         : "bg-[#1C8A6A] text-white";
 });
-
+const managePost = () => {
+  console.log("hi");
+  isMoreModalOpen.value = true;
+};
 const moveToClub = () => {
   if (!props.clubId) {
     console.error("clubId가 없습니다!");
@@ -184,7 +205,13 @@ onBeforeMount(() => {
       class="w-[400px] h-[60px] rounded-[30px] text-[22px]"
       :class="buttonStyle"
       :disabled="!authStore.loginUser || isFull"
-      @click="!props.isUserInClub && props.clubId ? moveToClub() : toggleModal()"
+      @click="
+        props.creator === props.userId
+          ? managePost()
+          : !props.isUserInClub && props.clubId
+            ? moveToClub()
+            : toggleModal()
+      "
     >
       {{ buttonText }}
     </button>
@@ -203,5 +230,6 @@ onBeforeMount(() => {
     :buttonMessage="'확인'"
     @close="toggleLikeLogin"
   />
+  <MoreModal :isModalOpen="isMoreModalOpen" :postId="postId" @close="isMoreModalOpen = false" />
 </template>
 <style scoped></style>
