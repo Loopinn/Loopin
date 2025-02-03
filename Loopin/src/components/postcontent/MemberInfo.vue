@@ -3,7 +3,6 @@ import { ref, defineProps, onMounted, computed, watch } from "vue";
 import supabase from "@/config/supabase";
 import { useRouter } from "vue-router";
 
-import MemberInfoList from "./MemberInfoList.vue";
 import { resizeImage } from "@/utils/resizeImage";
 
 const props = defineProps({
@@ -21,17 +20,16 @@ const props = defineProps({
 
 const router = useRouter();
 
-const memberInfoModal = ref(false);
+const showMore = ref(false);
 const participantsInfo = ref([]);
 const userData = ref(props.userData || {});
-
-const memberInfoModalOpen = () => {
-  memberInfoModal.value = !memberInfoModal.value;
-};
-
-const memberInfoModalClose = () => {
-  memberInfoModal.value = false;
-};
+const displayParticipants = computed(() => {
+  if (showMore.value) {
+    return participantsInfo.value;
+  } else {
+    return participantsInfo.value.slice(0, 5);
+  }
+});
 
 const textColor = computed(() => {
   switch (props.pageType) {
@@ -44,6 +42,10 @@ const textColor = computed(() => {
       return "text-[#1C8A6A]";
   }
 });
+
+const toggleShowMore = () => {
+  showMore.value = !showMore.value;
+};
 
 const fetchParticipantsInfo = async () => {
   try {
@@ -128,11 +130,15 @@ const resizeProfile = (imgUrl, index) => {
       />
       <div v-if="props.pageType === 'club'" class="flex flex-col">
         <span class="text-[15px]">{{ userData?.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{ userData?.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{
+          userData?.description || "자기소개가 없습니다."
+        }}</span>
       </div>
       <div v-else class="flex flex-col">
         <span class="text-[15px]">{{ participants?.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{ participants?.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{
+          participants?.description || "자기소개가 없습니다."
+        }}</span>
       </div>
     </div>
 
@@ -142,7 +148,7 @@ const resizeProfile = (imgUrl, index) => {
     </div>
     <!-- 참여자가 있는 경우 (클럽) -->
     <div v-if="props.pageType === 'club'" class="flex gap-4 mt-2">
-      <div v-for="participant in participantsInfo" class="gap-1 mt-2">
+      <div v-for="participant in displayParticipants" class="gap-1 mt-2">
         <img
           v-if="participant?.profile_img"
           :src="participant?.profile_img"
@@ -163,7 +169,7 @@ const resizeProfile = (imgUrl, index) => {
       </div>
     </div>
     <!-- 참여자가 있는 경우 (소셜링, 챌린지) -->
-    <div v-else v-for="participant in participantsInfo" class="flex gap-1 mt-2">
+    <div v-else v-for="participant in displayParticipants" class="flex gap-1 mt-2">
       <img
         v-if="participant?.profile_img"
         :src="participant?.profile_img"
@@ -180,19 +186,19 @@ const resizeProfile = (imgUrl, index) => {
       />
       <div class="flex flex-col">
         <span class="text-[15px]">{{ participant?.nickname }}</span>
-        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{ participant?.description || "자기소개가 없습니다." }}</span>
+        <span class="text-[13px] text-[#B1B1B1] line-clamp-1">{{
+          participant?.description || "자기소개가 없습니다."
+        }}</span>
       </div>
     </div>
 
     <button
       v-if="participants?.length > 5"
       class="flex items-center justify-center mt-2 w-full h-[40px] rounded-[5px] bg-white font-semibold"
-      @click="memberInfoModalOpen"
+      @click="toggleShowMore"
     >
-      더보기 >
+      {{ showMore ? "닫기" : "더보기" }}
     </button>
-    <!-- 멤버 리스트 모달 -->
-    <MemberInfoList :isOpen="memberInfoModal" :participants="participantsInfo" @close="memberInfoModalClose" />
   </div>
 </template>
 <style scoped></style>
