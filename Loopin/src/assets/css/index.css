@@ -1,0 +1,121 @@
+@import "./tailwind.css";
+
+@font-face {
+  font-family: "Inter";
+  src: url("@/assets/fonts/Inter-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "BMJUA";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "GongGothicMedium";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/GongGothicMedium.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  box-shadow:
+    0 4px 4px -1px rgba(0, 0, 0, 0.2),
+    0 4px 4px -1px rgba(0, 0, 0, 0.2);
+  overflow-y: scroll;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+img {
+  image-rendering: -webkit-optimize-contrast; /* 대비 최적화 */
+  image-rendering: crisp-edges; /* 선명하게 유지 */
+}
+pre {
+  font-family: "GongGothicMedium";
+}
+
+/* Input 창 크기 조절 */
+.datepicker-input input {
+  width: 263px; /* 원하는 너비 설정 */
+  height: 40px; /* 원하는 높이 설정 */
+  font-size: 16px; /* 텍스트 크기 */
+  border: 1px solid #ccc; /* 테두리 설정 */
+  border-radius: 8px; /* 둥근 테두리 */
+}
+.timepicker-input input {
+  width: 270px; /* 원하는 너비 설정 */
+  height: 40px; /* 원하는 높이 설정 */
+  font-size: 16px; /* 텍스트 크기 */
+  border: 1px solid #ccc; /* 테두리 설정 */
+  border-radius: 8px; /* 둥근 테두리 */
+}
+
+/* 날짜 선택 색상 변경 */
+.datepicker-소셜링 .dp__active_date {
+  background-color: #f43630;
+}
+.datepicker-소셜링 .dp__today {
+  border-color: #f43630;
+}
+.datepicker-챌린지 .dp__active_date {
+  background-color: #3498d0;
+}
+.datepicker-챌린지 .dp__today {
+  border-color: #3498d0;
+}
+
+/* TimePicker 팝업 크기 조절 */
+.timepicker-input .dp__outer_menu_wrap {
+  width: 270px;
+}
+.timepicker-input .dp__menu {
+  height: 290px;
+}
+.dp--clear-btn {
+  display: none !important;
+}
+/* timepicker 화살표 색상 */
+.timepicker-input-소셜링 .dp__inc_dec_button:hover {
+  color: #f43630;
+}
+.timepicker-input-클럽 .dp__inc_dec_button:hover {
+  color: #1c8a6a;
+}
+.timepicker-input-챌린지 .dp__inc_dec_button:hover {
+  color: #3498d0;
+}
+
+/* textarea */
+.post-textarea::-webkit-scrollbar {
+  display: none;
+}
+
+/* 장소 검색 리스트 */
+.location-list-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+/* vue-toastify */
+.Toastify__toast-container--top-center {
+  top: 50px !important;
+  transform: translateX(-50%);
+}
+
+.Toastify__toast {
+  width: 350px;
+  height: 80px;
+  font-size: 18px;
+}

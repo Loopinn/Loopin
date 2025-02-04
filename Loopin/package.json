@@ -1,0 +1,39 @@
+{
+  "name": "vue_todo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.13",
+    "@vuepic/vue-datepicker": "^11.0.1",
+    "lodash": "^4.17.21",
+    "pinia": "^2.3.0",
+    "pinia-plugin-persistedstate": "^4.2.0",
+    "swiper": "^11.2.1",
+    "tailwind-merge": "^2.6.0",
+    "tailwind-scrollbar-hide": "^2.0.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "vue-scroll-picker": "^1.2.3",
+    "vue-slider-component": "^4.1.0-beta.7",
+    "vue3-toastify": "^0.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "postcss": "^8.4.49",
+    "prettier": "^3.4.2",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.5",
+    "vite-plugin-vue-devtools": "^7.6.8"
+  }
+}

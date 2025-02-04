@@ -1,0 +1,1893 @@
+<script setup>
+import Funnel from "@/components/Funnel.vue";
+import supabase from "@/config/supabase";
+import { usePostStore } from "@/stores/postStore";
+import { useFunnel } from "@/utils/useFunnel";
+import { ref, computed, reactive, watch, onMounted } from "vue";
+import checkActiveSocial from "@/assets/images/check-active-social.svg";
+import checkActiveChallenge from "@/assets/images/check-active-challenge.svg";
+import checkActiveClub from "@/assets/images/check-active-club.svg";
+import check from "@/assets/images/check.svg";
+
+import { VueScrollPicker } from "vue-scroll-picker";
+
+import VueSlider from "vue-slider-component";
+import "vue-slider-component/theme/default.css";
+import "vue-scroll-picker/lib/style.css";
+
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
+import { useRoute, useRouter } from "vue-router";
+import KakaoMap from "@/components/KakaoMap.vue";
+import ChoiceModal from "@/components/modal/ChoiceModal.vue";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
+import { nextTick } from "vue";
+import { resizeImage } from "@/utils/resizeImage";
+import { toast } from "vue3-toastify";
+
+const userInfo = ref(null);
+
+const router = useRouter();
+const postStore = usePostStore();
+const { createSocialPost, createClubPost, createChallengePost, updateSocialPost, updateClubPost, updateChallengePost } =
+  postStore;
+const route = useRoute();
+
+// 활동 선택에 따른 단계 배열
+const socialSteps = ["활동선택", "타입선택", "참가비", "주제", "장소", "멤버", "시간", "소개", "미리보기"]; // 소셜링
+const clubSteps = ["활동선택", "참가비", "주제", "장소", "멤버", "소개", "미리보기"]; // 클럽
+const challengeSteps = ["활동선택", "참가비", "주제", "시작종료", "주몇회", "멤버", "소개", "미리보기"]; // 챌린지
+// 업데이트
+const updateSocialSteps = ["타입선택", "참가비", "주제", "장소", "멤버", "시간", "소개", "미리보기"]; // 소셜링
+const updateClubSteps = ["참가비", "주제", "장소", "멤버", "소개", "미리보기"]; // 클럽
+const updateChallengeSteps = ["참가비", "주제", "시작종료", "주몇회", "멤버", "소개", "미리보기"]; // 챌린지
+
+onMounted(async () => {
+  const postType = route.params.type;
+  const postId = route.params.id;
+  if (postId) {
+    if (postType === "socialing") {
+      setState({ ...state.value, selectedActivity: "소셜링" });
+      updateSteps(updateSocialSteps);
+      const { data: socialingPost, error } = await supabase
+        .from("socialing_posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+      if (error) console.log("불러오기 실패", error.message);
+      if (socialingPost) {
+        stateFields.socialingType = socialingPost.type;
+        stateFields.range = socialingPost.age_limit;
+        stateFields.category = socialingPost.category;
+        stateFields.subject = socialingPost.subject;
+        stateFields.meetDate = socialingPost.date;
+        stateFields.description = socialingPost.description;
+        socialingPost.fee !== 0 ? (stateFields.isFee = true) : (stateFields.isFee = false);
+        stateFields.fee = socialingPost.fee;
+        stateFields.feeInfo = socialingPost.fee_info;
+        stateFields.gender = socialingPost.gender;
+        stateFields.maxPeople = socialingPost.max_people;
+        socialingPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
+        stateFields.place = socialingPost.place === "온라인" ? "온라인" : JSON.parse(socialingPost.place);
+        stateFields.meetTime = JSON.parse(socialingPost.time);
+        stateFields.title = socialingPost.title;
+        stateFields.socialingType = socialingPost.type;
+        stateFields.selectedClub = socialingPost.for_club;
+
+        //카테고리 인덱스
+        const index = categoryList.value.findIndex((category) => category.name === socialingPost.subject);
+        stateFields.activeIndex = index;
+        //이미지
+        previewImages.value = [...socialingPost.images];
+        fileCount.value = socialingPost.images.length;
+        selectedImage.value = [...socialingPost.images];
+
+        participantsCnt.value = socialingPost.participants.length;
+      }
+    } else if (postType === "club") {
+      setState({ ...state.value, selectedActivity: "클럽" });
+      updateSteps(updateClubSteps);
+      const { data: clubPost, error } = await supabase.from("club_posts").select("*").eq("id", postId).single();
+      if (error) console.log("불러오기 실패", error.message);
+      if (clubPost) {
+        stateFields.range = clubPost.age_limit;
+        stateFields.category = clubPost.category;
+        stateFields.subject = clubPost.subject;
+        stateFields.description = clubPost.description;
+        clubPost.fee !== 0 ? (stateFields.isFee = true) : (stateFields.isFee = false);
+        stateFields.fee = clubPost.fee;
+        stateFields.feeInfo = clubPost.fee_info;
+        stateFields.gender = clubPost.gender;
+        stateFields.maxPeople = clubPost.max_people;
+        clubPost.place !== "온라인" ? (stateFields.isOffline = true) : (stateFields.isOffline = false);
+        stateFields.place = clubPost.place === "온라인" ? "온라인" : JSON.parse(clubPost.place);
+        stateFields.title = clubPost.title;
+
+        //카테고리 인덱스
+        const index = categoryList.value.findIndex((category) => category.name === clubPost.subject);
+        stateFields.activeIndex = index;
+        //이미지
+        previewImages.value = [...clubPost.images];
+        fileCount.value = clubPost.images.length;
+        selectedImage.value = [...clubPost.images];
+
+        participantsCnt.value = clubPost.participants.length;
+      }
+    } else if (postType === "challenge") {
+      setState({ ...state.value, selectedActivity: "챌린지" });
+      updateSteps(updateChallengeSteps);
+      const { data: challengePost, error } = await supabase
+        .from("challenge_posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+      if (error) console.log("불러오기 실패", error.message);
+      if (challengePost) {
+        stateFields.category = challengePost.category;
+        stateFields.description = challengePost.description;
+        challengePost.fee !== 0 ? (stateFields.isFee = true) : (stateFields.isFee = false);
+        stateFields.fee = challengePost.fee;
+        stateFields.feeInfo = challengePost.fee_info;
+        stateFields.maxPeople = challengePost.max_people;
+        stateFields.startDate = challengePost.start_date;
+        stateFields.endDate = challengePost.end_date;
+        stateFields.subject = challengePost.subject;
+        stateFields.tpw = challengePost.times_per_week;
+        stateFields.title = challengePost.title;
+
+        //카테고리 인덱스
+        const index = categoryList.value.findIndex((category) => category.name === challengePost.subject);
+        stateFields.activeIndex = index;
+        //이미지
+        previewImages.value = [...challengePost.images];
+        fileCount.value = challengePost.images.length;
+        selectedImage.value = [...challengePost.images];
+
+        participantsCnt.value = challengePost.participants.length;
+      }
+    }
+  }
+});
+
+// 기본 첫 단계 정의
+const steps = ["활동선택"];
+//stateField 초기화
+const handleReset = () => {
+  stateFields.selectedActivity = "";
+  stateFields.socialingType = "";
+  stateFields.isFee = null;
+  stateFields.fee = 0;
+  stateFields.feeInfo = [];
+  stateFields.subject = "";
+  stateFields.category = "";
+  stateFields.isOffline = null;
+  stateFields.place = {};
+  stateFields.maxPeople = "-";
+  stateFields.gender = "all";
+  stateFields.range = [20, 50];
+  stateFields.meetDate = null;
+  stateFields.meetTime = { hours: 0, minutes: 0, seconds: 0 };
+  stateFields.startDate = null;
+  stateFields.endDate = null;
+  stateFields.tpw = "-";
+  stateFields.title = "";
+  stateFields.description = "";
+  stateFields.activeIndex = null;
+
+  selectedImage.value = [];
+  fileCount.value = 0;
+  previewImages.value = [];
+};
+
+// Funnel 상태 관리
+const {
+  currentStep,
+  nextStep,
+  prevStep,
+  reset,
+  setState,
+  state,
+  updateSteps,
+  isModalOpen,
+  openModal,
+  closeModal,
+  handleConfirm,
+  modalMessage,
+  buttonMessage,
+} = useFunnel(steps, handleReset);
+
+// 선택한 활동 상태 관리
+const stateFields = reactive({
+  selectedActivity: "",
+  socialingType: "",
+  selectedClub: null,
+  isFee: null,
+  fee: 0,
+  feeInfo: [],
+  subject: "",
+  category: "",
+  isOffline: null,
+  place: {},
+  maxPeople: "-",
+  gender: "all",
+  range: [20, 50],
+  meetDate: null,
+  meetTime: { hours: 0, minutes: 0, seconds: 0 },
+  startDate: null,
+  endDate: null,
+  tpw: "-",
+  title: "",
+  description: "",
+  activeIndex: null,
+});
+
+// const private = ref(null);
+
+const fileInput = ref(null);
+const selectedImage = ref([]);
+const fileCount = ref(0);
+const previewImages = ref([]);
+
+const participantsCnt = ref(null);
+
+const categoryList = ref([
+  {
+    name: "푸드·드링크",
+    description: "맛집투어·카페·티저트·티룸·와인·비건",
+    image: "/categories/restaurant.jpg",
+    list: [
+      "맛집투어",
+      "카페",
+      "베이킹",
+      "와인",
+      "요리",
+      "전통주",
+      "칵테일",
+      "디저트",
+      "위스키",
+      "맥주",
+      "파인다이닝",
+      "커피",
+      "비건",
+      "티룸",
+    ],
+  },
+  {
+    name: "자기계발",
+    description: "독서·스터디·커리어·스피치",
+    image: "/categories/reading.jpg",
+    list: ["독서", "스터디", "대화", "스피치", "사이드프로젝트", "커리어", "브랜딩", "창작"],
+  },
+  {
+    name: "취미",
+    description: "사진·공예·드로잉·뷰티·댄스·글쓰기",
+    image: "/categories/photo.jpg",
+    list: [
+      "사진",
+      "드로잉",
+      "공예",
+      "노래",
+      "글쓰기",
+      "댄스",
+      "뷰티",
+      "봉사활동",
+      "스타일링",
+      "향수",
+      "악기연주",
+      "음악감상",
+      "만화",
+      "명상",
+      "반려동물",
+      "캘리그라피",
+      "쇼핑",
+    ],
+  },
+  {
+    name: "파티·게임",
+    description: "컨셉파티·생일파티·보드게임·방탈출",
+    image: "/categories/concept-party.jpg",
+    list: [
+      "컨셉파티",
+      "포틀럭파티",
+      "내향인파티",
+      "푸드파티",
+      "와인파티",
+      "홈파티",
+      "뮤직파티",
+      "생일파티",
+      "보드게임",
+      "추리게임",
+      "컨셉게임",
+      "방탕출",
+      "온라인게임",
+      "운동회",
+      "액팅게임",
+    ],
+  },
+  {
+    name: "문화·예술",
+    description: "전시·영화·페스티벌·연극·뮤지컬·공연",
+    image: "/categories/exhibition.jpg",
+    list: ["전시", "영화", "뮤지컬", "공연", "연극", "페스티벌", "팝업", "연주회"],
+  },
+  {
+    name: "연애·사랑",
+    description: "소개팅·미팅·연애탐구",
+    image: "/categories/rotation-dating.jpg",
+    list: ["로테이션소개팅", "컨셉소개팅", "대화형소개팅", "연애탐구생활", "콘텐츠소개팅", "와인미팅"],
+  },
+  {
+    name: "동네·또래",
+    description: "취향친구·동네친구·또래친구",
+    image: "/categories/preference-friends.jpg",
+    list: ["또래친구", "동네친구", "취향친구"],
+  },
+]);
+
+const handleCategoryClick = (subjectName, cate) => {
+  stateFields.category = cate;
+  stateFields.subject = subjectName;
+
+  setState({
+    ...state.value,
+    category: stateFields.category,
+    subject: stateFields.subject,
+    activeIndex: stateFields.activeIndex,
+  });
+};
+
+//체크박스 이미지 렌더링
+const getCheckboxImage = (fee) => {
+  if (stateFields.feeInfo.includes(fee)) {
+    if (stateFields.selectedActivity === "소셜링") {
+      return checkActiveSocial;
+    } else if (stateFields.selectedActivity === "클럽") {
+      return checkActiveClub;
+    } else {
+      return checkActiveChallenge;
+    }
+  } else {
+    return check;
+  }
+};
+//kakaomap emits
+const getPlaceInfo = (placeInfo) => {
+  stateFields.place = placeInfo;
+  setState({ ...state.value, place: stateFields.place });
+};
+
+//나이 슬라이더
+const minValue = 20; // 최소값
+const maxValue = 50; // 최대값
+const interval = 5; // 간격
+const marks = {
+  20: "20",
+  25: "25",
+  30: "30",
+  35: "35",
+  40: "40",
+  45: "45",
+  50: "50",
+};
+const railStyle = {
+  backgroundColor: "#999996", // 트랙 배경 색상
+};
+const processStyle = computed(() => {
+  const colors = {
+    소셜링: "#F43630",
+    클럽: "#1C8A6A",
+    챌린지: "#3498D0",
+  };
+  return {
+    backgroundColor: colors[stateFields.selectedActivity] || "#F43630",
+  };
+});
+// 슬라이더 핸들 색상
+const handleStyle = computed(() => {
+  const colors = {
+    소셜링: "#F43630",
+    클럽: "#1C8A6A",
+    챌린지: "#3498D0",
+  };
+  return {
+    backgroundColor: colors[stateFields.selectedActivity] || "#F43630", // 핸들 색상
+    borderColor: colors[stateFields.selectedActivity] || "#F43630", // 핸들 테두리 색상
+  };
+});
+
+//인원 옵션
+const options = ["-", 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const tpwOptions = ["-", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "주 6회", "매일"];
+//나이 표시
+const filterRange = () => {
+  const [start, end] = stateFields.range;
+
+  if (start === minValue && end === maxValue) {
+    return "누구나"; // 전체 범위
+  } else if (start === minValue) {
+    return `${end}세 이하`; // 최소값은 고정, 끝 값만 기준
+  } else if (end === maxValue) {
+    return `${start}세 이상`; // 끝값은 고정, 시작 값만 기준
+  } else {
+    return `${start} ~ ${end}세`; // 두 값 모두 지정된 경우
+  }
+};
+
+const convertGender = () => {
+  if (stateFields.gender === "all") {
+    return "누구나"; // 전체
+  } else if (stateFields.gender === "male") {
+    return "남자만"; // 남자만
+  } else if (stateFields.gender === "female") {
+    return "여자만"; // 여자만
+  } else {
+    return "잘못된 값"; // 잘못된 값 처리
+  }
+};
+//datepicker format
+const format = (date) => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+
+  return `${year}/${month}/${day}`;
+};
+//이미지 추가
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+//title input change
+const handleTitleInputChange = (e) => {
+  stateFields.title = e.target.value;
+};
+
+// 다음 버튼 활성화 여부
+const isNextEnabled = computed(() => {
+  if (currentStep.value === "활동선택") {
+    return stateFields.selectedActivity !== ""; // 타입 선택 단계에서는 socialingType이 비어있지 않은지 확인
+  } else if (currentStep.value === "타입선택") {
+    if (stateFields.socialingType === "클럽") {
+      return stateFields.selectedClub !== null;
+    }
+    return stateFields.socialingType !== "";
+  } else if (currentStep.value === "참가비") {
+    if (stateFields.isFee === true) {
+      return stateFields.fee > 0 && stateFields.feeInfo.length > 0; // 참가비 입력 및 최소 체크박스 1개 확인
+    }
+    return stateFields.isFee === false; // 참가비 없음을 선택한 경우 활성화
+  } else if (currentStep.value === "주제") {
+    return stateFields.category !== ""; // 주제 선택 단계에서는 category 비어있지 않은지 확인
+  } else if (currentStep.value === "장소") {
+    if (stateFields.isOffline === true) {
+      return Object.keys(stateFields.place).length !== 0;
+    }
+    return stateFields.isOffline === false; // 온라인을 선택한 경우 활성화
+  } else if (currentStep.value === "멤버") {
+    return stateFields.maxPeople !== "-" && stateFields.gender !== null;
+  } else if (currentStep.value === "시간") {
+    return stateFields.meetDate !== null && stateFields.meetTime !== null;
+  } else if (currentStep.value === "시작종료") {
+    return (
+      stateFields.startDate !== null && stateFields.endDate !== null && stateFields.startDate < stateFields.endDate
+    );
+  } else if (currentStep.value === "주몇회") {
+    return stateFields.tpw !== "-";
+  } else if (currentStep.value === "소개") {
+    return selectedImage.value.length > 0 && stateFields.title.length >= 5;
+  } else return true;
+});
+
+// 활동 선택 로직
+const selectActivity = (activity) => {
+  stateFields.selectedActivity = activity;
+
+  if (activity === "소셜링") {
+    setState({ ...state.value, selectedActivity: "소셜링" });
+    updateSteps(socialSteps);
+  } else if (activity === "클럽") {
+    setState({ ...state.value, selectedActivity: "클럽" });
+    updateSteps(clubSteps);
+  } else if (activity === "챌린지") {
+    setState({ ...state.value, selectedActivity: "챌린지" });
+    updateSteps(challengeSteps);
+  }
+};
+
+//fee input change
+const handleFeeChange = () => {
+  setState({ ...state.value, fee: stateFields.fee });
+};
+const handleIsFeeFalse = () => {
+  stateFields.isFee = false;
+  stateFields.fee = 0;
+  stateFields.feeInfo = [];
+  setState({ ...state.value, fee: 0, feeInfo: [] });
+};
+
+// 체크박스 상태 업데이트
+const toggleFeeSelection = (feeType) => {
+  if (stateFields.feeInfo.includes(feeType)) {
+    stateFields.feeInfo = stateFields.feeInfo.filter((type) => type !== feeType);
+  } else {
+    stateFields.feeInfo.push(feeType);
+  }
+  setState({ ...state.value, feeInfo: stateFields.feeInfo });
+};
+//장소
+const handleOnlineClick = () => {
+  stateFields.place = "온라인";
+  stateFields.isOffline = false;
+  setState({ ...state.value, place: stateFields.place, isOffline: stateFields.isOffline });
+};
+const handleOfflineClick = () => {
+  if (stateFields.isOffline === false) stateFields.place = {};
+  stateFields.isOffline = true;
+  setState({ ...state.value, place: stateFields.place, isOffline: stateFields.isOffline });
+};
+
+//시작/종료 날짜
+const disableNonSundays = (date) => {
+  const day = new Date(date).getDay();
+  return day !== 0; // 일요일이 아니면 비활성화
+};
+const disableNonSaturdays = (date) => {
+  const day = new Date(date).getDay();
+  return day !== 6; // 토요일이 아니면 비활성화
+};
+
+//소개 이미지 선택
+const handleFileChange = (event) => {
+  const files = event.target.files;
+  if (files) {
+    fileCount.value += files.length;
+    selectedImage.value = [...selectedImage.value, ...Array.from(files)];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        previewImages.value.push(e.target.result); // 미리보기 URL 배열에 추가
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  event.target.value = "";
+};
+//이미지 제거
+const removeImage = (index) => {
+  previewImages.value.splice(index, 1); // 해당 인덱스의 이미지를 배열에서 제거
+  selectedImage.value.splice(index, 1);
+  fileCount.value = selectedImage.value.length;
+};
+
+// 완료 버튼 액션
+const finish = async () => {
+  await handlePostSubmit();
+};
+
+const handlePostSubmit = async () => {
+  const imageUrls = [];
+  if (selectedImage.value.length > 0) {
+    for (let i = 0; i < selectedImage.value.length; i++) {
+      if (typeof selectedImage.value[i] === "string") {
+        imageUrls.push(selectedImage.value[i]);
+      } else {
+        const file = selectedImage.value[i];
+        const fileName = `${Date.now()}-${file.name}`;
+
+        // 이미지 파일을 Supabase에 업로드
+        const { data, error } = await supabase.storage.from("post-images").upload(`images/${fileName}`, file);
+
+        if (error) {
+          console.error("Image upload failed:", error.message);
+          return; // 오류 발생 시 함수 종료
+        }
+        // 업로드된 이미지의 public URL 가져오기
+        const { data: publicUrlData, error: urlError } = supabase.storage
+          .from("post-images")
+          .getPublicUrl(`images/${fileName}`);
+
+        if (urlError) {
+          console.error("Error getting public URL:", urlError.message);
+          return;
+        }
+        // 이미지 URL 배열에 추가
+        imageUrls.push(publicUrlData.publicUrl);
+      }
+    }
+  }
+
+  //post 생성, 수정
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData?.session?.user?.id;
+  const postId = ref(null);
+  try {
+    if (stateFields.selectedActivity === "소셜링") {
+      const postData = {
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
+        images: imageUrls,
+        max_people: stateFields.maxPeople,
+        age_limit: stateFields.range,
+        gender: stateFields.gender,
+        place: stateFields.place,
+        type: stateFields.socialingType,
+        date: stateFields.meetDate,
+        time: stateFields.meetTime,
+        for_club: stateFields.selectedClub,
+      };
+      if (!route.params.id) {
+        // 새 게시글 생성
+        const createdPost = await createSocialPost(postData, userId);
+        postId.value = createdPost[0].id;
+        localStorage.removeItem("소셜링");
+        toast("게시글이 생성되었습니다!");
+      } else {
+        // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
+        const updatedPost = await updateSocialPost(postData, route.params.id);
+        postId.value = updatedPost[0].id;
+        toast("게시글이 수정되었습니다!");
+      }
+      // 게시글 상세 페이지로 이동
+      router.push(`/socialing/${postId.value}`);
+    } else if (stateFields.selectedActivity === "클럽") {
+      const postData = {
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        category: stateFields.category,
+        title: stateFields.title,
+        description: stateFields.description,
+        images: imageUrls,
+        max_people: stateFields.maxPeople,
+        age_limit: stateFields.range,
+        gender: stateFields.gender,
+        place: stateFields.place,
+      };
+      if (!route.params.id) {
+        // 새 게시글 생성
+        const createdPost = await createClubPost(postData, userId);
+        postId.value = createdPost[0].id;
+        localStorage.removeItem("클럽");
+        toast("게시글이 생성되었습니다!");
+      } else {
+        // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
+        const updatedPost = await updateClubPost(postData, route.params.id);
+        postId.value = updatedPost[0].id;
+        toast("게시글이 수정되었습니다!");
+      }
+      // 게시글 상세 페이지로 이동
+      router.push(`/club/${postId.value}`);
+    } else if (stateFields.selectedActivity === "챌린지") {
+      const postData = {
+        category: stateFields.category,
+        fee: stateFields.fee,
+        fee_info: stateFields.feeInfo,
+        subject: stateFields.subject,
+        title: stateFields.title,
+        description: stateFields.description,
+        images: imageUrls,
+        max_people: stateFields.maxPeople,
+        start_date: stateFields.startDate,
+        end_date: stateFields.endDate,
+        times_per_week: stateFields.tpw,
+      };
+      if (!route.params.id) {
+        // 새 게시글 생성
+        const createdPost = await createChallengePost(postData, userId);
+        postId.value = createdPost[0].id;
+        localStorage.removeItem("챌린지");
+        toast("게시글이 생성되었습니다!");
+      } else {
+        // 기존 게시글 업데이트
+        const koreaTime = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        postData.updated_at = koreaTime.toISOString();
+        const updatedPost = await updateChallengePost(postData, route.params.id);
+        postId.value = updatedPost[0].id;
+        toast("게시글이 수정되었습니다!");
+      }
+      // 게시글 상세 페이지로 이동
+      router.push(`/challenge/${postId.value}`);
+    }
+  } catch (e) {
+    console.log("포스팅 실패", e);
+  }
+};
+
+//
+//미리보기용 format
+const formatDate = (date) => {
+  // date가 문자열인 경우 Date 객체로 변환
+  const parsedDate = new Date(date);
+
+  // Date 객체인지 확인 (유효하지 않은 날짜 방지)
+  if (isNaN(parsedDate)) {
+    throw new Error("Invalid date format");
+  }
+
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const year = parsedDate.getFullYear().toString().slice(2); // 연도 마지막 두 자리
+  const month = parsedDate.getMonth() + 1; // 월
+  const day = parsedDate.getDate(); // 일
+  const dayOfWeek = days[parsedDate.getDay()]; // 요일
+  return `${year}.${month}.${day}(${dayOfWeek})`;
+};
+const formatTime = (time) => {
+  const { hours, minutes } = time;
+  // 오전/오후 계산
+  const ampm = hours < 12 ? "오전" : "오후";
+  // 12시간제로 변환 (0시 -> 12시, 13시~23시 -> 1시~11시)
+  const formattedHours = hours % 12 || 12;
+  // 분을 두 자리로 표시
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+
+  return `${ampm} ${formattedHours}:${formattedMinutes}`;
+};
+const period = computed(() => {
+  const start = new Date(stateFields.startDate);
+  const end = new Date(stateFields.endDate);
+
+  return (end - start) / (1000 * 60 * 60 * 24) + 1;
+});
+
+const formatFeeInfo = (fee) => {
+  switch (fee) {
+    case "contentFee":
+      return "콘텐츠 제작비";
+    case "hostFee":
+      return "호스트 수고비";
+    case "noshowFee":
+      return "노쇼 방지비";
+    case "rentalFee":
+      return "대관료";
+    case "materialFee":
+      return "재료비";
+    case "dessertFee":
+      return "다과비";
+  }
+};
+const openKakaoMap = () => {
+  const kakaoMapUrl = `https://map.kakao.com/link/map/${stateFields.place.id}`;
+  window.open(kakaoMapUrl, "_blank");
+};
+
+const myClubs = ref([]);
+const myClubsInfo = ref([]);
+
+onMounted(async () => {
+  const auth = JSON.parse(localStorage.getItem("authStore"));
+  if (auth.loginUser) userInfo.value = auth.loginUser;
+
+  //가입하거나 운영하는 클럽
+  const joinedClubs = userInfo.value.joinPosts.filter((joinP) => JSON.parse(joinP).type === "club_posts");
+  myClubs.value = [...myClubs.value, ...joinedClubs];
+  const createdClubs = userInfo.value.posts.filter((createP) => JSON.parse(createP).type === "club_posts");
+  myClubs.value = [...myClubs.value, ...createdClubs].map((joinP) => JSON.parse(joinP));
+
+  myClubs.value.forEach(async (club, index) => {
+    const { data, error } = await supabase.from("club_posts").select().eq("id", club.id);
+    myClubsInfo.value.push({
+      id: data[0].id,
+      image: data[0].images[0],
+      title: data[0].title,
+      description: data[0].description,
+    });
+    // 클럽 이미지 리사이징 실행
+    resizeClubImage(data[0].images[0], index);
+  });
+});
+const resizeClubImage = (imgUrl, index) => {
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 이슈 방지
+  img.onload = () => {
+    myClubsInfo.value[index].image = resizeImage(img, 200, 200);
+  };
+  img.src = imgUrl; // 첫 번째 클럽 이미지 로드
+};
+
+const selectSocialingType = (type) => {
+  stateFields.socialingType = type;
+  if (type === "일반") stateFields.selectedClub = null;
+};
+
+const handleClubSelect = (clubId) => {
+  stateFields.selectedClub = clubId;
+};
+
+watch(
+  () => stateFields.selectedClub,
+  (newValue) => {
+    setState({ ...state.value, selectedClub: newValue });
+  },
+);
+
+//useFunnel 의 state 가 변하면 stateField 값 갱신
+watch(
+  () => state.value,
+  () => {
+    for (const key in stateFields) {
+      if (key in state.value) {
+        stateFields[key] = state.value[key];
+      }
+    }
+  },
+);
+//stateField 값 변경 시 useFunnel state 업데이트
+watch(
+  () => stateFields.socialingType,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, socialingType: newValue });
+  },
+);
+watch(
+  () => stateFields.isFee,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, isFee: newValue });
+  },
+);
+watch(
+  () => [stateFields.maxPeople, stateFields.gender, stateFields.range],
+  ([newMaxPeople, newGender, newRange]) => {
+    if (newMaxPeople !== "-") setState({ ...state.value, maxPeople: newMaxPeople, gender: newGender, range: newRange });
+  },
+);
+watch(
+  () => [stateFields.meetDate, stateFields.meetTime],
+  ([newMeetDate, newMeetTime]) => {
+    if (newMeetDate !== null) setState({ ...state.value, meetDate: newMeetDate, meetTime: newMeetTime });
+  },
+);
+watch(
+  () => stateFields.startDate,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, startDate: newValue });
+  },
+);
+watch(
+  () => stateFields.endDate,
+  (newValue) => {
+    if (newValue !== null) setState({ ...state.value, endDate: newValue });
+  },
+);
+watch(
+  () => stateFields.tpw,
+  (newValue) => {
+    if (newValue !== "-") setState({ ...state.value, tpw: newValue });
+  },
+);
+watch(
+  () => stateFields.title,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, title: newValue });
+  },
+);
+watch(
+  () => stateFields.description,
+  (newValue) => {
+    if (newValue !== "") setState({ ...state.value, description: newValue });
+  },
+);
+
+//프로필 이미지 리사이즈
+const resizedProfile = ref(null);
+const resizeProfile = (imgUrl) => {
+  if (!imgUrl) {
+    resizedProfile.value = null;
+    return;
+  }
+  if (imgUrl && imgUrl.includes("k.kakaocdn.net")) {
+    resizedProfile.value = imgUrl;
+    return;
+  }
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // CORS 설정 추가
+  img.onload = () => {
+    // 리사이징된 이미지 URL 얻기
+    resizedProfile.value = resizeImage(img, 200, 200);
+  };
+  // 외부 URL에서 이미지 로드
+  img.src = imgUrl;
+};
+onMounted(() => {
+  resizeProfile(userInfo.value.profile_img);
+});
+
+const convertType = () => {
+  if (stateFields.selectedActivity === "소셜링") return "socialing";
+  else if (stateFields.selectedActivity === "클럽") return "club";
+  else if (stateFields.selectedActivity === "챌린지") return "challenge";
+  else return null;
+};
+</script>
+
+<template>
+  <div class="relative">
+    <div class="h-[80px] flex px-[15px]">
+      <button @click="prevStep"><img src="@/assets/images/arrow-left.svg" alt="" /></button>
+    </div>
+    <ChoiceModal
+      :isOpen="isModalOpen"
+      :message="modalMessage"
+      :buttonMessage="buttonMessage"
+      :pageType="convertType()"
+      @confirm="handleConfirm"
+      @close="closeModal"
+    />
+
+    <Funnel :steps="state.steps || steps" :currentStep="currentStep">
+      <!-- 활동 선택 단계 -->
+      <template #활동선택>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">멤버들과 함께 어떤 활동을 하고싶나요?</h2>
+          <div class="flex flex-col gap-[15px]">
+            <button
+              class="border flex items-center w-full h-[80px] rounded-[16px]"
+              :class="{ 'bg-[#F43630] text-white': stateFields.selectedActivity === '소셜링' }"
+              @click="selectActivity('소셜링')"
+            >
+              <div class="px-[27px]">
+                <img
+                  v-if="stateFields.selectedActivity === '소셜링'"
+                  src="@/assets/images/socialing-active.svg"
+                  alt=""
+                />
+                <img v-else src="@/assets/images/Socialing.svg" alt="" />
+              </div>
+              <div class="flex flex-col text-left">
+                <p>소셜링</p>
+                <p :class="{ 'text-[#999996]': stateFields.selectedActivity !== '소셜링' }">
+                  일회성 모임으로 번개처럼 가볍게 만나요
+                </p>
+              </div>
+            </button>
+
+            <button
+              class="border flex items-center w-full h-[80px] rounded-[16px]"
+              :class="{ 'bg-[#1C8A6A] text-white': stateFields.selectedActivity === '클럽' }"
+              @click="selectActivity('클럽')"
+            >
+              <div class="px-[27px]">
+                <img v-if="stateFields.selectedActivity === '클럽'" src="@/assets/images/club-active.svg" alt="" />
+                <img v-else src="@/assets/images/club.svg" alt="" />
+              </div>
+              <div class="flex flex-col text-left">
+                <p>클럽</p>
+                <p :class="{ 'text-[#999996]': stateFields.selectedActivity !== '클럽' }">
+                  지속형 모임으로 계속해서 친하게 지내요
+                </p>
+              </div>
+            </button>
+
+            <button
+              class="border flex items-center w-full h-[80px] rounded-[16px]"
+              :class="{ 'bg-[#3498D0] text-white': stateFields.selectedActivity === '챌린지' }"
+              @click="selectActivity('챌린지')"
+            >
+              <div class="px-[27px]">
+                <img
+                  v-if="stateFields.selectedActivity === '챌린지'"
+                  src="@/assets/images/challenge-active.svg"
+                  alt=""
+                />
+                <img v-else src="@/assets/images/challenge.svg" alt="" />
+              </div>
+              <div class="flex flex-col text-left">
+                <p>챌린지</p>
+                <p :class="{ 'text-[#999996]': stateFields.selectedActivity !== '챌린지' }">
+                  같은 목표를 가진 멤버들과 함께 도전해요
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- 타입 선택 단계 (소셜링에서만 사용) -->
+      <template #타입선택>
+        <div class="px-[15px] mb-[100px]">
+          <h2 class="text-[30px] mb-[43px]">어떤 소셜링을 열어볼까요?</h2>
+          <div class="flex flex-col gap-[15px]">
+            <button
+              class="border flex items-center w-full h-[80px] rounded-[16px]"
+              :class="{ 'bg-[#F43630] text-white': stateFields.socialingType === '일반' }"
+              @click="selectSocialingType('일반')"
+            >
+              <div class="px-[27px]">
+                <img v-if="stateFields.socialingType === '일반'" src="@/assets/images/socialing-active.svg" alt="" />
+                <img v-else src="@/assets/images/Socialing.svg" alt="" />
+              </div>
+              <div class="flex flex-col text-left">
+                <p>일반 소셜링</p>
+                <p :class="{ 'text-[#999996]': stateFields.socialingType !== '일반' }">
+                  누구나 자유롭게 참여할 수 있는 소셜링을 열어요
+                </p>
+              </div>
+            </button>
+            <button
+              class="border flex items-center w-full h-[80px] rounded-[16px]"
+              :class="{ 'bg-[#F43630] text-white': stateFields.socialingType === '클럽' }"
+              @click="selectSocialingType('클럽')"
+            >
+              <div class="px-[27px]">
+                <img
+                  v-if="stateFields.socialingType === '클럽'"
+                  src="@/assets/images/club-socialing-active.svg"
+                  alt=""
+                />
+                <img v-else src="@/assets/images/club-socialing.svg" alt="" />
+              </div>
+              <div class="flex flex-col text-left">
+                <p>클럽 소셜링</p>
+                <p :class="{ 'text-[#999996]': stateFields.socialingType !== '클럽' }">
+                  가입하거나 운영하는 클럽에서 소셜링을 열어요
+                </p>
+              </div>
+            </button>
+          </div>
+          <div v-if="myClubsInfo.length && stateFields.socialingType === '클럽'" class="mt-[30px]">
+            <div
+              v-for="club in myClubsInfo"
+              class="relative border rounded-[16px] flex h-[100px] mt-[15px] items-center px-[10px] cursor-pointer"
+              @click="handleClubSelect(club.id)"
+              :key="club.id"
+            >
+              <img :src="club.image" class="w-[80px] h-[80px] object-cover rounded-[16px]" alt="club-image" />
+              <div class="mx-[10px]">
+                <p class="line-clamp-2 max-w-[423px]">{{ club.title }}</p>
+                <p class="line-clamp-1 min-h-[24px] max-w-[423px] text-[#999996]">{{ club.description }}</p>
+              </div>
+              <div class="absolute right-[10px]">
+                <img
+                  v-if="stateFields.selectedClub === club.id"
+                  src="@/assets/images/circle-active.svg"
+                  alt="circle-active"
+                />
+                <img v-else src="@/assets/images/circle.svg" alt="circle" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 참가비 단계 -->
+      <template #참가비>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">참가비를 활용해 보시겠어요?</h2>
+          <div class="flex gap-[20px]">
+            <button
+              class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
+              :class="{
+                'bg-[#F43630] text-white': stateFields.isFee === true && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isFee === true && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isFee === true && stateFields.selectedActivity === '챌린지',
+              }"
+              @click="stateFields.isFee = true"
+            >
+              <p>있음</p>
+            </button>
+
+            <button
+              class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
+              :class="{
+                'bg-[#F43630] text-white': stateFields.isFee === false && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isFee === false && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isFee === false && stateFields.selectedActivity === '챌린지',
+              }"
+              @click="handleIsFeeFalse"
+            >
+              <p>없음</p>
+            </button>
+          </div>
+
+          <div v-if="stateFields.isFee" class="flex flex-col mt-[35px]">
+            <label for="fee" class="mb-[15px]">참가비</label>
+            <input
+              v-model="stateFields.fee"
+              type="number"
+              id="fee"
+              class="h-[50px] border border-[#999996] rounded-[16px] px-3"
+              @input="handleFeeChange"
+            />
+
+            <div class="mt-[50px]">
+              <p>참가비 정보</p>
+              <div class="my-[35px]">
+                <p>운영비</p>
+                <div class="flex gap-[15px]">
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="contentFee"
+                      class="appearance-none"
+                      :checked="stateFields.feeInfo.includes('contentFee')"
+                      @change="toggleFeeSelection('contentFee')"
+                    />
+                    <label for="contentFee" class="flex">
+                      <img :src="getCheckboxImage('contentFee')" alt="content fee" />
+                      <span class="ml-[13px]">콘텐츠 제작비</span></label
+                    >
+                  </div>
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="hostFee"
+                      class="appearance-none"
+                      :checked="stateFields.feeInfo.includes('hostFee')"
+                      @change="toggleFeeSelection('hostFee')"
+                    />
+                    <label for="hostFee" class="flex">
+                      <img :src="getCheckboxImage('hostFee')" alt="host fee" />
+                      <span class="ml-[13px]">호스트 수고비</span></label
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-2">
+                <p>모임비</p>
+                <div class="flex gap-[15px]">
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="noshowFee"
+                      class="appearance-none"
+                      :checked="stateFields.feeInfo.includes('noshowFee')"
+                      @change="toggleFeeSelection('noshowFee')"
+                    />
+                    <label for="noshowFee" class="flex">
+                      <img :src="getCheckboxImage('noshowFee')" alt="noshow fee" />
+                      <span class="ml-[13px]">노쇼 방지비</span></label
+                    >
+                  </div>
+
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="rentalFee"
+                      class="appearance-none"
+                      :checked="stateFields.feeInfo.includes('rentalFee')"
+                      @change="toggleFeeSelection('rentalFee')"
+                    />
+                    <label for="rentalFee" class="flex">
+                      <img :src="getCheckboxImage('rentalFee')" alt="rental fee" />
+                      <span class="ml-[13px]">대관료</span></label
+                    >
+                  </div>
+
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="materialFee"
+                      class="appearance-none"
+                      :checked="stateFields.feeInfo.includes('materialFee')"
+                      @change="toggleFeeSelection('materialFee')"
+                    />
+                    <label for="materialFee" class="flex">
+                      <img :src="getCheckboxImage('materialFee')" alt="material fee" />
+                      <span class="ml-[13px]">재료비</span></label
+                    >
+                  </div>
+
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="dessertFee"
+                      class="appearance-none"
+                      :checked="stateFields.feeInfo.includes('dessertFee')"
+                      @change="toggleFeeSelection('dessertFee')"
+                    />
+                    <label for="dessertFee" class="flex">
+                      <img :src="getCheckboxImage('dessertFee')" alt="dessert fee" />
+                      <span class="ml-[13px]">다과비</span></label
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 주제 선택 단계 -->
+      <template #주제>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">{{ stateFields.selectedActivity }} 주제를 선택해볼까요?</h2>
+          <div
+            v-for="(subject, index) in categoryList"
+            class="border p-[15px] rounded-[16px] mb-[15px] cursor-pointer"
+            :class="stateFields.activeIndex === index ? 'bg-[#f9f9f9]' : 'h-[80px]'"
+            @click="
+              stateFields.activeIndex === index ? (stateFields.activeIndex = null) : (stateFields.activeIndex = index)
+            "
+            :key="index"
+          >
+            <div class="flex justify-between items-center mb-[24px]">
+              <div class="flex">
+                <div class="w-[50px] h-[50px] border flex items-center justify-center rounded-full mr-[10px]">
+                  <img :src="subject.image" alt="subject-img" />
+                </div>
+                <div>
+                  <p>{{ subject.name }}</p>
+                  <p class="text-[#999996]">{{ subject.description }}</p>
+                </div>
+              </div>
+              <div>
+                <img v-if="stateFields.activeIndex === index" src="@/assets/images/arrow-up-circle.svg" alt="" />
+                <img v-else src="@/assets/images/arrow-down-circle.svg" alt="" />
+              </div>
+            </div>
+            <div v-if="stateFields.activeIndex === index" class="grid grid-cols-5 gap-[15px]">
+              <div
+                v-for="(cate, subindex) in subject.list"
+                class="flex justify-center items-center w-[96px] h-[47px] rounded-[16px] text-[13px]"
+                :class="{
+                  'bg-[#F43630] text-white': stateFields.selectedActivity === '소셜링' && stateFields.category === cate,
+                  'bg-[#1C8A6A] text-white': stateFields.selectedActivity === '클럽' && stateFields.category === cate,
+                  'bg-[#3498D0] text-white': stateFields.selectedActivity === '챌린지' && stateFields.category === cate,
+                  'border border-[#999996] text-[#666666]': stateFields.category !== cate,
+                }"
+                @click.stop="handleCategoryClick(subject.name, cate, index)"
+                :key="subindex"
+              >
+                {{ cate }}
+              </div>
+            </div>
+          </div>
+          <div class="h-[120px]"></div>
+        </div>
+      </template>
+
+      <!-- 장소 선택 단계 -->
+      <template #장소>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">어디서 만날까요?</h2>
+          <div class="flex gap-[20px]">
+            <button
+              class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
+              :class="{
+                'bg-[#F43630] text-white': stateFields.isOffline === true && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isOffline === true && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isOffline === true && stateFields.selectedActivity === '챌린지',
+              }"
+              @click="handleOfflineClick"
+            >
+              <p>오프라인</p>
+            </button>
+
+            <button
+              class="border flex items-center w-[50%] h-[60px] rounded-[16px] justify-center"
+              :class="{
+                'bg-[#F43630] text-white': stateFields.isOffline === false && stateFields.selectedActivity === '소셜링',
+                'bg-[#1C8A6A] text-white': stateFields.isOffline === false && stateFields.selectedActivity === '클럽',
+                'bg-[#3498D0] text-white': stateFields.isOffline === false && stateFields.selectedActivity === '챌린지',
+              }"
+              @click="handleOnlineClick"
+            >
+              <p>온라인</p>
+            </button>
+          </div>
+          <div v-if="stateFields.isOffline">
+            <KakaoMap @get-place="getPlaceInfo" :selected-place="stateFields.place" />
+          </div>
+        </div>
+      </template>
+
+      <!-- 멤버 선택 단계 -->
+      <template #멤버>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">어떻게 멤버를 모을까요?</h2>
+          <div class="flex justify-between mb-[15px]">
+            <p>신청 방식</p>
+            <p>선착순</p>
+          </div>
+          <div>
+            <div class="flex justify-between">
+              <p>참여 인원</p>
+              <p>최대 {{ stateFields.maxPeople }}명</p>
+            </div>
+            <VueScrollPicker
+              v-model="stateFields.maxPeople"
+              :options="options"
+              :class="`number-picker number-picker-${stateFields.selectedActivity}`"
+            />
+          </div>
+          <div class="mb-[40px]">
+            <div class="flex justify-between mb-[15px]">
+              <p>성별</p>
+              <p>{{ convertGender() }}</p>
+            </div>
+            <div class="flex gap-[20px]">
+              <button
+                class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
+                :class="{
+                  'bg-[#F43630] text-white': stateFields.gender === 'all' && stateFields.selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': stateFields.gender === 'all' && stateFields.selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': stateFields.gender === 'all' && stateFields.selectedActivity === '챌린지',
+                }"
+                @click="stateFields.gender = 'all'"
+              >
+                <p>누구나</p>
+              </button>
+
+              <button
+                class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
+                :class="{
+                  'bg-[#F43630] text-white': stateFields.gender === 'male' && stateFields.selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': stateFields.gender === 'male' && stateFields.selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white': stateFields.gender === 'male' && stateFields.selectedActivity === '챌린지',
+                }"
+                @click="stateFields.gender = 'male'"
+              >
+                <p>남자만</p>
+              </button>
+              <button
+                class="border flex items-center w-[34%] h-[60px] rounded-[16px] justify-center"
+                :class="{
+                  'bg-[#F43630] text-white':
+                    stateFields.gender === 'female' && stateFields.selectedActivity === '소셜링',
+                  'bg-[#1C8A6A] text-white': stateFields.gender === 'female' && stateFields.selectedActivity === '클럽',
+                  'bg-[#3498D0] text-white':
+                    stateFields.gender === 'female' && stateFields.selectedActivity === '챌린지',
+                }"
+                @click="stateFields.gender = 'female'"
+              >
+                <p>여자만</p>
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-[15px]">
+              <p>나이</p>
+              <p>{{ filterRange() }}</p>
+            </div>
+            <vue-slider
+              v-model="stateFields.range"
+              :min="minValue"
+              :max="maxValue"
+              :interval="interval"
+              :marks="marks"
+              :railStyle="railStyle"
+              :processStyle="processStyle"
+              :handleStyle="handleStyle"
+              :tooltip="'none'"
+            />
+          </div>
+        </div>
+      </template>
+
+      <!-- 시간/주차 선택 단계 -->
+      <template #시간>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">언제 만날까요?</h2>
+          <div class="flex justify-between">
+            <div>
+              <VueDatePicker
+                v-model="stateFields.meetDate"
+                :min-date="new Date().toLocaleDateString('ko-KR')"
+                :enable-time-picker="false"
+                :format="format"
+                locale="ko"
+                :inline="{ input: true }"
+                auto-apply
+                class="datepicker-input"
+                :class="`datepicker-${stateFields.selectedActivity}`"
+                week-start="0"
+              />
+            </div>
+            <div>
+              <VueDatePicker
+                v-model="stateFields.meetTime"
+                :enable-time-picker="true"
+                :enable-date-picker="false"
+                :time-picker="true"
+                :inline="{ input: true }"
+                auto-apply
+                :class="`timepicker-input timepicker-input-${stateFields.selectedActivity}`"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 시작/종료 시간 선택 단계 -->
+      <template #시작종료>
+        <div class="px-[15px]">
+          <div class="mb-[43px]">
+            <h2 class="text-[30px]">얼마나 챌린지를 진행할까요?</h2>
+            <p class="text-[#666666]">일요일부터 시작해서 일주일 단위로 기간을 설정할 수 있어요</p>
+          </div>
+          <div>
+            <div class="flex justify-between">
+              <div>
+                <h2>시작 날짜</h2>
+                <VueDatePicker
+                  v-model="stateFields.startDate"
+                  :min-date="new Date().toLocaleDateString('ko-KR')"
+                  :enable-time-picker="false"
+                  :format="format"
+                  locale="ko"
+                  :inline="{ input: true }"
+                  auto-apply
+                  class="datepicker-input"
+                  :class="`datepicker-${stateFields.selectedActivity}`"
+                  :disabled-dates="disableNonSundays"
+                  week-start="0"
+                />
+              </div>
+              <div>
+                <h2>종료 날짜</h2>
+                <VueDatePicker
+                  v-model="stateFields.endDate"
+                  :min-date="stateFields.startDate"
+                  :enable-time-picker="false"
+                  :format="format"
+                  locale="ko"
+                  :inline="{ input: true }"
+                  auto-apply
+                  class="datepicker-input"
+                  :class="`datepicker-${stateFields.selectedActivity}`"
+                  :disabled-dates="disableNonSaturdays"
+                  week-start="0"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 주몇회 선택 단계 -->
+      <template #주몇회>
+        <div class="px-[15px]">
+          <h2 class="text-[30px] mb-[43px]">인증은 일주일에 몇 회씩 할까요?</h2>
+          <VueScrollPicker v-model="stateFields.tpw" :options="tpwOptions" />
+        </div>
+      </template>
+
+      <!-- 소개 단계 -->
+      <template #소개>
+        <div class="px-[15px]">
+          <h2 v-if="['소셜링', '클럽'].includes(stateFields.selectedActivity)" class="text-[30px] mb-[43px]">
+            {{ stateFields.selectedActivity }}을 소개해볼까요?
+          </h2>
+          <h2 v-else class="text-[30px] mb-[43px]">{{ stateFields.selectedActivity }}를 소개해볼까요?</h2>
+          <div class="flex flex-col gap-[15px]">
+            <div class="flex gap-2">
+              <div class="border rounded-lg flex flex-col items-center justify-center w-32 h-32">
+                <img
+                  src="@/assets/images/addImages.svg"
+                  alt="addImage"
+                  class="w-16 h-16 ml-4 mt-2 cursor-pointer"
+                  @click="triggerFileInput"
+                />
+                <input
+                  type="file"
+                  id="file"
+                  accept="image/*"
+                  class="hidden"
+                  ref="fileInput"
+                  multiple
+                  @change="handleFileChange"
+                />
+                <div class="text-sm text-gray-500">{{ fileCount }}/10</div>
+              </div>
+              <div class="flex overflow-x-auto space-x-2 slide-container">
+                <div
+                  v-for="(image, index) in previewImages"
+                  :key="index"
+                  class="flex-shrink-0 w-[128px] h-[128px] relative"
+                >
+                  <img :src="image" alt="Selected Image" class="w-full h-full object-cover border rounded-lg" />
+                  <!-- 삭제 버튼 -->
+                  <img
+                    src="@/assets/images/delete.svg"
+                    alt="delete"
+                    class="absolute top-2 right-2 opacity-50 cursor-pointer"
+                    @click="removeImage(index)"
+                  />
+                </div>
+              </div>
+            </div>
+            <input
+              :value="stateFields.title"
+              type="text"
+              class="border border-[#999996] h-[50px] rounded-[16px] px-3"
+              placeholder="제목을 입력해 주세요.(최소 5글자)"
+              @input="handleTitleInputChange"
+            />
+            <textarea
+              v-model="stateFields.description"
+              class="post-textarea border border-[#999996] h-[400px] rounded-[16px] p-3 resize-none"
+              placeholder="소개글을 입력해 주세요.(선택)"
+            ></textarea>
+          </div>
+        </div>
+      </template>
+
+      <!-- 미리보기 단계 -->
+      <template #미리보기>
+        <div v-if="stateFields.selectedActivity === '클럽'" class="relative">
+          <div class="w-full relative z-0 bg-white rounded-xl">
+            <Swiper
+              :modules="[Navigation, Pagination]"
+              :slides-per-view="1"
+              :navigation="true"
+              :pagination="{ clickable: true }"
+              class="w-full h-[260px]"
+            >
+              <SwiperSlide v-for="(image, index) in previewImages" :key="index">
+                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+              </SwiperSlide>
+            </Swiper>
+          </div>
+          <div class="bg-[#f1f1f1] min-h-screen pb-[120px] pt-11">
+            <div class="ml-[40px] w-[520px]">
+              <div class="h-[80px] flex gap-4">
+                <div class="flex items-center">
+                  <img
+                    v-if="resizedProfile"
+                    :src="resizedProfile"
+                    alt="hostprofile"
+                    class="w-[60px] h-[60px] rounded-full object-cover"
+                  />
+                  <img
+                    v-else
+                    src="@/assets/images/no-profile.svg"
+                    alt="hostprofile"
+                    class="w-[60px] h-[60px] rounded-full"
+                  />
+                </div>
+                <div class="mt-1 flex flex-col justify-center">
+                  <p class="text-[20px] font-bold mb-1 max-w-[420px] line-clamp-2">{{ stateFields.title }}</p>
+                  <p class="text-[12px]">호스트 {{ userInfo.nickname }}</p>
+                </div>
+              </div>
+
+              <div class="mt-2">
+                <img src="@/assets/images/members_gray.svg" alt="memberscount" class="inline-block" />
+                <span class="ml-1 text-[12px] text-[#403F3F]"
+                  >{{ participantsCnt ? participantsCnt : 1 }}/{{ stateFields.maxPeople }}명</span
+                >
+              </div>
+
+              <div class="mt-[30px]">
+                <pre class="break-words whitespace-pre-wrap">{{ stateFields.description }}</pre>
+                <!-- 안내사항 -->
+                <div class="mt-5">
+                  <p class="text-[#1C8A6A]">안내사항</p>
+                  <p>자세한 정보를 알려드릴게요</p>
+                  <div class="mt-2">
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/category.svg" alt="category" />
+
+                      <span>{{ stateFields.subject }}</span>
+                      <span> > </span>
+                      <span>{{ stateFields.category }}</span>
+                    </div>
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/members.svg" alt="members" />
+                      <p>{{ stateFields.maxPeople }}명</p>
+                    </div>
+                    <div v-if="stateFields.fee !== 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/won.svg" alt="fee" />
+                      <p>{{ stateFields.fee }}원</p>
+                    </div>
+                    <div v-if="stateFields.feeInfo.length > 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                      <span v-for="(info, index) in stateFields.feeInfo" :key="index">{{ formatFeeInfo(info) }}</span>
+                    </div>
+                    <div
+                      v-if="
+                        stateFields.gender !== 'all' || JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])
+                      "
+                      class="flex gap-1 mb-1"
+                    >
+                      <img src="@/assets/images/address-card.svg" alt="stamp" />
+                      <span v-if="JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])">{{
+                        filterRange(stateFields.range)
+                      }}</span>
+                      <span v-if="stateFields.gender !== 'all'">{{ convertGender(stateFields.gender) }}</span>
+                    </div>
+                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
+                      <div class="flex gap-1 mb-1">
+                        <img src="@/assets/images/location.svg" alt="location" />
+                        <div>
+                          <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                          <span v-else
+                            >{{ stateFields.place.place_name }} ({{
+                              stateFields.place.road_address_name || stateFields.place.address_name
+                            }})</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        v-if="typeof stateFields.place !== 'string'"
+                        @click="openKakaoMap"
+                        class="flex cursor-pointer border rounded-lg shadow-md bg-gray-100 hover:bg-gray-200 overflow-hidden"
+                      >
+                        <img src="@/assets/images/location-map.svg" alt="location-map" />
+                        <div class="p-4">
+                          <p>{{ stateFields.place.place_name }}</p>
+                          <p class="text-[14px] text-[#403F3F]">
+                            {{ stateFields.place.road_address_name || stateFields.place.address_name }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="relative">
+          <div class="w-full relative z-0 bg-white rounded-xl">
+            <Swiper
+              :modules="[Navigation, Pagination]"
+              :slides-per-view="1"
+              :navigation="true"
+              :pagination="{ clickable: true }"
+              class="w-full h-[260px]"
+            >
+              <SwiperSlide v-for="(image, index) in previewImages" :key="index">
+                <img :src="image || noImage" alt="게시물 이미지" class="w-full h-full object-cover" />
+              </SwiperSlide>
+            </Swiper>
+          </div>
+          <div class="bg-white w-[440px] h-[105px] top-[205px] left-[80px] absolute rounded-[20px]">
+            <img
+              v-if="resizedProfile"
+              :src="resizedProfile"
+              alt="hostprofile"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px] object-cover"
+            />
+            <img
+              v-else
+              src="@/assets/images/no-profile.svg"
+              alt="hostprofile"
+              class="w-[60px] h-[60px] rounded-full absolute left-[190px] top-[-30px]"
+            />
+            <div class="text-center mt-[30px] px-[15px]">
+              <p class="text-[12px] mb-1">{{ userInfo.nickname }}</p>
+              <p class="text-[20px] font-bold line-clamp-1">{{ stateFields.title }}</p>
+            </div>
+          </div>
+          <!-- 한줄 요약 -->
+          <div class="bg-[#f1f1f1] min-h-screen pb-[120px]">
+            <div class="pt-[50px]">
+              <div class="flex justify-center items-center text-center text-[#403F3F] mt-2 px-[40px]">
+                <img
+                  src="@/assets/images/calendar.svg"
+                  alt="calendar"
+                  class="mb-[2px]"
+                  style="filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%)"
+                />
+                <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
+                  <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                  <span v-else>{{ stateFields.place.place_name }}</span>
+                  <span class="mx-1">·</span>
+                </div>
+                <span v-if="stateFields.meetDate && stateFields.meetTime">
+                  {{ formatDate(stateFields.meetDate) }}
+                  {{ formatTime(stateFields.meetTime) }}
+                </span>
+
+                <span v-if="stateFields.startDate && stateFields.endDate">
+                  {{ formatDate(stateFields.startDate) }} {{ period / 7 }}주 간
+                </span>
+
+                <div v-if="stateFields.tpw !== '-'" class="flex">
+                  <img
+                    src="@/assets/images/check-circle.svg"
+                    alt="check"
+                    class="ml-2 mr-1"
+                    style="
+                      filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%);
+                    "
+                  />
+                  <span>{{ stateFields.tpw }} 인증</span>
+                </div>
+
+                <div v-if="stateFields.selectedActivity === '챌린지' && stateFields.maxPeople !== '-'" class="flex">
+                  <img
+                    src="@/assets/images/members.svg"
+                    alt="members"
+                    class="ml-2 mr-1"
+                    style="
+                      filter: invert(23%) sepia(15%) saturate(21%) hue-rotate(83deg) brightness(101%) contrast(97%);
+                    "
+                  />
+                  <span>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}</span>
+                </div>
+              </div>
+              <div class="ml-[40px] mt-[70px] w-[520px]">
+                <pre class="break-words whitespace-pre-wrap">{{ stateFields.description }}</pre>
+                <!-- 안내사항 -->
+                <div class="mt-5">
+                  <div
+                    :class="{
+                      'text-[#F43630]': stateFields.selectedActivity === '소셜링',
+                      'text-[#3498D0]': stateFields.selectedActivity === '챌린지',
+                    }"
+                  >
+                    안내사항
+                  </div>
+                  <div class="font-bold">자세한 정보를 알려드릴게요</div>
+                  <div class="mt-2">
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/category.svg" alt="category" />
+
+                      <span>{{ stateFields.subject }}</span>
+                      <span> > </span>
+                      <span>{{ stateFields.category }}</span>
+                    </div>
+                    <div class="flex gap-1 mb-1">
+                      <img src="@/assets/images/members.svg" alt="members" />
+                      <span>{{ participantsCnt ?? 1 }}/{{ stateFields.maxPeople }}명 선착순</span>
+                    </div>
+                    <div v-if="stateFields.isFee" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/won.svg" alt="fee" />
+                      <p>{{ stateFields.fee }}원</p>
+                    </div>
+                    <div v-if="stateFields.isFee && stateFields.feeInfo.length > 0" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/info-circle.svg" alt="feeinfo" />
+                      <span v-for="(info, index) in stateFields.feeInfo" :key="index">{{ formatFeeInfo(info) }}</span>
+                    </div>
+                    <div
+                      v-if="
+                        stateFields.gender !== 'all' || JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])
+                      "
+                      class="flex gap-1 mb-1"
+                    >
+                      <img src="@/assets/images/address-card.svg" alt="stamp" />
+                      <span v-if="JSON.stringify(stateFields.range) !== JSON.stringify([20, 50])">{{
+                        filterRange(stateFields.range)
+                      }}</span>
+                      <span v-if="stateFields.gender !== 'all'">{{ convertGender(stateFields.gender) }}</span>
+                    </div>
+                    <div v-if="stateFields.startDate && stateFields.endDate" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/calendar.svg" alt="calendar" />
+                      <p>
+                        {{ period / 7 }}주 간 진행 - {{ formatDate(stateFields.startDate) }} ~
+                        {{ formatDate(stateFields.endDate) }}
+                      </p>
+                    </div>
+                    <div v-if="stateFields.tpw !== '-'" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/stamp.svg" alt="stamp" />
+                      <p>{{ stateFields.tpw }} 인증</p>
+                    </div>
+                    <div v-if="stateFields.meetDate" class="flex gap-1 mb-1">
+                      <img src="@/assets/images/calendar.svg" alt="calendar" />
+                      <p>모임날짜 · {{ formatDate(stateFields.meetDate) }} {{ formatTime(stateFields.meetTime) }}</p>
+                    </div>
+                    <div v-if="JSON.stringify(stateFields.place) !== JSON.stringify({})">
+                      <div class="flex gap-1 mb-1">
+                        <img src="@/assets/images/location.svg" alt="location" />
+                        <div>
+                          <span v-if="typeof stateFields.place === 'string'">{{ stateFields.place }}</span>
+                          <span v-else
+                            >{{ stateFields.place.place_name }} ({{
+                              stateFields.place.road_address_name || stateFields.place.address_name
+                            }})</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        v-if="typeof stateFields.place !== 'string'"
+                        @click="openKakaoMap"
+                        class="flex cursor-pointer border rounded-lg shadow-md bg-gray-100 hover:bg-gray-200 overflow-hidden"
+                      >
+                        <img src="@/assets/images/location-map.svg" alt="location-map" />
+                        <div class="p-4">
+                          <p>{{ stateFields.place.place_name }}</p>
+                          <p class="text-[14px] text-[#403F3F]">
+                            {{ stateFields.place.road_address_name || stateFields.place.address_name }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Funnel>
+    <div class="h-[1px]"></div>
+    <div class="px-[15px]">
+      <button
+        v-if="currentStep === '미리보기'"
+        class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
+        :class="{
+          'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
+          'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
+          'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
+        }"
+        :disabled="!isNextEnabled"
+        @click="finish"
+      >
+        <span v-if="route.params.id">{{ stateFields.selectedActivity }} 수정</span>
+        <span v-else>{{ stateFields.selectedActivity }} 열기</span>
+      </button>
+      <button
+        v-else
+        class="w-full max-w-[570px] border py-5 rounded-full fixed bottom-5 text-[white] disabled:bg-[#BBBBBB] disabled:text-[#666]"
+        :class="{
+          'bg-[#F43630]': stateFields.selectedActivity === '소셜링',
+          'bg-[#1C8A6A]': stateFields.selectedActivity === '클럽',
+          'bg-[#3498D0]': stateFields.selectedActivity === '챌린지',
+        }"
+        :disabled="!isNextEnabled"
+        @click="nextStep"
+      >
+        <span v-if="currentStep === '소개'">미리보기</span>
+        <span v-else>다음</span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* 선택 윗 부분 */
+::v-deep(.vue-scroll-picker-layer-top) {
+  box-sizing: border-box;
+  border-bottom: 1px solid #c8c7cc;
+  background: linear-gradient(180deg, #fff 10%, rgba(255, 255, 255, 0.7));
+  top: 0;
+  height: calc(50% - 2em);
+  cursor: pointer;
+}
+
+/* 선택 부분 */
+::v-deep(.vue-scroll-picker-layer-selection) {
+  top: calc(50% - 2em);
+  bottom: calc(50% - 2em);
+}
+
+/* 선택 및 부분 */
+::v-deep(.vue-scroll-picker-layer-bottom) {
+  border-top: 1px solid #c8c7cc;
+  background: linear-gradient(0deg, #fff 10%, rgba(255, 255, 255, 0.7));
+  bottom: 0;
+  height: calc(50% - 2em);
+  cursor: pointer;
+}
+/* 아이템 간 간격 넓히기 */
+::v-deep(.vue-scroll-picker-item) {
+  margin: 10px 0;
+  font-size: 20px;
+  line-height: 50px;
+  height: 50px;
+  box-sizing: border-box;
+}
+
+/* 선택된 항목 스타일 변경 */
+::v-deep(.number-picker-소셜링 .vue-scroll-picker-item-selected) {
+  color: #f43630;
+  font-weight: 600;
+}
+::v-deep(.number-picker-클럽 .vue-scroll-picker-item-selected) {
+  color: #1c8a6a;
+  font-weight: 600;
+}
+::v-deep(.number-picker-챌린지 .vue-scroll-picker-item-selected) {
+  color: #3498d0;
+  font-weight: 600;
+}
+</style>
