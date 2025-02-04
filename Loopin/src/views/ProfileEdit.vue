@@ -252,7 +252,7 @@ const cancelUpdate = () => {
               </div>
               <div>
                 <h3 class="text-lg font-medium text-gray-900 mb-1">프로필 사진</h3>
-                <p class="text-sm text-gray-500">JPG, PNG 형식의 이미지를 업로드해주세요</p>
+                <p class="text-sm text-gray-500">이미지 형식의 파일을 업로드해주세요</p>
               </div>
             </div>
 
